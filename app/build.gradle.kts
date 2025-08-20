@@ -2,7 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt.android)
 }
 
 android {
@@ -32,19 +33,28 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
     buildFeatures {
         compose = true
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+    }
+}
+
 dependencies {
-    val room_version = "2.7.2"
-    implementation("androidx.room:room-runtime:${room_version}")
-    kapt("androidx.room:room-compiler:$room_version")
-    implementation("com.google.code.gson:gson:2.13.1")
+
+    implementation(kotlin("reflect"))
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.android.volley)
+    implementation(libs.coil.kt.coil.compose)
+    implementation(libs.google.gson)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
