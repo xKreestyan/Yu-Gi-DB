@@ -1,15 +1,18 @@
 package com.example.yu_gi_db.model
 import com.google.gson.annotations.SerializedName // Importa questo se usi Gson e i nomi delle variabili Kotlin differiscono dalle chiavi JSON
 
+//Anteprima (small) della carta
 data class SmallPlayingCard(
         val idCard: String?,
         val strCard: String?,
         val strCardThumb: String?
 )
-data class  SmallPlayingCardResponse(
+//Lista formata dalla singola carta
+data class SmallPlayingCardResponse(
         val cards: List<SmallPlayingCard>?
 )
 
+//Carta completa
 data class LargePlayingCard(
         val id: Long?,
         val name: String?,
@@ -33,6 +36,7 @@ data class LargePlayingCard(
         val cardPrices: List<CardPrice>?
 )
 
+//Set della carta
 data class CardSet(
         @SerializedName("set_name")
         val setName: String?,
@@ -50,6 +54,7 @@ data class CardSet(
         val setPrice: String? // Prezzo come Stringa, potrebbe essere meglio convertirlo a Double/Float se necessario
 )
 
+//Immagine della carta
 data class CardImage(
         val id: Long?,
 
@@ -63,6 +68,7 @@ data class CardImage(
         val imageUrlCropped: String?
 )
 
+//Prezzo della carta nei vari store
 data class CardPrice(
         @SerializedName("cardmarket_price")
         val cardmarketPrice: String?, // Anche questi prezzi sono stringhe
@@ -78,4 +84,9 @@ data class CardPrice(
 
         @SerializedName("coolstuffinc_price")
         val coolstuffincPrice: String?
+)
+
+//Lista formata dalla singola carta
+data class LargePlayingCardResponse(
+        val cards: List<LargePlayingCard>?
 )
