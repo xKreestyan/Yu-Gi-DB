@@ -47,6 +47,7 @@ kotlin {
 dependencies {
 
     implementation(kotlin("reflect"))
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.android.volley)
@@ -54,6 +55,7 @@ dependencies {
     implementation(libs.google.gson)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
