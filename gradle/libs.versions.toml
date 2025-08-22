@@ -11,7 +11,7 @@ lifecycleViewmodelCompose = "2.9.2"
 activityCompose = "1.10.1"
 composeBom = "2025.08.00"
 navigationCompose = "2.9.3"
-roomRuntime = "2.7.2"
+roomVersion = "2.7.2"
 volley = "1.2.1"
 coil = "2.7.0"
 gson = "2.13.1"
@@ -22,8 +22,9 @@ ksp = "2.2.10-2.0.2"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
-androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomRuntime" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomVersion" }
 android-volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
 coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
