@@ -49,6 +49,7 @@ dependencies {
     implementation(kotlin("reflect"))
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
     implementation(libs.android.volley)
     implementation(libs.coil.kt.coil.compose)
     implementation(libs.google.gson)
