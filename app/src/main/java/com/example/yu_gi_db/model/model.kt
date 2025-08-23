@@ -4,12 +4,11 @@ import com.google.gson.annotations.SerializedName // Importa questo se usi Gson 
 //Anteprima (small) della carta
 data class SmallPlayingCard(
         val id: Int,
-        @SerializedName("image_url_small")
         val imageUrlSmall: String
 )
 //Lista formata dalla singola carta
 data class SmallPlayingCardResponse(
-        val cards: List<SmallPlayingCard>?
+        val data: List<SmallPlayingCard>?
 )
 
 //Carta completa
@@ -28,14 +27,25 @@ data class LargePlayingCard(
         // ma il JSON lo chiama 'level'. Potrebbe essere un 'rank' mascherato da 'level'.
         val attribute: String?,
 
-        @SerializedName("image_url_small")
-        val imageUrlSmall: String,
+        @SerializedName("card_images")
+        val cardImages: List<CardImage>,
 
         @SerializedName("card_sets") // Esempio se il nome della variabile Kotlin fosse diverso, es. cardSets
         val cardSets: List<CardSet>,
 
         @SerializedName("card_prices")
         val cardPrices: List<CardPrice>
+)
+
+//Immagini della carta
+data class CardImage(
+        val id: Int,
+        @SerializedName("image_url")
+        val imageUrl: String,
+        @SerializedName("image_url_small")
+        val imageUrlSmall: String,
+        @SerializedName("image_url_cropped")
+        val imageUrlCropped: String
 )
 
 //Set della carta
@@ -76,5 +86,5 @@ data class CardPrice(
 
 //Lista formata dalla singola carta
 data class LargePlayingCardResponse(
-        val cards: List<LargePlayingCard>?
+        val data: List<LargePlayingCard>?
 )

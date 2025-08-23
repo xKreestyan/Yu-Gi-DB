@@ -69,6 +69,16 @@ interface YuGiDAO {
     """) // NUOVA QUERY
     suspend fun getCardsByTypeLineName(typeLineName: String): List<CardEntity>
 
+    /**
+     * Recupera i nomi di tutte le typeline associate a una specifica carta.
+     */
+    @Query("""
+        SELECT tl.name 
+        FROM card_type_line_cross_ref AS ctlcr
+        INNER JOIN type_lines AS tl ON ctlcr.typeLineId = tl.id
+        WHERE ctlcr.cardId = :cardId
+    """)
+    suspend fun getTypeLineNamesForCard(cardId: Int): List<String>
 
     @Query("SELECT * FROM card_set_appearances WHERE cardId = :cardId")
     suspend fun getAppearancesForCard(cardId: Int): List<CardSetAppearanceEntity>
