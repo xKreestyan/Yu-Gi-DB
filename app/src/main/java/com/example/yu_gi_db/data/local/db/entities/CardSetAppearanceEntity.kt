@@ -1,4 +1,4 @@
-package com.example.yu_gi_db.data.local.db.entity
+package com.example.yu_gi_db.data.local.db.entities
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

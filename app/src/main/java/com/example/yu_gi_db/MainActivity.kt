@@ -15,7 +15,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
-import com.example.yu_gi_db.viewmodel.YuGiViewModel
+import com.example.yu_gi_db.viewmodels.CardListViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yu_gi_db.views.MainScreen
@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             var splash = rememberSaveable { mutableStateOf(true) }
             YuGiDBTheme {
-                val viewModel = hiltViewModel<YuGiViewModel>()
+                val viewModel = hiltViewModel<CardListViewModel>()
                 LaunchedEffect(Unit) {
                     delay(2500)
                     splash.value = false

@@ -4,11 +4,11 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.yu_gi_db.data.local.db.entity.CardEntity
-import com.example.yu_gi_db.data.local.db.entity.CardSetAppearanceEntity
-import com.example.yu_gi_db.data.local.db.entity.SetEntity
-import com.example.yu_gi_db.data.local.db.entity.TypeLineEntity // NUOVO IMPORT
-import com.example.yu_gi_db.data.local.db.entity.CardTypeLineCrossRef // NUOVO IMPORT
+import com.example.yu_gi_db.data.local.db.entities.CardEntity
+import com.example.yu_gi_db.data.local.db.entities.CardSetAppearanceEntity
+import com.example.yu_gi_db.data.local.db.entities.SetEntity
+import com.example.yu_gi_db.data.local.db.entities.TypeLineEntity // NUOVO IMPORT
+import com.example.yu_gi_db.data.local.db.entities.CardTypeLineCrossRef // NUOVO IMPORT
 import kotlinx.coroutines.flow.Flow
 
 @Dao
