@@ -161,7 +161,7 @@ class YuGiRepo @Inject constructor(
                 yuGiDAO.insertCard(cardEntity)
                 Log.d(tag, "Inserted/Updated CardEntity for ID: ${apiCard.id}")
 
-                apiCard.typeline.forEach { typeLineName ->
+                apiCard.typeline?.forEach { typeLineName ->
                     if (typeLineName.isNotBlank()) {
                         var typeLineEntity = yuGiDAO.getTypeLineByName(typeLineName)
                         val typeLineId: Long
@@ -174,7 +174,7 @@ class YuGiRepo @Inject constructor(
                     }
                 }
 
-                apiCard.cardSets.forEach { apiSet ->
+                apiCard.cardSets?.forEach { apiSet ->
                     var setEntity = yuGiDAO.getSetByName(apiSet.setName)
                     val setId: Long
                     if (setEntity == null) {

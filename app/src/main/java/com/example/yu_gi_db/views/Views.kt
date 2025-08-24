@@ -1,5 +1,6 @@
 package com.example.yu_gi_db.views
 
+import android.util.Log // Importa Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -99,6 +100,9 @@ fun SavedCardsScreen(modifier: Modifier = Modifier, cardListViewModel: CardListV
     val isLoading by cardListViewModel.isLoadingInitialData.collectAsStateWithLifecycle()
     val error by cardListViewModel.initialDataError.collectAsStateWithLifecycle()
 
+    // Log per vedere quanti elementi contiene 'cards'
+    Log.d("SavedCardsScreen", "Number of cards from ViewModel: ${cards.size}")
+
     SavedCardsContent(
         modifier = modifier,
         cards = cards,
@@ -151,6 +155,9 @@ private fun SavedCardsContent(
     isLoading: Boolean,
     errorMessage: String?
 ) {
+    // Log per vedere quanti elementi riceve SavedCardsContent
+    Log.d("SavedCardsContent", "Number of cards received: ${cards.size}, isLoading: $isLoading, error: $errorMessage")
+
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.TopStart
@@ -170,12 +177,15 @@ private fun SavedCardsContent(
                 modifier = Modifier.padding(16.dp)
             )
         } else if (cards.isEmpty()) {
+            Log.d("SavedCardsContent", "Displaying 'No cards saved' message.")
             Text(
                 text = "No cards saved",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
         } else {
+            // Log per confermare che stiamo per comporre la LazyVerticalGrid
+            Log.d("SavedCardsContent", "Displaying LazyVerticalGrid with ${cards.size} cards.")
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxWidth(),
