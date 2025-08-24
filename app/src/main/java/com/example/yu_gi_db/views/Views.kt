@@ -156,21 +156,22 @@ private fun SavedCardsContent(
         contentAlignment = Alignment.TopStart
     ) {
         if (isLoading) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CircularProgressIndicator()
+            Column(horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.fillMaxSize()) {
+                CircularProgressIndicator(Modifier.fillMaxSize(0.5f) )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("cccck")
+                Text("Loading")
+
             }
         } else if (errorMessage != null) {
             Text(
-                text = "ciao,",
+                text = "errorMessage{$errorMessage}",
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(16.dp)
             )
         } else if (cards.isEmpty()) {
             Text(
-                text = "stringResource(R.string.no_saved_cards)",
+                text = "No cards saved",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
