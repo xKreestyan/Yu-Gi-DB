@@ -52,7 +52,7 @@ fun SplashScreen(modifier: Modifier = Modifier) {
         ) {
             Image(
                 painter = painterResource(id = R.drawable.screen_yu_gi_db),
-                contentDescription = "stringResource(id = R.string.logo_content_description)",
+                contentDescription = stringResource(id = R.string.splash_content_description),
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier.fillMaxSize() // Example size
             )
