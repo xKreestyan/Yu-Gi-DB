@@ -1,4 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Yu-Gi-DB</string>
-    <string name="splash_content_description">Splash screeen</string>
+    <string name="splash_content_description">Yu-Gi-Oh! Database Splash Screen</string>
+    <string name="card_image_description">Image of card %1$s</string>
+    <string name="search_bar_label">Search by ID</string>
+    <string name="error_message_generic">Error: %1$s</string>
+    <string name="no_cards_saved">No cards saved</string>
+    <string name="no_cards_found_search">No cards found for your search</string>
+    <string name="loading_text">Loading</string>
+
 </resources>
