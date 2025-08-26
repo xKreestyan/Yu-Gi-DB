@@ -1,16 +1,17 @@
-package com.example.yu_gi_db.viewmodels // MODIFICATO
+package com.example.yu_gi_db.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.yu_gi_db.domain.repository.YuGiRepoInterface // Cambiato da .data.remote.repository
+import com.example.yu_gi_db.domain.repository.YuGiRepoInterface
+import com.example.yu_gi_db.model.LargePlayingCard // Importa LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch // Aggiunto se mancava per .catch
-import kotlinx.coroutines.flow.distinctUntilChanged // Aggiunto per coerenza con discussione precedente
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,58 +22,56 @@ class CardListViewModel @Inject constructor(
 
     private val _tag = "CardListViewModel"
 
+    // StateFlow per la lista di SmallPlayingCard
     private val _smallCards = MutableStateFlow<List<SmallPlayingCard>>(emptyList())
     val smallCards: StateFlow<List<SmallPlayingCard>> = _smallCards.asStateFlow()
 
+    // StateFlow per il caricamento iniziale dei dati
     private val _isLoadingInitialData = MutableStateFlow(false)
     val isLoadingInitialData: StateFlow<Boolean> = _isLoadingInitialData.asStateFlow()
 
     private val _initialDataError = MutableStateFlow<String?>(null)
     val initialDataError: StateFlow<String?> = _initialDataError.asStateFlow()
 
-    private var initialDataFetchAttemptedThisSession = false // Rinominiamo per chiarezza
+    private var initialDataFetchAttemptedThisSession = false
+
+    // StateFlow per la LargePlayingCard selezionata
+    private val _selectedLargeCard = MutableStateFlow<LargePlayingCard?>(null)
+    val selectedLargeCard: StateFlow<LargePlayingCard?> = _selectedLargeCard.asStateFlow()
+
+    // StateFlow per lo stato di caricamento della LargePlayingCard
+    private val _isLoadingLargeCard = MutableStateFlow(false)
+    val isLoadingLargeCard: StateFlow<Boolean> = _isLoadingLargeCard.asStateFlow()
+
+    // StateFlow per errori durante il caricamento della LargePlayingCard
+    private val _largeCardError = MutableStateFlow<String?>(null)
+    val largeCardError: StateFlow<String?> = _largeCardError.asStateFlow()
 
     init {
         Log.d(_tag, "ViewModel initialized. Repo: $yuGiRepo")
         observeSmallCards()
-        // Non chiamare triggerInitialDataLoad qui se deve essere chiamato esplicitamente dalla UI
-        // o basato su una logica più complessa. Per ora, lo lascio se l'intenzione è caricarlo all'avvio.
-        // Se `initialDataFetchAttemptedThisSession` deve prevenire fetch multipli *automatici*,
-        // allora la logica in triggerInitialDataLoad è più appropriata.
-        triggerInitialDataLoad() // Se vuoi che si carichi all'avvio del ViewModel
+        triggerInitialDataLoad()
     }
 
     private fun observeSmallCards() {
         viewModelScope.launch {
             Log.d(_tag, "Inizio osservazione smallCards stream dal repository.")
             yuGiRepo.getSmallCardsStream(null)
-                .distinctUntilChanged() // Evita aggiornamenti inutili se la lista non cambia
+                .distinctUntilChanged()
                 .catch { exception ->
                     Log.e(_tag, "Errore nell'osservare smallCards stream", exception)
-                    // Potresti voler impostare _initialDataError qui se l'errore è critico per la visualizzazione
-                    // e _isLoadingInitialData a false se questo errore interrompe un caricamento.
                 }
                 .collect { cards ->
                     Log.d(_tag, "Ricevute ${cards.size} carte piccole. Aggiornamento UI.")
                     _smallCards.value = cards
-                    // Se il caricamento iniziale è terminato (con successo o fallimento),
-                    // e abbiamo ricevuto carte, l'indicatore di caricamento principale
-                    // dovrebbe già essere stato gestito da triggerInitialDataLoad.
-                    // Questa collect aggiorna semplicemente la lista.
-                    // Se _isLoadingInitialData è ancora true qui E initialDataFetchAttemptedThisSession è true,
-                    // significa che triggerInitialDataLoad non ha completato il suo ciclo per qualche motivo
-                    // o c'è una race condition.
                     if (_isLoadingInitialData.value && initialDataFetchAttemptedThisSession) {
                         Log.w(_tag, "Collect sta vedendo isLoadingInitialData ancora a true dopo che il fetch è stato tentato.")
-                        // _isLoadingInitialData.value = false; // Forse una misura di sicurezza, ma dovrebbe essere gestito da trigger.
                     }
                 }
         }
     }
 
     fun triggerInitialDataLoad() {
-        // Previene fetch multipli se uno è già stato tentato in questa sessione
-        // o se uno è attivamente in corso.
         if (initialDataFetchAttemptedThisSession || _isLoadingInitialData.value) {
             val reason = if (_isLoadingInitialData.value) "già in corso" else "già tentato in questa sessione"
             Log.d(_tag, "Caricamento iniziale skip: $reason.")
@@ -82,24 +81,60 @@ class CardListViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoadingInitialData.value = true
             _initialDataError.value = null
-            initialDataFetchAttemptedThisSession = true // Marchia che un tentativo è iniziato
-            var fetchSuccess = false // Traccia il successo del fetch
+            initialDataFetchAttemptedThisSession = true
+            var fetchSuccess = false
 
             Log.i(_tag, "Avvio fetchAndSaveAllCards per il popolamento iniziale del DB...")
             try {
-                yuGiRepo.fetchAndSaveAllCards() // suspend function
+                yuGiRepo.fetchAndSaveAllCards()
                 Log.i(_tag, "fetchAndSaveAllCards completato con successo.")
                 fetchSuccess = true
             } catch (e: Exception) {
                 Log.e(_tag, "Errore durante fetchAndSaveAllCards", e)
                 _initialDataError.value = "Errore durante il caricamento dei dati: ${e.localizedMessage}"
-                // fetchSuccess rimane false
             } finally {
-                // Questo blocco finally assicura che isLoadingInitialData venga impostato a false
-                // indipendentemente dal successo o fallimento del try-catch.
                 _isLoadingInitialData.value = false
                 Log.d(_tag, "Fine triggerInitialDataLoad. isLoadingInitialData settato a false. Successo Fetch: $fetchSuccess")
             }
         }
+    }
+
+    fun fetchLargeCardById(cardId: Int) {
+        viewModelScope.launch {
+            _isLoadingLargeCard.value = true
+            _largeCardError.value = null
+            // _selectedLargeCard.value = null // Opzionale: pulire la carta precedente all'inizio del fetch
+                                            // Dipende se vuoi che la vecchia carta scompaia subito
+                                            // o solo quando la nuova è pronta (o c'è un errore).
+                                            // Per ora lo commento, implica che la vecchia carta resta visibile durante il caricamento della nuova.
+                                            // Se la nuova non viene trovata, _selectedLargeCard non verrà aggiornata.
+
+            Log.d(_tag, "Avvio fetchLargeCardById per ID: $cardId")
+            try {
+                val card = yuGiRepo.getLargeCardById(cardId)
+                if (card != null) {
+                    Log.i(_tag, "LargePlayingCard con ID: $cardId trovata: ${card.name}")
+                    _selectedLargeCard.value = card // Aggiorna solo se la carta è trovata
+                } else {
+                    Log.w(_tag, "Nessuna LargePlayingCard trovata per ID: $cardId")
+                    _selectedLargeCard.value = null // Assicura che se la carta non viene trovata, lo stato sia null
+                    _largeCardError.value = "Carta non trovata con ID: $cardId."
+                }
+            } catch (e: Exception) {
+                Log.e(_tag, "Errore durante fetchLargeCardById per ID: $cardId", e)
+                 _selectedLargeCard.value = null // Assicura che in caso di errore non ci sia una carta selezionata
+                _largeCardError.value = "Errore durante il caricamento della carta ID $cardId: ${e.localizedMessage}"
+            } finally {
+                _isLoadingLargeCard.value = false
+                Log.d(_tag, "Fine fetchLargeCardById per ID: $cardId. isLoadingLargeCard settato a false.")
+            }
+        }
+    }
+
+    fun clearSelectedLargeCard() {
+        _selectedLargeCard.value = null
+        _largeCardError.value = null // Pulisce anche eventuali errori relativi
+        _isLoadingLargeCard.value = false // Assicura che anche lo stato di caricamento sia resettato
+        Log.d(_tag, "selectedLargeCard e i relativi stati sono stati resettati.")
     }
 }

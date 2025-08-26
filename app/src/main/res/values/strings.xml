@@ -8,5 +8,6 @@
     <string name="no_cards_saved">No cards saved</string>
     <string name="no_cards_found_search">No cards found for your search</string>
     <string name="loading_text">Loading</string>
+    <string name="card_detail_title_default">\?????????????</string>
 
 </resources>

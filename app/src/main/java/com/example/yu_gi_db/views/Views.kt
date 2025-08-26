@@ -7,17 +7,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -25,6 +33,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -177,7 +187,153 @@ fun SmallCardsListView(
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LargePlayingCard(card: String?, modifier: Modifier = Modifier, navController: NavHostController? = null) { // cardId rinominato in card, e tipo cambiato in String?
+fun InitLargePlayingCard(
+    cardId: Int,
+    modifier: Modifier = Modifier,
+    navController: NavHostController? = null, // Utile per la navigazione Indietro
+    viewModel: CardListViewModel = hiltViewModel()
+) {
+    val largeCard by viewModel.selectedLargeCard.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoadingLargeCard.collectAsStateWithLifecycle()
+    val error by viewModel.largeCardError.collectAsStateWithLifecycle()
+
+    LaunchedEffect(cardId) {
+        Log.d("InitLargePlayingCard", "LaunchedEffect triggered for cardId: $cardId")
+        viewModel.fetchLargeCardById(cardId)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            Log.d(
+                "InitLargePlayingCard",
+                "DisposableEffect onDispose triggered. Clearing selected card."
+            )
+            viewModel.clearSelectedLargeCard()
+        }
+    }
+
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        largeCard?.name ?: stringResource(id = R.string.card_detail_title_default)
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                navigationIcon = {
+                    if (navController?.previousBackStackEntry != null) {
+                        IconButton(onClick = { navController.navigateUp() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.card_detail_title_default)
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = modifier.padding(innerPadding)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            when {
+                isLoading -> WaitIndicatorView(Modifier.size(100.dp))
+                error != null -> ErrorMessageView(
+                    text = error ?: stringResource(R.string.error_message_generic)
+                )
+
+                largeCard != null -> LargeCardDetailDisplayView(
+                    card = largeCard!!,
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                else -> Text("Nessuna carta da visualizzare.") // Stato per quando non c'è nulla, né errore né caricamento
+            }
+        }
+    }
+}
+
+@Composable
+fun LargeCardDetailDisplayView(card: LargePlayingCard, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()), // Per contenuti lunghi
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = card.name,
+            style = MaterialTheme.typography.headlineMedium,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Immagine della carta (cropped)
+        card.cardImages.firstOrNull()?.imageUrlCropped?.let { imageUrl ->
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.ic_launcher_foreground),
+                error = painterResource(R.drawable.ic_launcher_background),
+                contentDescription = stringResource(R.string.card_image_description, card.id),
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .fillMaxWidth(0.8f) // Adatta la larghezza ma non riempie tutto
+                    .padding(vertical = 8.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Tipo e Razza
+        Text(
+            text = "Type: ${card.type} / ${card.race}",
+            style = MaterialTheme.typography.titleMedium
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Attributo e Livello (se applicabile)
+        card.attribute?.let {
+            Text(
+                text = "Attribute: $it",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+        card.level?.let {
+            Text(
+                text = "Level/Rank: $it",
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // ATK/DEF (se applicabile)
+        if (card.atk != null || card.def != null) {
+            val atkText = card.atk?.toString() ?: "N/A"
+            val defText = card.def?.toString() ?: "N/A"
+            Text(text = "ATK: $atkText / DEF: $defText", style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // Descrizione
+        Text(
+            text = card.desc,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Justify
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+/*fun LargePlayingCard(card: String?, modifier: Modifier = Modifier, navController: NavHostController? = null) { // cardId rinominato in card, e tipo cambiato in String?
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -199,6 +355,8 @@ fun LargePlayingCard(card: String?, modifier: Modifier = Modifier, navController
         // SmallCardItemView(card = card,modifier = Modifier.padding(innerPadding), navController = navController)
     }
 }
+*/
+
 @Composable
 fun WaitIndicatorView(modifier: Modifier = Modifier){
     CircularProgressIndicator(
@@ -425,6 +583,40 @@ fun CardsScreenNoCardsFoundSearchPreview() {
             searchQuery = "nonExistentCard", // Stringa di ricerca non vuota
             onSearchQueryChange = {}
             // Non passiamo navController nelle preview statiche se non necessario per la UI base
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "LargeCardDetail - Populated")
+@Composable
+fun LargeCardDetailPreview() {
+    YuGiDBTheme {
+        LargeCardDetailDisplayView(
+            card = LargePlayingCard(
+                id = 12345,
+                name = "Drago Bianco Occhi Blu",
+                type = "Mostro Normale",
+                desc = "Questo drago leggendario è un potente motore di distruzione. Praticamente invincibile, sono in pochi ad aver fronteggiato questa creatura ed essere sopravvissuti per raccontarlo.",
+                atk = 3000,
+                def = 2500,
+                level = 8,
+                race = "Drago",
+                attribute = "LUCE",
+                cardSets = emptyList(),
+                cardImages = listOf(
+                    com.example.yu_gi_db.model.CardImage(
+                        id = 1,
+                        imageUrl = "https://images.ygoprodeck.com/images/cards/89631139.jpg",
+                        imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/89631139.jpg",
+                        imageUrlCropped = "https://images.ygoprodeck.com/images/cards_cropped/89631139.jpg"
+                    )
+                ),
+                cardPrices = emptyList(),
+                typeline = emptyList(),
+                frameType = "Card",
+                humanReadableCardType = "Mostro",
+
+            )
         )
     }
 }

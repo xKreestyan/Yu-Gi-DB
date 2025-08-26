@@ -12,11 +12,8 @@ sealed class Screen(
 ) {
     object SplashScreen : Screen("SplashScreen")
     object MainScreen : Screen("MainScreen")
-
     object CardScreen : Screen("CardScreen/{cardId}") { // route property is "CardScreen/{cardId}"
         const val ARG_CARD_ID = "cardId" // Define argument key as a constant
-
-        // Helper function to create the actual route for navigation
         fun createRoute(cardId: String): String {
             // Replaces the placeholder {cardId} with the actual cardId value
             return this.route.replace("{$ARG_CARD_ID}", cardId)
@@ -55,15 +52,14 @@ fun Navigation() {
                 // nullable = false by default. Specify if it can be null or needs a default value.
             })
         ) { backStackEntry ->
-            // Estraiamo l'argomento "message" // This comment seems to refer to "cardId" now
             LargePlayingCard(
                 navController = navController,
-                // Use the const for retrieving the arg
                 card = backStackEntry.arguments?.getString(Screen.CardScreen.ARG_CARD_ID)
             )
         }
 
-        composable(Screen.InfoScreen.route) { // Uses Screen.InfoScreen.route ("InfoScreen")
+        composable(Screen.InfoScreen.route) {
+
             // InfoScreenView(navController = navController)
         }
         // Add other composables here
