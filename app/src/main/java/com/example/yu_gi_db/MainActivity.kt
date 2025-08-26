@@ -10,14 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import dagger.hilt.android.AndroidEntryPoint
-import com.example.yu_gi_db.views.InitMainScreen
+import com.example.yu_gi_db.views.Navigation
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent {InitMainScreen()}
+        setContent {Navigation()}
     }
 }
 
