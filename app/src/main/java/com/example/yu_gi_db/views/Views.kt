@@ -1,13 +1,17 @@
 package com.example.yu_gi_db.views
 
+
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,14 +25,17 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -61,6 +69,48 @@ import com.example.yu_gi_db.model.SmallPlayingCard
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 
+@OptIn(ExperimentalMaterial3Api::class) // Aggiungi se non già presente e usi componenti Material 3
+@Composable
+fun StandardTopAppBar(
+    modifier: Modifier = Modifier,
+    navController: NavHostController? = null,
+    title: String="",
+) {
+    TopAppBar(
+        modifier = modifier,
+        title = { Row(){Text(title)
+            Spacer(modifier = Modifier.fillMaxWidth(0.8f))
+            IconButton(onClick = {
+                navController?.navigate(Screen.InfoScreen.route)
+
+            }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = stringResource(R.string.card_detail_title_default)
+                )
+            }
+
+        } },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        navigationIcon = {
+
+            if (navController?.previousBackStackEntry != null) {
+                IconButton(onClick = { navController.navigateUp() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.card_detail_title_default)
+                    )
+                }
+            }
+
+
+        }
+    )
+
+}
 
 
 @Composable
@@ -81,7 +131,8 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
 @Composable
 fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
     Scaffold { innerPadding ->
-        BoxWithConstraints( // Modificato per usare BoxWithConstraints
+        BoxWithConstraints(
+            // Modificato per usare BoxWithConstraints
             modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
@@ -112,15 +163,11 @@ fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController?
 fun MainScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(id = R.string.app_name)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
+        topBar = {StandardTopAppBar(
+            title = stringResource(id = R.string.app_name),
+            navController = navController
+        )}
+
     ) { innerPadding ->
         InitCardsScreenView(
             modifier = Modifier.padding(innerPadding),
@@ -217,31 +264,15 @@ fun InitLargePlayingCard(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        largeCard?.name ?: stringResource(id = R.string.card_detail_title_default)
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                navigationIcon = {
-                    if (navController?.previousBackStackEntry != null) {
-                        IconButton(onClick = { navController.navigateUp() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.card_detail_title_default)
-                            )
-                        }
-                    }
-                }
+            StandardTopAppBar(
+                title =largeCard?.name ?: stringResource(id = R.string.card_detail_title_default),
+                navController = navController,
             )
         }
     ) { innerPadding ->
         Box(
-            modifier = modifier.padding(innerPadding)
+            modifier = modifier
+                .padding(innerPadding)
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
@@ -270,13 +301,6 @@ fun LargeCardDetailDisplayView(card: LargePlayingCard, modifier: Modifier = Modi
             .verticalScroll(rememberScrollState()), // Per contenuti lunghi
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = card.name,
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
 
         val firstCardImage: CardImage? = card.cardImages.firstOrNull()
         val imageUrl: String? = firstCardImage?.imageUrlSmall
@@ -288,10 +312,9 @@ fun LargeCardDetailDisplayView(card: LargePlayingCard, modifier: Modifier = Modi
             placeholder = painterResource(R.drawable.ic_launcher_foreground),
             error = painterResource(R.drawable.ic_launcher_background),
             contentDescription = stringResource(R.string.card_image_description, card.id),
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                .fillMaxWidth(0.8f) // Adatta la larghezza ma non riempie tutto
-                .padding(vertical = 8.dp)
+            contentScale = ContentScale.FillBounds,
+            modifier =Modifier.size(260.dp, 350.dp) // Adatta la larghezza ma non riempie tutto
+
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -335,6 +358,7 @@ fun LargeCardDetailDisplayView(card: LargePlayingCard, modifier: Modifier = Modi
             textAlign = TextAlign.Justify
         )
         Spacer(modifier = Modifier.height(16.dp))
+
     }
 }
 
@@ -447,7 +471,9 @@ private fun CardsScreenView(
             })
         )
         if (isLoading) {
-            WaitIndicatorView(modifier.align(Alignment.CenterHorizontally).fillMaxSize(0.7f)) // Ora WaitIndicatorView non ha testo e ha uno stile diverso
+            WaitIndicatorView(modifier
+                .align(Alignment.CenterHorizontally)
+                .fillMaxSize(0.7f)) // Ora WaitIndicatorView non ha testo e ha uno stile diverso
         }
         else if (errorMessage != null) {
             ErrorMessageView(stringResource(R.string.error_message_generic)+": $errorMessage")
@@ -461,6 +487,126 @@ private fun CardsScreenView(
         }
     }
 }
+@OptIn(ExperimentalMaterial3Api::class) // Necessario per Scaffold, TopAppBar, ecc. da Material 3
+@Composable
+fun InfoScreenView(
+    modifier: Modifier = Modifier, // Il modifier per la Scaffold stessa (opzionale)
+    navController: NavHostController? = null
+) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(), // La Scaffold occupa tutto lo spazio
+        topBar = {
+            StandardTopAppBar(
+                title = stringResource(id = R.string.info_screen_title), // Titolo per questa schermata specifica
+                navController = navController
+            )
+        }
+    ) { innerPadding -> // innerPadding è fornito da Scaffold per gestire lo spazio della TopAppBar
+
+        // Il contenuto precedente ora va qui, con il padding applicato
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding) // APPLICA QUI L'INNER PADDING!
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp), // Padding aggiuntivo per il contenuto interno della colonna
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Non serve più il Text del titolo principale qui, perché è gestito dalla StandardTopAppBar
+            // Se vuoi un titolo DIVERSO sotto la TopAppBar, puoi aggiungerlo.
+            // Text(
+            // text = stringResource(R.string.info_screen_title),
+            // style = MaterialTheme.typography.headlineMedium,
+            // textAlign = TextAlign.Center,
+            // modifier = Modifier.padding(bottom = 24.dp)
+            // )
+
+            // Sezione 1: Descrizione dell'App
+            InfoSection(
+                title = stringResource(R.string.info_section_about_title)
+            ) {
+                Text(
+                    text = stringResource(R.string.info_section_about_content),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Justify
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Sezione 2: Versione dell'App
+            InfoSection(
+                title = stringResource(R.string.info_section_version_title)
+            ) {
+                Text(
+                    text = "1.0.0 (Build 1)",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Sezione 3: Sviluppatore
+            InfoSection(
+                title = stringResource(R.string.info_section_developer_title)
+            ) {
+                Text(
+                    text = "Il Tuo Nome / Nome Azienda",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Sezione 4: Ringraziamenti o Fonti Dati
+            InfoSection(
+                title = stringResource(R.string.info_section_credits_title)
+            ) {
+                Text(
+                    text = stringResource(R.string.info_section_credits_content),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun InfoSection(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        Spacer(modifier = Modifier.height(8.dp))
+        Column(content = content)
+    }
+}
+
+@Preview(showBackground = true, name = "InfoScreenView Preview")
+@Composable
+fun InfoScreenViewPreview() {
+    YuGiDBTheme { // Applica il tuo tema per la preview
+        // Passa StandardScreenModel se vuoi vedere anche la TopAppBar nella preview
+        // StandardScreenModel { modifier, _ -> InfoScreenView(modifier = modifier) }
+        Surface { // Surface per avere uno sfondo predefinito se non usi StandardScreenModel
+            InfoScreenView()
+        }
+    }
+}
+
+
+
+
+
 
 @Preview(showBackground = true)
 @Composable

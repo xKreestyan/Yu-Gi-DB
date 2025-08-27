@@ -9,5 +9,12 @@
     <string name="no_cards_found_search">No cards found for your search</string>
     <string name="loading_text">Loading</string>
     <string name="card_detail_title_default">\?????????????</string>
+    <string name="info_screen_title">Informazioni sull\'App</string>
+    <string name="info_section_about_title">Riguardo a Yu-Gi-DB</string>
+    <string name="info_section_about_content">Yu-Gi-DB è un\'applicazione per consultare un database di carte di Yu-Gi-Oh!, permettendo agli utenti di cercare, visualizzare dettagli e gestire le proprie collezioni (funzionalità future). Questa app è creata per scopi dimostrativi ed educativi.</string>
+    <string name="info_section_version_title">Versione</string>
+    <string name="info_section_developer_title">Sviluppato da</string>
+    <string name="info_section_credits_title">Fonti Dati e Ringraziamenti</string>
+    <string name="info_section_credits_content">I dati delle carte sono gentilmente forniti da YGOPRODeck API (ygoprodeck.com). Un ringraziamento speciale alla community di sviluppatori Android.</string>
 
 </resources>

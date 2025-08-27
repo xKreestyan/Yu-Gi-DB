@@ -6,9 +6,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-sealed class Screen(
-    val route: String // This string will now be the full route pattern, e.g., "CardScreen/{cardId}"
-) {
+// This string will now be the full route pattern, e.g., "CardScreen/{cardId}"
+sealed class Screen(val route: String) {
     object SplashScreen : Screen("SplashScreen")
     object MainScreen : Screen("MainScreen")
     object CardScreen : Screen("CardScreen/{cardId}") { // route property is "CardScreen/{cardId}"
@@ -18,7 +17,6 @@ sealed class Screen(
             return this.route.replace("{$ARG_CARD_ID}", cardId)
         }
     }
-
     object InfoScreen : Screen("InfoScreen")
     // Add other screens here
 }
@@ -42,8 +40,6 @@ fun Navigation() {
         composable(Screen.SplashScreen.route) { // Uses Screen.SplashScreen.route ("SplashScreen")
             SplashScreen(navController = navController)
         }
-
-
         composable(
             route = Screen.CardScreen.route, // Uses Screen.CardScreen.route ("CardScreen/{cardId}")
             arguments = listOf(navArgument(Screen.CardScreen.ARG_CARD_ID) { // Use the const for arg name
@@ -60,10 +56,8 @@ fun Navigation() {
             )
 
         }
-
         composable(Screen.InfoScreen.route) {
-
-            // InfoScreenView(navController = navController)
+             InfoScreenView(navController = navController)
         }
         // Add other composables here
     }
