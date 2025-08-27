@@ -6,7 +6,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-
 sealed class Screen(
     val route: String // This string will now be the full route pattern, e.g., "CardScreen/{cardId}"
 ) {
@@ -52,10 +51,14 @@ fun Navigation() {
                 // nullable = false by default. Specify if it can be null or needs a default value.
             })
         ) { backStackEntry ->
-            LargePlayingCard(
+            val cardIdString = backStackEntry.arguments?.getString(Screen.CardScreen.ARG_CARD_ID)
+            val cardIdInt = cardIdString?.toIntOrNull() ?: -1 // Default a -1 se null o non valido
+
+            InitLargePlayingCard( // Assumendo che questo sia il Composable corretto
                 navController = navController,
-                card = backStackEntry.arguments?.getString(Screen.CardScreen.ARG_CARD_ID)
+                cardId = cardIdInt
             )
+
         }
 
         composable(Screen.InfoScreen.route) {

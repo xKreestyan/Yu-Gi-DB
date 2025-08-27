@@ -55,10 +55,12 @@ import androidx.navigation.NavHostController // Importa NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
+import com.example.yu_gi_db.model.CardImage
 import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
+
 
 
 @Composable
@@ -275,23 +277,26 @@ fun LargeCardDetailDisplayView(card: LargePlayingCard, modifier: Modifier = Modi
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Immagine della carta (cropped)
-        card.cardImages.firstOrNull()?.imageUrlCropped?.let { imageUrl ->
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(imageUrl)
-                    .crossfade(true)
-                    .build(),
-                placeholder = painterResource(R.drawable.ic_launcher_foreground),
-                error = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = stringResource(R.string.card_image_description, card.id),
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .fillMaxWidth(0.8f) // Adatta la larghezza ma non riempie tutto
-                    .padding(vertical = 8.dp)
-            )
-        }
+
+        val firstCardImage: CardImage? = card.cardImages.firstOrNull()
+        val imageUrl: String? = firstCardImage?.imageUrlSmall
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl)
+                .crossfade(true)
+                .build(),
+            placeholder = painterResource(R.drawable.ic_launcher_foreground),
+            error = painterResource(R.drawable.ic_launcher_background),
+            contentDescription = stringResource(R.string.card_image_description, card.id),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .fillMaxWidth(0.8f) // Adatta la larghezza ma non riempie tutto
+                .padding(vertical = 8.dp)
+        )
+
         Spacer(modifier = Modifier.height(16.dp))
+
+        // Controlla se l'URL non è nullo prima di usarlo
 
         // Tipo e Razza
         Text(
@@ -374,13 +379,13 @@ fun ErrorMessageView(text: String, modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
         modifier = modifier.fillMaxSize()
     ) {
-    Text(
-        text = text,
-        color = MaterialTheme.colorScheme.error,
-        style = MaterialTheme.typography.bodyLarge,
-        textAlign = TextAlign.Justify, // Considera TextAlign.Center se più appropriato
-        modifier = Modifier.padding(16.dp)
-    )
+        Text(
+            text = text,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Justify, // Considera TextAlign.Center se più appropriato
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
 
@@ -429,7 +434,7 @@ private fun CardsScreenView(
     Log.d("CardsScreenView", "Number of cards received: ${cards.size}, isLoading: $isLoading, error: $errorMessage")
     val focusManager = LocalFocusManager.current
     Column(modifier = modifier.fillMaxSize()) {
-            OutlinedTextField(
+        OutlinedTextField(
             value = searchQuery,
             onValueChange = onSearchQueryChange,
             modifier = Modifier
@@ -441,19 +446,19 @@ private fun CardsScreenView(
                 focusManager.clearFocus()
             })
         )
-            if (isLoading) {
-               WaitIndicatorView(modifier.align(Alignment.CenterHorizontally).fillMaxSize(0.7f)) // Ora WaitIndicatorView non ha testo e ha uno stile diverso
-            }
-            else if (errorMessage != null) {
-                ErrorMessageView(stringResource(R.string.error_message_generic)+": $errorMessage")
-            }
-            else if (cards.isEmpty()) {
-                Log.d("CardsScreenView", "Displaying 'No cards found or saved' message.")
-                ErrorMessageView( if (searchQuery.isNotBlank()) stringResource(R.string.no_cards_found_search) else stringResource(R.string.no_cards_saved))
-            }
-            else {
-                SmallCardsListView(cards = cards, navController = navController) // Passa navController
-            }
+        if (isLoading) {
+            WaitIndicatorView(modifier.align(Alignment.CenterHorizontally).fillMaxSize(0.7f)) // Ora WaitIndicatorView non ha testo e ha uno stile diverso
+        }
+        else if (errorMessage != null) {
+            ErrorMessageView(stringResource(R.string.error_message_generic)+": $errorMessage")
+        }
+        else if (cards.isEmpty()) {
+            Log.d("CardsScreenView", "Displaying 'No cards found or saved' message.")
+            ErrorMessageView( if (searchQuery.isNotBlank()) stringResource(R.string.no_cards_found_search) else stringResource(R.string.no_cards_saved))
+        }
+        else {
+            SmallCardsListView(cards = cards, navController = navController) // Passa navController
+        }
     }
 }
 
@@ -616,7 +621,7 @@ fun LargeCardDetailPreview() {
                 frameType = "Card",
                 humanReadableCardType = "Mostro",
 
-            )
+                )
         )
     }
 }
