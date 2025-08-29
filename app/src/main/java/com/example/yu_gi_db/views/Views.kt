@@ -2,16 +2,14 @@ package com.example.yu_gi_db.views
 
 
 import android.util.Log
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,14 +26,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -64,10 +60,11 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.CardImage
-import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class) // Aggiungi se non già presente e usi componenti Material 3
 @Composable
@@ -75,21 +72,23 @@ fun StandardTopAppBar(
     modifier: Modifier = Modifier,
     navController: NavHostController? = null,
     title: String="",
+    iconButtonBool : Boolean= true
 ) {
     TopAppBar(
         modifier = modifier,
         title = { Row(){Text(title)
-            Spacer(modifier = Modifier.fillMaxWidth(0.8f))
-            IconButton(onClick = {
-                navController?.navigate(Screen.InfoScreen.route)
+            if(iconButtonBool) {
+                Spacer(modifier = Modifier.fillMaxWidth(0.8f))
+                IconButton(onClick = {
+                    navController?.navigate(Screen.InfoScreen.route)
 
-            }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                    contentDescription = stringResource(R.string.card_detail_title_default)
-                )
+                }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = stringResource(R.string.card_detail_title_default)
+                    )
+                }
             }
-
         } },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -112,286 +111,12 @@ fun StandardTopAppBar(
 
 }
 
-
-@Composable
-fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
-    YuGiDBTheme {
-        val viewModel = hiltViewModel<CardListViewModel>()
-        val isLoadingInitialData by viewModel.isLoadingInitialData.collectAsStateWithLifecycle()
-
-        if (isLoadingInitialData) {
-            SplashScreen(modifier = modifier,navController)
-        }
-        else {
-            MainScreen(modifier = modifier,navController)
-        }
-    }
-}
-
-@Composable
-fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
-    Scaffold { innerPadding ->
-        BoxWithConstraints(
-            // Modificato per usare BoxWithConstraints
-            modifier = modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.screen_yu_gi_db),
-                contentDescription = stringResource(id = R.string.splash_content_description),
-                contentScale = ContentScale.FillBounds, // o Crop
-                modifier = Modifier.fillMaxSize()
-            )
-            // Box per posizionare WaitIndicatorView al centro della metà inferiore
-            Box(
-                modifier = Modifier
-                    .fillMaxSize() // Prende tutto lo spazio per un allineamento più semplice
-                    .padding(bottom = this.maxHeight / 8), // Sposta il centro verso l'alto dalla metà inferiore
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                WaitIndicatorView(
-                    Modifier.size(this@BoxWithConstraints.maxWidth / 3) // Usa maxWidth del genitore
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MainScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {StandardTopAppBar(
-            title = stringResource(id = R.string.app_name),
-            navController = navController
-        )}
-
-    ) { innerPadding ->
-        InitCardsScreenView(
-            modifier = Modifier.padding(innerPadding),
-            navController = navController // Passa navController se InitCardsScreenView lo accetta
-        )
-    }
-}
-
-@Composable
-fun SmallCardItemView(
-    card: SmallPlayingCard,
-    modifier: Modifier = Modifier,
-    navController: NavHostController? = null // Aggiunto NavController
-) {
-    Card(modifier = modifier.padding(8.dp),
-        onClick ={
-            // Dovresti definire una route specifica per i dettagli della carta, es. Screen.CardDetailScreen.route
-            // e potenzialmente passare l'ID della carta come argomento.
-            // Per ora, userò la navigazione placeholder che avevi, assicurandoti che usi il navController corretto:
-            navController?.navigate(Screen.CardScreen.createRoute(card.id.toString())) { // Esempio: naviga a MainScreen
-
-            }
-        }
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(card.imageUrlSmall)
-                    .crossfade(true)
-                    .build(),
-                placeholder = painterResource(R.drawable.ic_launcher_foreground), // Considera placeholder specifici
-                error = painterResource(R.drawable.ic_launcher_background), // Considera error placeholder specifici
-                contentDescription = stringResource(R.string.card_image_description, card.id),
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.size(260.dp, 350.dp) // Dimensioni fisse, valuta se renderle dinamiche
-            )
-            Text(
-                text = card.id.toString(),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun SmallCardsListView(
-    cards: List<SmallPlayingCard>,
-    modifier: Modifier = Modifier,
-    navController: NavHostController? = null // Aggiunto per passarlo a SmallCardItemView
-) {
-    Log.d("CardsScreenView", "Displaying LazyVerticalGrid with ${cards.size} cards.")
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(cards, key = { card -> card.id }) { card ->
-            SmallCardItemView(card = card, navController = navController) // Passa navController
-        }
-    }
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun InitLargePlayingCard(
-    cardId: Int,
-    modifier: Modifier = Modifier,
-    navController: NavHostController? = null, // Utile per la navigazione Indietro
-    viewModel: CardListViewModel = hiltViewModel()
-) {
-    val largeCard by viewModel.selectedLargeCard.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoadingLargeCard.collectAsStateWithLifecycle()
-    val error by viewModel.largeCardError.collectAsStateWithLifecycle()
-
-    LaunchedEffect(cardId) {
-        Log.d("InitLargePlayingCard", "LaunchedEffect triggered for cardId: $cardId")
-        viewModel.fetchLargeCardById(cardId)
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            Log.d(
-                "InitLargePlayingCard",
-                "DisposableEffect onDispose triggered. Clearing selected card."
-            )
-            viewModel.clearSelectedLargeCard()
-        }
-    }
-
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            StandardTopAppBar(
-                title =largeCard?.name ?: stringResource(id = R.string.card_detail_title_default),
-                navController = navController,
-            )
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            when {
-                isLoading -> WaitIndicatorView(Modifier.size(100.dp))
-                error != null -> ErrorMessageView(
-                    text = error ?: stringResource(R.string.error_message_generic)
-                )
-
-                largeCard != null -> LargeCardDetailDisplayView(
-                    card = largeCard!!,
-                    modifier = Modifier.fillMaxSize()
-                )
-
-                else -> Text("Nessuna carta da visualizzare.") // Stato per quando non c'è nulla, né errore né caricamento
-            }
-        }
-    }
-}
-
-@Composable
-fun LargeCardDetailDisplayView(card: LargePlayingCard, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()), // Per contenuti lunghi
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        val firstCardImage: CardImage? = card.cardImages.firstOrNull()
-        val imageUrl: String? = firstCardImage?.imageUrlSmall
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(imageUrl)
-                .crossfade(true)
-                .build(),
-            placeholder = painterResource(R.drawable.ic_launcher_foreground),
-            error = painterResource(R.drawable.ic_launcher_background),
-            contentDescription = stringResource(R.string.card_image_description, card.id),
-            contentScale = ContentScale.FillBounds,
-            modifier =Modifier.size(260.dp, 350.dp) // Adatta la larghezza ma non riempie tutto
-
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Controlla se l'URL non è nullo prima di usarlo
-
-        // Tipo e Razza
-        Text(
-            text = "Type: ${card.type} / ${card.race}",
-            style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Attributo e Livello (se applicabile)
-        card.attribute?.let {
-            Text(
-                text = "Attribute: $it",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-        card.level?.let {
-            Text(
-                text = "Level/Rank: $it",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // ATK/DEF (se applicabile)
-        if (card.atk != null || card.def != null) {
-            val atkText = card.atk?.toString() ?: "N/A"
-            val defText = card.def?.toString() ?: "N/A"
-            Text(text = "ATK: $atkText / DEF: $defText", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        // Descrizione
-        Text(
-            text = card.desc,
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Justify
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-    }
-}
-
-/*fun LargePlayingCard(card: String?, modifier: Modifier = Modifier, navController: NavHostController? = null) { // cardId rinominato in card, e tipo cambiato in String?
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(id = R.string.app_name)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            )
-        }
-    ) { innerPadding ->
-        if (card != null) { // Gestisce la nullabilità di card
-            Text(text = card, modifier = Modifier.padding(innerPadding))
-        } else {
-            // Puoi mostrare un messaggio specifico o un Text vuoto se card è null
-            Text(text = "ID Carta non disponibile.", modifier = Modifier.padding(innerPadding))
-        }
-        // SmallCardItemView(card = card,modifier = Modifier.padding(innerPadding), navController = navController)
-    }
-}
-*/
-
 @Composable
 fun WaitIndicatorView(modifier: Modifier = Modifier){
     CircularProgressIndicator(
         modifier = modifier, // Il modifier passato viene applicato qui
         color = MaterialTheme.colorScheme.surface, // Colore per migliore visibilità
-        strokeWidth = 6.dp // Spessore del tratto per migliore visibilità
+        strokeWidth = 10.dp // Spessore del tratto per migliore visibilità
     )
 }
 
@@ -412,6 +137,38 @@ fun ErrorMessageView(text: String, modifier: Modifier = Modifier) {
         )
     }
 }
+
+@Composable
+fun OptionErrorView(modifier: Modifier = Modifier,
+                    isLoading: Boolean=false,
+                    isEmpty: Boolean=false,
+                    errorMessage: String?=null,
+                    isNotBlank: Boolean=true,
+                    elseFun: @Composable () -> Unit
+                    ) {
+    Box() {
+        if (isLoading) {
+            WaitIndicatorView(
+                modifier
+                    .align(Alignment.Center)
+                    .fillMaxSize(0.7f)
+            ) // Ora WaitIndicatorView non ha testo e ha uno stile diverso
+        } else if (errorMessage != null) {
+            ErrorMessageView(stringResource(R.string.error_message_generic) + ": $errorMessage")
+        } else if (isEmpty) {
+            Log.d("CardsScreenView", "Displaying 'No cards found or saved' message.")
+            ErrorMessageView(
+                if (isNotBlank) stringResource(R.string.no_cards_found_search) else stringResource(
+                    R.string.no_cards_saved
+                )
+            )
+        }else {
+            elseFun()
+        }
+    }
+
+}
+
 
 @Composable
 fun InitCardsScreenView(
@@ -446,7 +203,7 @@ fun InitCardsScreenView(
 }
 
 @Composable
-private fun CardsScreenView(
+fun CardsScreenView(
     modifier: Modifier = Modifier,
     cards: List<SmallPlayingCard>,
     isLoading: Boolean,
@@ -470,111 +227,89 @@ private fun CardsScreenView(
                 focusManager.clearFocus()
             })
         )
-        if (isLoading) {
-            WaitIndicatorView(modifier
-                .align(Alignment.CenterHorizontally)
-                .fillMaxSize(0.7f)) // Ora WaitIndicatorView non ha testo e ha uno stile diverso
-        }
-        else if (errorMessage != null) {
-            ErrorMessageView(stringResource(R.string.error_message_generic)+": $errorMessage")
-        }
-        else if (cards.isEmpty()) {
-            Log.d("CardsScreenView", "Displaying 'No cards found or saved' message.")
-            ErrorMessageView( if (searchQuery.isNotBlank()) stringResource(R.string.no_cards_found_search) else stringResource(R.string.no_cards_saved))
-        }
-        else {
-            SmallCardsListView(cards = cards, navController = navController) // Passa navController
+        OptionErrorView(modifier = modifier,
+            isLoading = isLoading,
+            errorMessage = errorMessage,
+            isEmpty = cards.isEmpty(),
+            isNotBlank = searchQuery.isNotBlank(),
+            elseFun = {
+                SmallCardsListView(cards = cards, navController = navController) // Passa navController
+            }
+        )
+
+
+    }
+}
+
+
+@Composable
+fun SmallCardsListView(
+    cards: List<SmallPlayingCard>,
+    modifier: Modifier = Modifier,
+    navController: NavHostController? = null // Aggiunto per passarlo a SmallCardItemView
+) {
+    Log.d("CardsScreenView", "Displaying LazyVerticalGrid with ${cards.size} cards.")
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(cards, key = { card -> card.id }) { card ->
+            SmallCardItemView(card = card, navController = navController) // Passa navController
         }
     }
 }
-@OptIn(ExperimentalMaterial3Api::class) // Necessario per Scaffold, TopAppBar, ecc. da Material 3
-@Composable
-fun InfoScreenView(
-    modifier: Modifier = Modifier, // Il modifier per la Scaffold stessa (opzionale)
-    navController: NavHostController? = null
-) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(), // La Scaffold occupa tutto lo spazio
-        topBar = {
-            StandardTopAppBar(
-                title = stringResource(id = R.string.info_screen_title), // Titolo per questa schermata specifica
-                navController = navController
-            )
-        }
-    ) { innerPadding -> // innerPadding è fornito da Scaffold per gestire lo spazio della TopAppBar
 
-        // Il contenuto precedente ora va qui, con il padding applicato
+@Composable
+fun SmallCardItemView(
+    card: SmallPlayingCard,
+    modifier: Modifier = Modifier,
+    navController: NavHostController? = null // Aggiunto NavController
+) {
+    Card(modifier = modifier.padding(8.dp),
+        onClick ={
+            // Dovresti definire una route specifica per i dettagli della carta, es. Screen.CardDetailScreen.route
+            // e potenzialmente passare l'ID della carta come argomento.
+            // Per ora, userò la navigazione placeholder che avevi, assicurandoti che usi il navController corretto:
+            navController?.navigate(Screen.CardScreen.createRoute(card.id.toString())) { // Esempio: naviga a MainScreen
+
+            }
+        }
+    ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding) // APPLICA QUI L'INNER PADDING!
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp), // Padding aggiuntivo per il contenuto interno della colonna
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Non serve più il Text del titolo principale qui, perché è gestito dalla StandardTopAppBar
-            // Se vuoi un titolo DIVERSO sotto la TopAppBar, puoi aggiungerlo.
-            // Text(
-            // text = stringResource(R.string.info_screen_title),
-            // style = MaterialTheme.typography.headlineMedium,
-            // textAlign = TextAlign.Center,
-            // modifier = Modifier.padding(bottom = 24.dp)
-            // )
+            CardUrltoView(card.imageUrlSmall,modifier = Modifier.size(260.dp, 350.dp))
 
-            // Sezione 1: Descrizione dell'App
-            InfoSection(
-                title = stringResource(R.string.info_section_about_title)
-            ) {
-                Text(
-                    text = stringResource(R.string.info_section_about_content),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Justify
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Sezione 2: Versione dell'App
-            InfoSection(
-                title = stringResource(R.string.info_section_version_title)
-            ) {
-                Text(
-                    text = "1.0.0 (Build 1)",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Sezione 3: Sviluppatore
-            InfoSection(
-                title = stringResource(R.string.info_section_developer_title)
-            ) {
-                Text(
-                    text = "Il Tuo Nome / Nome Azienda",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Sezione 4: Ringraziamenti o Fonti Dati
-            InfoSection(
-                title = stringResource(R.string.info_section_credits_title)
-            ) {
-                Text(
-                    text = stringResource(R.string.info_section_credits_content),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center
-                )
-            }
+            Text(
+                text = card.id.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
         }
     }
 }
+@Composable
+fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
+    AsyncImage(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(url)
+            .crossfade(true)
+            .build(),
+        placeholder = painterResource(R.drawable.ic_launcher_foreground), // Considera placeholder specifici
+        error = painterResource(R.drawable.ic_launcher_background), // Considera error placeholder specifici
+        contentDescription = stringResource(R.string.card_image_description),
+        contentScale = ContentScale.FillBounds,
+        modifier = modifier
+    )
+}
+
 
 
 @Composable
-private fun InfoSection(
+fun InfoSection(
     title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -585,44 +320,12 @@ private fun InfoSection(
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        Divider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
         Spacer(modifier = Modifier.height(8.dp))
         Column(content = content)
     }
 }
 
-@Preview(showBackground = true, name = "InfoScreenView Preview")
-@Composable
-fun InfoScreenViewPreview() {
-    YuGiDBTheme { // Applica il tuo tema per la preview
-        // Passa StandardScreenModel se vuoi vedere anche la TopAppBar nella preview
-        // StandardScreenModel { modifier, _ -> InfoScreenView(modifier = modifier) }
-        Surface { // Surface per avere uno sfondo predefinito se non usi StandardScreenModel
-            InfoScreenView()
-        }
-    }
-}
-
-
-
-
-
-
-@Preview(showBackground = true)
-@Composable
-fun SplashScreenPreview() {
-    YuGiDBTheme { // Aggiunto Theme per coerenza con altre preview
-        SplashScreen()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    YuGiDBTheme {
-        MainScreen()
-    }
-}
+/*------------------------------------------------------------*/
 
 @Preview(showBackground = true)
 @Composable
@@ -657,117 +360,5 @@ fun WaitIndicatorViewPreviewNew() {
         Box(modifier = Modifier.size(100.dp), contentAlignment = Alignment.Center){ // Box per dare una dimensione
             WaitIndicatorView(Modifier.fillMaxSize(0.8f)) // Esempio di utilizzo con modifier
         }
-    }
-}
-
-@Preview(showBackground = true, name = "CardsScreen - Populated")
-@Composable
-fun CardsScreenPopulatedPreview() {
-    YuGiDBTheme {
-        CardsScreenView(
-            cards = listOf(
-                SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
-                SmallPlayingCard(id = 2, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/6983839.jpg")
-            ),
-            isLoading = false,
-            errorMessage = null,
-            searchQuery = "",
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "CardsScreen - Loading")
-@Composable
-fun CardsScreenLoadingPreview() {
-    YuGiDBTheme {
-        CardsScreenView(
-            cards = emptyList(),
-            isLoading = true,
-            errorMessage = null,
-            searchQuery = "",
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "CardsScreen - Error")
-@Composable
-fun CardsScreenErrorPreview() {
-    YuGiDBTheme {
-        CardsScreenView(
-            cards = emptyList(),
-            isLoading = false,
-            errorMessage = "Failed to load cards. Please try again.",
-            searchQuery = "",
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "CardsScreen - No Cards Saved")
-@Composable
-fun CardsScreenNoCardsSavedPreview() {
-    YuGiDBTheme {
-        CardsScreenView(
-            cards = emptyList(),
-            isLoading = false,
-            errorMessage = null,
-            searchQuery = "", // Stringa di ricerca vuota
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "CardsScreen - No Cards Found Search")
-@Composable
-fun CardsScreenNoCardsFoundSearchPreview() {
-    YuGiDBTheme {
-        CardsScreenView(
-            cards = emptyList(),
-            isLoading = false,
-            errorMessage = null,
-            searchQuery = "nonExistentCard", // Stringa di ricerca non vuota
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "LargeCardDetail - Populated")
-@Composable
-fun LargeCardDetailPreview() {
-    YuGiDBTheme {
-        LargeCardDetailDisplayView(
-            card = LargePlayingCard(
-                id = 12345,
-                name = "Drago Bianco Occhi Blu",
-                type = "Mostro Normale",
-                desc = "Questo drago leggendario è un potente motore di distruzione. Praticamente invincibile, sono in pochi ad aver fronteggiato questa creatura ed essere sopravvissuti per raccontarlo.",
-                atk = 3000,
-                def = 2500,
-                level = 8,
-                race = "Drago",
-                attribute = "LUCE",
-                cardSets = emptyList(),
-                cardImages = listOf(
-                    com.example.yu_gi_db.model.CardImage(
-                        id = 1,
-                        imageUrl = "https://images.ygoprodeck.com/images/cards/89631139.jpg",
-                        imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/89631139.jpg",
-                        imageUrlCropped = "https://images.ygoprodeck.com/images/cards_cropped/89631139.jpg"
-                    )
-                ),
-                cardPrices = emptyList(),
-                typeline = emptyList(),
-                frameType = "Card",
-                humanReadableCardType = "Mostro",
-
-                )
-        )
     }
 }
