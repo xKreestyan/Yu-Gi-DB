@@ -10,8 +10,11 @@ import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 
 // This string will now be the full route pattern, e.g., "CardScreen/{cardId}"
 sealed class Screen(val route: String) {
+    object InitMainScreen : Screen("InitMainScreen")
     object SplashScreen : Screen("SplashScreen")
     object MainScreen : Screen("MainScreen")
+    object InfoScreen : Screen("InfoScreen")
+    object SavedCardsScreen : Screen("SavedCardsScreen")
     object CardScreen : Screen("CardScreen/{cardId}") { // route property is "CardScreen/{cardId}"
         const val ARG_CARD_ID = "cardId" // Define argument key as a constant
         fun createRoute(cardId: String): String {
@@ -19,14 +22,15 @@ sealed class Screen(val route: String) {
             return this.route.replace("{$ARG_CARD_ID}", cardId)
         }
     }
-    object InfoScreen : Screen("InfoScreen")
-
     object ZoomCardScreen : Screen("cardZoom/{imageUrl}") { // Nuova route con placeholder
         const val ARG_IMAGE_URL = "imageUrl" // Chiave per l'argomento
         fun createRoute(imageUrl: String): String {
             return this.route.replace("{$ARG_IMAGE_URL}", imageUrl)
         }
     }
+
+
+
 }
 /*
   navController?.navigate(Screen.MainScreen.route) {
@@ -41,13 +45,23 @@ sealed class Screen(val route: String) {
 fun Navigation() {
     val navController = rememberNavController()
     YuGiDBTheme {
-        NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
-            composable(Screen.MainScreen.route) { // Uses Screen.MainScreen.route ("MainScreen")
+        NavHost(navController = navController, startDestination = Screen.InitMainScreen.route) {
+            composable(Screen.InitMainScreen.route) { // Uses Screen.MainScreen.route ("MainScreen")
                 InitMainScreen(navController = navController)
             }
-
             composable(Screen.SplashScreen.route) { // Uses Screen.SplashScreen.route ("SplashScreen")
                 SplashScreen(navController = navController)
+            }
+            composable(Screen.MainScreen.route) { // Uses Screen.MainScreen.route ("MainScreen")
+                MainScreen(navController = navController)
+            }
+
+
+            composable(Screen.InfoScreen.route) {
+                InformationScreen(navController = navController)
+            }
+            composable(Screen.SavedCardsScreen.route) {
+                SavedCardsScreen(navController = navController)
             }
             composable(
                 route = Screen.CardScreen.route, // Uses Screen.CardScreen.route ("CardScreen/{cardId}")
@@ -55,7 +69,8 @@ fun Navigation() {
                     type = NavType.StringType
                     // nullable = false by default. Specify if it can be null or needs a default value.
                 })
-            ) { backStackEntry ->
+            )
+            { backStackEntry ->
                 val cardIdString =
                     backStackEntry.arguments?.getString(Screen.CardScreen.ARG_CARD_ID)
                 val cardIdInt =
@@ -67,15 +82,14 @@ fun Navigation() {
                 )
 
             }
-            composable(Screen.InfoScreen.route) {
-                InformationScreen(navController = navController)
-            }
+
             composable(
                 route = Screen.ZoomCardScreen.route, // Usa la nuova route "cardZoom/{imageUrl}"
                 arguments = listOf(navArgument(Screen.ZoomCardScreen.ARG_IMAGE_URL) {
                     type = NavType.StringType
                 })
-            ) { backStackEntry ->
+            )
+            { backStackEntry ->
                 val imageUrl = backStackEntry.arguments?.getString(Screen.ZoomCardScreen.ARG_IMAGE_URL)
                     CardZoomScreen(url = imageUrl ?: "", navController = navController)
             }

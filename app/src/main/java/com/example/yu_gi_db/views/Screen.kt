@@ -2,42 +2,33 @@ package com.example.yu_gi_db.views
 
 import android.util.Log
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -49,16 +40,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
-import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
-import com.example.yu_gi_db.model.CardImage
-import com.example.yu_gi_db.model.LargePlayingCard
-import com.example.yu_gi_db.model.SmallPlayingCard
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
+
 
 
 @Composable
@@ -70,6 +56,7 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
     }
     else {
         MainScreen(modifier = modifier,navController)
+        //navController?.navigate(Screen.MainScreen.route)
     }
 }
 
@@ -77,7 +64,6 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
 fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
     Scaffold { innerPadding ->
         BoxWithConstraints(
-            // Modificato per usare BoxWithConstraints
             modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
@@ -85,243 +71,126 @@ fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController?
             Image(
                 painter = painterResource(id = R.drawable.screen_yu_gi_db),
                 contentDescription = stringResource(id = R.string.splash_content_description),
-                contentScale = ContentScale.FillBounds, // o Crop
+                contentScale = ContentScale.FillBounds,
                 modifier = Modifier.fillMaxSize()
             )
-            // Box per posizionare WaitIndicatorView al centro della metà inferiore
             Box(
                 modifier = Modifier
-                    .fillMaxSize() // Prende tutto lo spazio per un allineamento più semplice
-                    .padding(bottom = this.maxHeight / 8), // Sposta il centro verso l'alto dalla metà inferiore
+                    .fillMaxSize()
+                    .padding(bottom = this.maxHeight / 8),
                 contentAlignment = Alignment.BottomCenter
             ) {
-                WaitIndicatorView(
-                    Modifier.size(this@BoxWithConstraints.maxWidth / 3) // Usa maxWidth del genitore
+                WaitIndicatorView( // Assicurati che sia definita e importata
+                    Modifier.size(this@BoxWithConstraints.maxWidth / 3)
                 )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {StandardTopAppBar(
-            title = stringResource(id = R.string.app_name),
-            navController = navController
-        )}
-
+    AppScreen(
+        modifier = modifier,
+        appBarTitle = stringResource(id = R.string.app_name),
+        navController = navController
     ) { innerPadding ->
-        InitCardsScreenView(
+        InitCardsScreenView( // Assicurati che sia definita e importata
             modifier = Modifier.padding(innerPadding),
-            navController = navController // Passa navController se InitCardsScreenView lo accetta
+            navController = navController
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InitLargePlayingCardScreen(
     modifier: Modifier = Modifier,
     cardId: Int,
-    navController: NavHostController?=null, // Aggiunto NavController
+    navController: NavHostController?=null,
     viewModel: CardListViewModel = hiltViewModel()
 ) {
-
     val largeCard by viewModel.selectedLargeCard.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoadingLargeCard.collectAsStateWithLifecycle()
     val error by viewModel.largeCardError.collectAsStateWithLifecycle()
 
     LaunchedEffect(cardId) {
-        Log.d("InitLargePlayingCard", "LaunchedEffect triggered for cardId: $cardId")
         viewModel.fetchLargeCardById(cardId)
     }
 
     DisposableEffect(Unit) {
         onDispose {
-            Log.d(
-                "InitLargePlayingCard",
-                "DisposableEffect onDispose triggered. Clearing selected card."
-            )
             viewModel.clearSelectedLargeCard()
         }
-
     }
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            StandardTopAppBar(
-                title =largeCard?.name ?: stringResource(id = R.string.card_detail_title_default),
-                navController = navController,
-            )
-        }
-    ) {innerPadding ->
-        OptionErrorView(modifier = modifier,
+
+    AppScreen(
+        modifier = modifier,
+        appBarTitle = largeCard?.name ?: stringResource(id = R.string.card_detail_title_default),
+        navController = navController
+    ) { innerPadding ->
+        if(optionErrorView( // Assicurati che sia definita e importata
+            modifier = modifier.padding(innerPadding),
             isLoading = isLoading,
             errorMessage = error,
-            isEmpty = largeCard == null,
-            elseFun ={
-                Column(
-                    modifier = modifier.fillMaxSize().padding(innerPadding)
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState()), // Per contenuti lunghi
-                    horizontalAlignment = Alignment.CenterHorizontally
-                )
-                {
-                    val card = largeCard ?: return@Column
-                    val firstCardImage: CardImage? = card.cardImages.firstOrNull()
-                    val smallImageUrl: String =
-                        firstCardImage?.imageUrlSmall ?: "" // Per la visualizzazione in questa schermata
-                    CardUrltoView(
-                        smallImageUrl,
-                        modifier = Modifier
-                            .size(260.dp, 350.dp)
-                            .clickable(enabled = navController != null && smallImageUrl != "") { // Rendi cliccabile
-                                smallImageUrl.let { url ->
-                                    // Codifica l'URL prima di passarlo come argomento di navigazione
-                                    val encodedUrl =
-                                        URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
-                                    // Assicurati che la route "cardZoom/{imageUrl}" sia definita nel tuo NavHost
-                                    navController?.navigate("cardZoom/$encodedUrl")
-                                }
-                            }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Type: ${card.type} / ${card.race}",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Attributo e Livello (se applicabile)
-                    card.attribute?.let {
-                        Text(
-                            text = "Attribute: $it",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                    card.level?.let {
-                        Text(
-                            text = "Level/Rank: $it",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // ATK/DEF (se applicabile)
-                    if (card.atk != null || card.def != null) {
-                        val atkText = card.atk?.toString() ?: "N/A"
-                        val defText = card.def?.toString() ?: "N/A"
-                        Text(
-                            text = "ATK: $atkText / DEF: $defText",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-
-                    // Descrizione
-                    Text(
-                        text = card.desc,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Justify
-                    )
-                }
-
-            }
-        )
-
+            isEmpty = (largeCard == null)
+            ))
+        {
+            LargeCardItemView(modifier.padding(innerPadding),card = largeCard, navController = navController) // Assicurati che sia definita e importata
+        }
     }
 }
 
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardZoomScreen(
-    url: String, // URL dell'immagine da visualizzare
+    url: String,
     modifier: Modifier = Modifier,
-    navController: NavHostController? = null // Per la navigazione indietro tramite StandardTopAppBar
-    // In alternativa, potresti passare una lambda: onNavigateBack: () -> Unit
+    navController: NavHostController? = null
 ) {
-
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            // Assumendo che tu abbia una Composable StandardTopAppBar
-            // Se la tua StandardTopAppBar non gestisce da sola l'icona di navigazione
-            // basata sulla presenza del navController, potresti doverla configurare qui.
-            StandardTopAppBar(
-                title = stringResource(id = R.string.zoomed_card_title), // Esempio: "Zoom Immagine"
-                navController = navController
-                // iconButtonBool = true // o come vuoi configurarla
-            )
-        }
+    AppScreen(
+        modifier = modifier,
+        appBarTitle = stringResource(id = R.string.zoomed_card_title),
+        navController = navController
     ) { innerPadding ->
         Box(
-            modifier = Modifier // Corretto: Inizia con Modifier
+            modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(url) // Usa l'immagine piccola per la visualizzazione
+                    .data(url)
                     .crossfade(true)
                     .build(),
                 placeholder = painterResource(R.drawable.ic_launcher_foreground),
                 error = painterResource(R.drawable.ic_launcher_background),
                 contentDescription = stringResource(R.string.card_image_description),
                 contentScale = ContentScale.FillBounds,
-                modifier = Modifier
-                    .fillMaxSize()
+                modifier = Modifier.fillMaxSize()
             )
-
         }
     }
 }
 
-
-
-@OptIn(ExperimentalMaterial3Api::class) // Necessario per Scaffold, TopAppBar, ecc. da Material 3
 @Composable
 fun InformationScreen(
-    modifier: Modifier = Modifier, // Il modifier per la Scaffold stessa (opzionale)
+    modifier: Modifier = Modifier,
     navController: NavHostController? = null
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(), // La Scaffold occupa tutto lo spazio
-        topBar = {
-            StandardTopAppBar(
-                title = stringResource(id = R.string.info_screen_title), // Titolo per questa schermata specifica
-                navController = navController,
-                iconButtonBool =false
-            )
-        }
-    ) { innerPadding -> // innerPadding è fornito da Scaffold per gestire lo spazio della TopAppBar
-
-        // Il contenuto precedente ora va qui, con il padding applicato
+    AppScreen(
+        modifier = modifier,
+        appBarTitle = stringResource(id = R.string.info_screen_title),
+        navController = navController,
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding) // APPLICA QUI L'INNER PADDING!
+                .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp), // Padding aggiuntivo per il contenuto interno della colonna
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Non serve più il Text del titolo principale qui, perché è gestito dalla StandardTopAppBar
-            // Se vuoi un titolo DIVERSO sotto la TopAppBar, puoi aggiungerlo.
-            // Text(
-            // text = stringResource(R.string.info_screen_title),
-            // style = MaterialTheme.typography.headlineMedium,
-            // textAlign = TextAlign.Center,
-            // modifier = Modifier.padding(bottom = 24.dp)
-            // )
-
-            // Sezione 1: Descrizione dell'App
-            InfoSection(
+            InfoSection( // Assicurati che sia definita e importata
                 title = stringResource(R.string.info_section_about_title)
             ) {
                 Text(
@@ -330,10 +199,7 @@ fun InformationScreen(
                     textAlign = TextAlign.Justify
                 )
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Sezione 2: Versione dell'App
             InfoSection(
                 title = stringResource(R.string.info_section_version_title)
             ) {
@@ -342,10 +208,7 @@ fun InformationScreen(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Sezione 3: Sviluppatore
             InfoSection(
                 title = stringResource(R.string.info_section_developer_title)
             ) {
@@ -354,10 +217,7 @@ fun InformationScreen(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-
             Spacer(modifier = Modifier.height(24.dp))
-
-            // Sezione 4: Ringraziamenti o Fonti Dati
             InfoSection(
                 title = stringResource(R.string.info_section_credits_title)
             ) {
@@ -371,23 +231,74 @@ fun InformationScreen(
     }
 }
 
-/*----------------------------------------------------------------------------------------------------*/
-
-
-@Preview(showBackground = true)
 @Composable
-fun CardZoomScreenPreview() {
-    YuGiDBTheme { // Aggiunto Theme per coerenza con altre preview
-        CardZoomScreen("")
+fun SavedCardsScreen(
+    modifier: Modifier = Modifier,
+    navController: NavHostController? = null,
+    cardListViewModel: CardListViewModel = hiltViewModel()
+) {
+    /*
+    val savedCards by viewModel.savedCardsList.collectAsStateWithLifecycle() // Assicurati che savedCardsList esista nel ViewModel
+    val isLoading by viewModel.isLoadingSavedCards.collectAsStateWithLifecycle() // Assicurati che isLoadingSavedCards esista
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchSavedCards() // Assicurati che fetchSavedCards esista
+    }*/
+    val cards by cardListViewModel.smallCards.collectAsStateWithLifecycle()
+    val isLoading by cardListViewModel.isLoadingInitialData.collectAsStateWithLifecycle()
+    val error by cardListViewModel.initialDataError.collectAsStateWithLifecycle()
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+
+    Log.d("InitCardsScreenView", "Number of cards from ViewModel: ${cards.size}")
+
+    val filteredCards = if (searchQuery.isBlank()) {
+        cards
+    } else {
+        cards.filter {
+            it.id.toString().contains(searchQuery, ignoreCase = true)
+        }
+    }
+
+    AppScreen(
+        modifier = modifier,
+        appBarTitle = stringResource(id = R.string.saved_cards_title), // Aggiungi questa stringa a strings.xml
+        navController = navController
+    ) { innerPadding ->
+        if (optionErrorView(
+                modifier = Modifier.padding(innerPadding), // optionErrorView si posizionerà all'interno di questo Box
+                isLoading = isLoading,
+                isEmpty = cards.isEmpty(),
+                errorMessage = error,
+                //isNotBlank = false // Per usare R.string.no_cards_saved quando isEmpty
+            )
+        ) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.padding(innerPadding).fillMaxSize(), // La griglia riempie il Box con padding
+                contentPadding = PaddingValues(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(cards, key = { card -> card.id }) { card ->
+                    // Assumendo che SmallPlayingCardView esista e accetti questi parametri
+                    // e che SmallPlayingCard abbia un campo 'name' e 'card_images'
+                    SmallCardItemView(
+                        card = card,
+                        navController = navController
+                    )
+                }
+            }
+        }
     }
 }
 
-
+/*----------------------------------------------------------------------------------------------------*/
+// Preview functions
 
 @Preview(showBackground = true)
 @Composable
 fun SplashScreenPreview() {
-    YuGiDBTheme { // Aggiunto Theme per coerenza con altre preview
+    YuGiDBTheme {
         SplashScreen()
     }
 }
@@ -400,106 +311,52 @@ fun MainScreenPreview() {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun CardZoomScreenPreview() {
+    YuGiDBTheme {
+        CardZoomScreen(url = "")
+    }
+}
 
 @Preview(showBackground = true, name = "InfoScreenView Preview")
 @Composable
 fun InfoScreenViewPreview() {
-    YuGiDBTheme { // Applica il tuo tema per la preview
-        // Passa StandardScreenModel se vuoi vedere anche la TopAppBar nella preview
-        // StandardScreenModel { modifier, _ -> InfoScreenView(modifier = modifier) }
-        Surface { // Surface per avere uno sfondo predefinito se non usi StandardScreenModel
-            InformationScreen()
-        }
-    }
-}
-
-
-@Preview(showBackground = true, name = "CardsScreen - Populated")
-@Composable
-fun CardsScreenPopulatedPreview() {
     YuGiDBTheme {
-        CardsScreenView(
-            cards = listOf(
-                SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
-                SmallPlayingCard(id = 2, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/6983839.jpg")
-            ),
-            isLoading = false,
-            errorMessage = null,
-            searchQuery = "",
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
+        InformationScreen()
     }
 }
 
-@Preview(showBackground = true, name = "CardsScreen - Loading")
+@Preview(showBackground = true, name = "SavedCardsScreen - Empty")
 @Composable
-fun CardsScreenLoadingPreview() {
+fun SavedCardsScreenEmptyPreview() {
     YuGiDBTheme {
-        CardsScreenView(
-            cards = emptyList(),
-            isLoading = true,
-            errorMessage = null,
-            searchQuery = "",
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
+        // Per una preview "vera", potresti voler usare un ViewModel fake
+        // che espone una lista vuota e isLoading = false
+        SavedCardsScreen(navController = null /* o un NavController fake */)
     }
 }
 
-@Preview(showBackground = true, name = "CardsScreen - Error")
+@Preview(showBackground = true, name = "SavedCardsScreen - With Data")
 @Composable
-fun CardsScreenErrorPreview() {
+fun SavedCardsScreenWithDataPreview() {
     YuGiDBTheme {
-        CardsScreenView(
-            cards = emptyList(),
-            isLoading = false,
-            errorMessage = "Failed to load cards. Please try again.",
-            searchQuery = "",
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
+        // Per una preview "vera", potresti voler usare un ViewModel fake
+        // che espone dati di esempio e isLoading = false
+        // Ad esempio, creando un CardListViewModelFake
+        SavedCardsScreen(navController = null /* o un NavController fake */)
     }
 }
 
-@Preview(showBackground = true, name = "CardsScreen - No Cards Saved")
-@Composable
-fun CardsScreenNoCardsSavedPreview() {
-    YuGiDBTheme {
-        CardsScreenView(
-            cards = emptyList(),
-            isLoading = false,
-            errorMessage = null,
-            searchQuery = "", // Stringa di ricerca vuota
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "CardsScreen - No Cards Found Search")
-@Composable
-fun CardsScreenNoCardsFoundSearchPreview() {
-    YuGiDBTheme {
-        CardsScreenView(
-            cards = emptyList(),
-            isLoading = false,
-            errorMessage = null,
-            searchQuery = "nonExistentCard", // Stringa di ricerca non vuota
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
-        )
-    }
-}
-
-@Preview(showBackground = true, name = "LargeCardDetail - Populated")
-@Composable
-fun LargeCardDetailPreview() {
-    YuGiDBTheme {
-        InitLargePlayingCardScreen(
-            cardId = 12345,
-            // Passa navController se necessario
-
-        )
-    }
-}
+// Assicurati che le seguenti Composable siano definite e accessibili:
+// - StandardTopAppBar (in Views.kt o altrove)
+// - WaitIndicatorView
+// - InitCardsScreenView
+// - optionErrorView
+// - LargeCardItemView
+// - InfoSection
+// - SmallPlayingCardView
+// E che le classi modello come SmallPlayingCard e CardImage siano corrette.
+// Ricorda di aggiungere le stringhe mancanti a strings.xml:
+// R.string.saved_cards_title (es. "Carte Salvate")
+// R.string.no_saved_cards (es. "Nessuna carta salvata.")
