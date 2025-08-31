@@ -1,9 +1,11 @@
 package com.example.yu_gi_db.views
 
 
+
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -118,13 +120,12 @@ fun StandardTopAppBar(
     val currentRoute = navBackStackEntry?.destination?.route
     TopAppBar(
         modifier = modifier,
-        title = { Row{
-            Column(Modifier.verticalScroll(rememberScrollState())){
-
-                Text(stringResource(R.string.app_name) ,
+        title = {Column{
+                Text(
+                    stringResource(R.string.app_name),
                     modifier = Modifier.clickable{
-                        navController.navigate(Screen.InitMainScreen.route) { // Inizia la lambda per NavOptionsBuilder
-                                popUpTo(Screen.InitMainScreen.route) { // Usa la route corretta di MainScreen
+                        navController.navigate(Screen.MainScreen.route) { // Inizia la lambda per NavOptionsBuilder
+                                popUpTo(Screen.MainScreen.route) { // Usa la route corretta di MainScreen
                                     inclusive = true
                                 }
                                 launchSingleTop = true
@@ -132,8 +133,9 @@ fun StandardTopAppBar(
                     }
                 )
                 if(title!= stringResource(R.string.app_name))
-                {Text(title)} }
-        } },
+                {Row(Modifier.horizontalScroll(rememberScrollState()) ){
+                    Text(title)} }}
+         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -222,13 +224,15 @@ fun optionErrorView(modifier: Modifier = Modifier,
                     ): Boolean
 {
     var ret=false
-    Box{
+
         if (isLoading) {
+            Box(Modifier.fillMaxSize()) {
             WaitIndicatorView(
                 modifier
                     .align(Alignment.Center)
                     .fillMaxSize(0.7f)
-            ) // Ora WaitIndicatorView non ha testo e ha uno stile diverso
+            )}
+            // Ora WaitIndicatorView non ha testo e ha uno stile diverso
         }
         else if (errorMessage != null) {
             ErrorMessageView(stringResource(R.string.error_message_generic) + ": $errorMessage")
@@ -244,7 +248,7 @@ fun optionErrorView(modifier: Modifier = Modifier,
         else{
             ret=true
         }
-    }
+
     return ret
 }
 
@@ -295,6 +299,7 @@ fun CardsScreenView(
     val focusManager = LocalFocusManager.current
     Column(modifier = modifier.fillMaxSize()) {
         OutlinedTextField(
+            shape = MaterialTheme.shapes.medium ,
             value = searchQuery,
             onValueChange = onSearchQueryChange,
             modifier = Modifier
@@ -335,7 +340,7 @@ fun SmallCardsListView(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(cards, key = { card -> card.id }) { card ->
-            SmallCardItemView(card = card, navController = navController) // Passa navController
+            SmallCardItemView(modifier = modifier,card = card, navController = navController) // Passa navController
         }
     }
 }
@@ -344,31 +349,39 @@ fun SmallCardsListView(
 fun SmallCardItemView(
     card: SmallPlayingCard,
     modifier: Modifier = Modifier,
-    navController: NavHostController? = null // Aggiunto NavController
+    navController: NavHostController? = null
 ) {
-    Card(modifier = modifier.padding(8.dp),
-        onClick ={
-            // Dovresti definire una route specifica per i dettagli della carta, es. Screen.CardDetailScreen.route
-            // e potenzialmente passare l'ID della carta come argomento.
-            // Per ora, userò la navigazione placeholder che avevi, assicurandoti che usi il navController corretto:
-            navController?.navigate(Screen.CardScreen.createRoute(card.id.toString())) { // Esempio: naviga a MainScreen
-
-            }
+    Card(
+        modifier = modifier, // Reduced padding slightly
+        onClick = {
+            navController?.navigate(Screen.CardScreen.createRoute(card.id.toString()))
         }
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            CardUrltoView(card.imageUrlSmall,modifier = Modifier.size(260.dp, 350.dp))
 
-            Text(
-                text = card.id.toString(),
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(vertical = 4.dp)
+        Box(
+            //horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth().size(0.dp, 280.dp)
+        ) {
+            CardUrltoView(
+                url = card.imageUrlSmall,
+                modifier = modifier.fillMaxSize()// Adjusted size slightly
             )
+            Card(modifier = Modifier.align(Alignment.BottomStart)
+                ){Text(
+                text = card.id.toString(),
+                style = MaterialTheme.typography.titleSmall, // Adjusted style
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier,
+                maxLines = 1, // Allow for slightly longer names
+            )}
+
+
+
         }
     }
 }
+
 
 @Composable
 fun LargeCardItemView(
@@ -447,7 +460,7 @@ fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
         placeholder = painterResource(R.drawable.ic_launcher_foreground), // Considera placeholder specifici
         error = painterResource(R.drawable.ic_launcher_background), // Considera error placeholder specifici
         contentDescription = stringResource(R.string.card_image_description),
-        contentScale = ContentScale.FillBounds,
+        contentScale = ContentScale.Fit,
         modifier = modifier
     )
 }

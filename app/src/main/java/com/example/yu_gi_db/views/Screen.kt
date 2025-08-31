@@ -55,7 +55,8 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
         SplashScreen(modifier = modifier,navController)
     }
     else {
-        MainScreen(modifier = modifier,navController)
+        //MainScreen(modifier = modifier,navController)
+        Navigation()
         //navController?.navigate(Screen.MainScreen.route)
     }
 }

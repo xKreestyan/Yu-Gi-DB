@@ -45,7 +45,7 @@ sealed class Screen(val route: String) {
 fun Navigation() {
     val navController = rememberNavController()
     YuGiDBTheme {
-        NavHost(navController = navController, startDestination = Screen.InitMainScreen.route) {
+        NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
             composable(Screen.InitMainScreen.route) { // Uses Screen.MainScreen.route ("MainScreen")
                 InitMainScreen(navController = navController)
             }
@@ -55,7 +55,6 @@ fun Navigation() {
             composable(Screen.MainScreen.route) { // Uses Screen.MainScreen.route ("MainScreen")
                 MainScreen(navController = navController)
             }
-
 
             composable(Screen.InfoScreen.route) {
                 InformationScreen(navController = navController)
