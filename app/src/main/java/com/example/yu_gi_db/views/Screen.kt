@@ -1,5 +1,6 @@
 package com.example.yu_gi_db.views
 
+import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -68,9 +70,14 @@ fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController?
             modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-        ) {
+        ) { val configuration = LocalConfiguration.current
+            val imageResource = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                R.drawable.screen_yu_gi_db_ori // Immagine per l'orientamento orizzontale
+            } else {
+                R.drawable.screen_yu_gi_db  // Immagine per l'orientamento verticale
+            }
             Image(
-                painter = painterResource(id = R.drawable.screen_yu_gi_db),
+                painter =painterResource(id = imageResource),
                 contentDescription = stringResource(id = R.string.splash_content_description),
                 contentScale = ContentScale.FillBounds,
                 modifier = Modifier.fillMaxSize()
@@ -275,7 +282,9 @@ fun SavedCardsScreen(
         ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = Modifier.padding(innerPadding).fillMaxSize(), // La griglia riempie il Box con padding
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize(), // La griglia riempie il Box con padding
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)

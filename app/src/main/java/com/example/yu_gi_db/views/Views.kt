@@ -333,7 +333,7 @@ fun SmallCardsListView(
 ) {
     Log.d("CardsScreenView", "Displaying LazyVerticalGrid with ${cards.size} cards.")
     LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Adaptive(180.dp),//.Fixed(2),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
