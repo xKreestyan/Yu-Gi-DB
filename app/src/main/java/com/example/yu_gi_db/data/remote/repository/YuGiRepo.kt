@@ -17,8 +17,9 @@ import com.example.yu_gi_db.domain.repository.YuGiRepoInterface
 import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async // ASSICURARSI CHE QUESTO IMPORT SIA PRESENTE O AGGIUNTO
-import kotlinx.coroutines.coroutineScope // ASSICURARSI CHE QUESTO IMPORT SIA PRESENTE O AGGIUNTO
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll // NUOVO IMPORT
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -96,27 +97,18 @@ class YuGiRepo @Inject constructor(
     override suspend fun fetchAndSaveAllCards() {
         Log.d(tag, "fetchAndSaveAllCards called")
         try {
-            // --- INIZIO SEZIONE MODIFICATA ---
-            // Esegui le chiamate API in parallelo
             val (stapleCardsResponse, lobCardsResponse) = coroutineScope {
-                // Esegui le chiamate API su Dispatchers.IO se sono blocking o se l'ApiClient non lo fa già
                 val stapleCardsDeferred = async(Dispatchers.IO) { apiClient.fetchCards(mapOf("staple" to "yes")) }
                 val lobCardsDeferred = async(Dispatchers.IO) { apiClient.fetchCards(mapOf("cardset" to "Legend of Blue Eyes White Dragon")) }
-                // Attendere il completamento di entrambe le chiamate
                 Pair(stapleCardsDeferred.await(), lobCardsDeferred.await())
             }
 
             val stapleCards = stapleCardsResponse?.data ?: emptyList()
-            Log.d(tag, "Fetched ${stapleCards.size} staple cards from API.")
-
             val lobCards = lobCardsResponse?.data ?: emptyList()
-            Log.d(tag, "Fetched ${lobCards.size} LOB cards from API.")
 
-            // Unisci le liste e rimuovi i duplicati basati sull'ID della carta
             val allCardsMap = mutableMapOf<Int, LargePlayingCard>()
             stapleCards.forEach { allCardsMap[it.id] = it }
-            lobCards.forEach { allCardsMap[it.id] = it } // Sovrascrive i duplicati, mantenendo l'ultima versione
-
+            lobCards.forEach { allCardsMap[it.id] = it }
             val uniqueCards = allCardsMap.values.toList()
 
             if (uniqueCards.isEmpty()) {
@@ -126,7 +118,6 @@ class YuGiRepo @Inject constructor(
             Log.d(tag, "Processing ${uniqueCards.size} unique cards in total.")
 
             uniqueCards.forEachIndexed { index, apiCard ->
-                // --- FINE SEZIONE MODIFICATA ---
                 Log.d(tag, "Processing card ${index + 1}/${uniqueCards.size}: ${apiCard.name} (ID: ${apiCard.id})")
 
                 val imageUrlSmallApi = apiCard.cardImages.firstOrNull()?.imageUrlSmall
@@ -134,11 +125,6 @@ class YuGiRepo @Inject constructor(
 
                 if (!imageUrlSmallApi.isNullOrBlank()) {
                     localImagePath = downloadAndSaveImageVolley(imageUrlSmallApi, apiCard.id, imageDir)
-                    if (localImagePath != null) {
-                        Log.d(tag, "Image for card ID ${apiCard.id} downloaded to: $localImagePath")
-                    } else {
-                        Log.w(tag, "Failed to download image for card ID ${apiCard.id} from $imageUrlSmallApi")
-                    }
                 } else {
                     Log.w(tag, "No small image URL found for card ID ${apiCard.id}")
                 }
@@ -159,7 +145,6 @@ class YuGiRepo @Inject constructor(
                     cardPrices = apiCard.cardPrices
                 )
                 yuGiDAO.insertCard(cardEntity)
-                Log.d(tag, "Inserted/Updated CardEntity for ID: ${apiCard.id}")
 
                 apiCard.typeline?.forEach { typeLineName ->
                     if (typeLineName.isNotBlank()) {
@@ -193,9 +178,7 @@ class YuGiRepo @Inject constructor(
                     yuGiDAO.insertCardSetAppearance(appearance)
                 }
             }
-            // --- INIZIO SEZIONE MODIFICATA (SOLO LA VARIABILE NEL LOG) ---
             Log.i(tag, "Successfully processed and saved ${uniqueCards.size} cards.")
-            // --- FINE SEZIONE MODIFICATA ---
         } catch (e: Exception) {
             Log.e(tag, "Error during fetchAndSaveAllCards", e)
         }
@@ -203,6 +186,7 @@ class YuGiRepo @Inject constructor(
 
     override fun getSmallCardsStream(query: String?): Flow<List<SmallPlayingCard>> {
         Log.d(tag, "getSmallCardsStream called with query: $query")
+        // TODO: Implement actual query filtering if 'query' parameter is to be used
         return yuGiDAO.getAllCards().map { entities ->
             Log.d(tag, "Mapping ${entities.size} CardEntities to SmallPlayingCards")
             entities.map { entity ->
@@ -214,30 +198,20 @@ class YuGiRepo @Inject constructor(
         }
     }
 
-    override suspend fun getLargeCardById(cardId: Int): LargePlayingCard? = withContext(Dispatchers.IO) {
-        Log.d(tag, "getLargeCardById called for ID: $cardId")
-        val entity = yuGiDAO.getCardById(cardId)
-        if (entity == null) {
-            Log.w(tag, "No CardEntity found for ID: $cardId")
-            return@withContext null
-        }
-
-        Log.d(tag, "Found CardEntity: ${entity.name}")
-        val typelines = yuGiDAO.getTypeLineNamesForCard(cardId)
-        Log.d(tag, "Typelines for card ID $cardId: $typelines")
-
+    // --- NUOVA FUNZIONE HELPER PER MAPPARE CardEntity a LargePlayingCard ---
+    private suspend fun mapCardEntityToLargePlayingCard(entity: CardEntity): LargePlayingCard = withContext(Dispatchers.IO) {
+        val typelines = yuGiDAO.getTypeLineNamesForCard(entity.id)
         val cardImagesDomain = mutableListOf<com.example.yu_gi_db.model.CardImage>()
         if (entity.localImageSmallPath != null) {
             cardImagesDomain.add(com.example.yu_gi_db.model.CardImage(
                 id = entity.id,
-                imageUrl = "",
+                imageUrl = "", // Non abbiamo l'URL originale completo qui, solo il percorso locale
                 imageUrlSmall = entity.localImageSmallPath,
-                imageUrlCropped = ""
+                imageUrlCropped = "" // Non abbiamo l'URL cropped qui
             ))
         }
-        Log.d(tag, "Constructed cardImages for LargePlayingCard: $cardImagesDomain")
 
-        val setAppearances = yuGiDAO.getAppearancesForCard(cardId)
+        val setAppearances = yuGiDAO.getAppearancesForCard(entity.id)
         val cardSetsDomain = mutableListOf<com.example.yu_gi_db.model.CardSet>()
         setAppearances.forEach { appearance ->
             val setEntity = yuGiDAO.getSetById(appearance.setId)
@@ -251,9 +225,8 @@ class YuGiRepo @Inject constructor(
                 ))
             }
         }
-        Log.d(tag, "Constructed cardSets for LargePlayingCard: $cardSetsDomain")
 
-        return@withContext LargePlayingCard(
+        LargePlayingCard(
             id = entity.id,
             name = entity.name,
             typeline = typelines,
@@ -271,5 +244,156 @@ class YuGiRepo @Inject constructor(
             cardPrices = entity.cardPrices
         )
     }
-}
 
+    override suspend fun getLargeCardById(cardId: Int): LargePlayingCard? = withContext(Dispatchers.IO) {
+        Log.d(tag, "getLargeCardById called for ID: $cardId")
+        val entity = yuGiDAO.getCardById(cardId)
+        if (entity == null) {
+            Log.w(tag, "No CardEntity found for ID: $cardId")
+            return@withContext null
+        }
+        mapCardEntityToLargePlayingCard(entity)
+    }
+
+    // --- IMPLEMENTAZIONE DELLE NUOVE FUNZIONI DI RICERCA ---
+
+    override fun getCardsByName(cardNameQuery: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByNameQuery(cardNameQuery).map { entities ->
+            coroutineScope { // o supervisorScope se le mappature possono fallire individualmente
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByAttribute(attributeName: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByAttributeQuery(attributeName).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByType(type: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByType(type).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByHumanReadableType(hrTypeQuery: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByHumanReadableType(hrTypeQuery).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByFrameType(frameType: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByFrameType(frameType).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByDescription(descQuery: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByDescription(descQuery).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByRace(race: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByRace(race).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByLevel(level: Int): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByLevel(level).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByAtk(atk: Int): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByAtk(atk).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByDef(def: Int): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByDef(def).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsByTypeLine(typeLineQuery: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsByTypeLine(typeLineQuery).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsBySetName(setNameQuery: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsBySetNameQuery(setNameQuery).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsBySetRarity(rarityQuery: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsBySetRarity(rarityQuery).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+
+    override fun getCardsBySetCode(setCodeQuery: String): Flow<List<LargePlayingCard>> {
+        return yuGiDAO.getCardsBySetCode(setCodeQuery).map { entities ->
+            coroutineScope {
+                entities.map { entity ->
+                    async(Dispatchers.IO) { mapCardEntityToLargePlayingCard(entity) }
+                }.awaitAll()
+            }
+        }
+    }
+}

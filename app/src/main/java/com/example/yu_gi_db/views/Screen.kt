@@ -139,7 +139,7 @@ fun Main1Screen(modifier: Modifier = Modifier,navController: NavHostController? 
                // enabled = false, // Puoi disabilitare il bottone se necessario
                modifier =modifier// Aggiunge un po' di spazio attorno
            ) {
-               Text(text ="DEck")
+               Text(text = stringResource(R.string.deck))
            }
            Button(
                onClick = {
@@ -148,7 +148,7 @@ fun Main1Screen(modifier: Modifier = Modifier,navController: NavHostController? 
                // enabled = false, // Puoi disabilitare il bottone se necessario
                modifier =modifier// Aggiunge un po' di spazio attorno
            ) {
-               Text(text = "goat format's rules")
+               Text(text = stringResource(R.string.goat_format_s_rules))
            }
 
            Button(
@@ -269,7 +269,7 @@ fun InformationScreen(
                 title = stringResource(R.string.info_section_version_title)
             ) {
                 Text(
-                    text = "1.0.0 (Build 1)",
+                    text = stringResource(R.string.version),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -278,7 +278,7 @@ fun InformationScreen(
                 title = stringResource(R.string.info_section_developer_title)
             ) {
                 Text(
-                    text = "Il Tuo Nome / Nome Azienda",
+                    text = stringResource(R.string.name_and_company),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }

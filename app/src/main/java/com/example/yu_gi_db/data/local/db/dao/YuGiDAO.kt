@@ -7,8 +7,8 @@ import androidx.room.Query
 import com.example.yu_gi_db.data.local.db.entities.CardEntity
 import com.example.yu_gi_db.data.local.db.entities.CardSetAppearanceEntity
 import com.example.yu_gi_db.data.local.db.entities.SetEntity
-import com.example.yu_gi_db.data.local.db.entities.TypeLineEntity // NUOVO IMPORT
-import com.example.yu_gi_db.data.local.db.entities.CardTypeLineCrossRef // NUOVO IMPORT
+import com.example.yu_gi_db.data.local.db.entities.TypeLineEntity
+import com.example.yu_gi_db.data.local.db.entities.CardTypeLineCrossRef
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,15 +20,15 @@ interface YuGiDAO {
     suspend fun insertCard(card: CardEntity)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertSet(set: SetEntity): Long // Ritorna l'ID del set inserito o esistente
+    suspend fun insertSet(set: SetEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCardSetAppearance(appearance: CardSetAppearanceEntity)
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE) // Ignora se la typeline esiste già
-    suspend fun insertTypeLine(typeLine: TypeLineEntity): Long // Ritorna l'ID
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertTypeLine(typeLine: TypeLineEntity): Long
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE) // Sostituisce se l'associazione esiste già
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCardTypeLineCrossRef(crossRef: CardTypeLineCrossRef)
 
     // --- Query Operations ---
@@ -42,12 +42,9 @@ interface YuGiDAO {
     @Query("SELECT * FROM sets WHERE id = :setId")
     suspend fun getSetById(setId: Long): SetEntity?
 
-    @Query("SELECT * FROM type_lines WHERE name = :typeLineName") // NUOVA QUERY
+    @Query("SELECT * FROM type_lines WHERE name = :typeLineName")
     suspend fun getTypeLineByName(typeLineName: String): TypeLineEntity?
 
-    /**
-     * Recupera tutte le carte appartenenti a un set specifico, dato il nome del set.
-     */
     @Query("""
         SELECT cards.*
         FROM cards
@@ -57,21 +54,15 @@ interface YuGiDAO {
     """)
     suspend fun getCardsFromSetName(setName: String): List<CardEntity>
 
-    /**
-     * Recupera tutte le carte che hanno una specifica typeline, dato il nome della typeline.
-     */
     @Query("""
         SELECT cards.*
         FROM cards
         INNER JOIN card_type_line_cross_ref ON cards.id = card_type_line_cross_ref.cardId
         INNER JOIN type_lines ON card_type_line_cross_ref.typeLineId = type_lines.id
         WHERE type_lines.name = :typeLineName
-    """) // NUOVA QUERY
+    """)
     suspend fun getCardsByTypeLineName(typeLineName: String): List<CardEntity>
 
-    /**
-     * Recupera i nomi di tutte le typeline associate a una specifica carta.
-     */
     @Query("""
         SELECT tl.name 
         FROM card_type_line_cross_ref AS ctlcr
@@ -89,8 +80,75 @@ interface YuGiDAO {
     @Query("SELECT * FROM sets ORDER BY name ASC")
     fun getAllSets(): Flow<List<SetEntity>>
 
-    // Potrebbe essere utile anche una query per avere tutte le TypeLines, simile a getAllSets
-    @Query("SELECT * FROM type_lines ORDER BY name ASC") // NUOVA QUERY OPZIONALE
+    @Query("SELECT * FROM type_lines ORDER BY name ASC")
     fun getAllTypeLines(): Flow<List<TypeLineEntity>>
 
+    // --- NUOVE QUERY PER RICERCA AVANZATA NEL DATABASE LOCALE ---
+
+    // Query su campi diretti di CardEntity
+
+    @Query("SELECT * FROM cards WHERE name LIKE '%' || :nameQuery || '%'")
+    fun getCardsByNameQuery(nameQuery: String): Flow<List<CardEntity>>
+
+    @Query("SELECT * FROM cards WHERE type = :type")
+    fun getCardsByType(type: String): Flow<List<CardEntity>>
+
+    @Query("SELECT * FROM cards WHERE humanReadableCardType LIKE '%' || :hrTypeQuery || '%'")
+    fun getCardsByHumanReadableType(hrTypeQuery: String): Flow<List<CardEntity>>
+
+    @Query("SELECT * FROM cards WHERE frameType = :frameType")
+    fun getCardsByFrameType(frameType: String): Flow<List<CardEntity>>
+
+    @Query("SELECT * FROM cards WHERE `desc` LIKE '%' || :descQuery || '%'") // Corretto qui
+    fun getCardsByDescription(descQuery: String): Flow<List<CardEntity>>
+
+    @Query("SELECT * FROM cards WHERE race = :race")
+    fun getCardsByRace(race: String): Flow<List<CardEntity>>
+
+    @Query("SELECT * FROM cards WHERE level = :level")
+    fun getCardsByLevel(level: Int): Flow<List<CardEntity>>
+
+    @Query("SELECT * FROM cards WHERE atk = :atk")
+    fun getCardsByAtk(atk: Int): Flow<List<CardEntity>>
+
+    @Query("SELECT * FROM cards WHERE def = :def")
+    fun getCardsByDef(def: Int): Flow<List<CardEntity>>
+
+    @Query("SELECT * FROM cards WHERE attribute = :attributeName")
+    fun getCardsByAttributeQuery(attributeName: String): Flow<List<CardEntity>>
+
+    // Query su campi da tabelle correlate (richiedono JOIN)
+    @Query("""
+        SELECT DISTINCT cards.*
+        FROM cards
+        INNER JOIN card_type_line_cross_ref ON cards.id = card_type_line_cross_ref.cardId
+        INNER JOIN type_lines ON card_type_line_cross_ref.typeLineId = type_lines.id
+        WHERE type_lines.name LIKE '%' || :typeLineQuery || '%'
+    """)
+    fun getCardsByTypeLine(typeLineQuery: String): Flow<List<CardEntity>>
+
+    @Query("""
+        SELECT DISTINCT cards.*
+        FROM cards
+        INNER JOIN card_set_appearances ON cards.id = card_set_appearances.cardId
+        INNER JOIN sets ON card_set_appearances.setId = sets.id
+        WHERE sets.name LIKE '%' || :setNameQuery || '%'
+    """)
+    fun getCardsBySetNameQuery(setNameQuery: String): Flow<List<CardEntity>>
+
+    @Query("""
+        SELECT DISTINCT cards.*
+        FROM cards
+        INNER JOIN card_set_appearances ON cards.id = card_set_appearances.cardId
+        WHERE card_set_appearances.rarity LIKE '%' || :rarityQuery || '%'
+    """)
+    fun getCardsBySetRarity(rarityQuery: String): Flow<List<CardEntity>>
+
+    @Query("""
+        SELECT DISTINCT cards.*
+        FROM cards
+        INNER JOIN card_set_appearances ON cards.id = card_set_appearances.cardId
+        WHERE card_set_appearances.setSpecificCode LIKE '%' || :setCodeQuery || '%'
+    """)
+    fun getCardsBySetCode(setCodeQuery: String): Flow<List<CardEntity>>
 }
