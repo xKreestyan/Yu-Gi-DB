@@ -10,14 +10,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -41,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.room.Database
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
@@ -70,18 +75,8 @@ fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController?
             modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-        ) { val configuration = LocalConfiguration.current
-            val imageResource = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                R.drawable.screen_yu_gi_db_ori // Immagine per l'orientamento orizzontale
-            } else {
-                R.drawable.screen_yu_gi_db  // Immagine per l'orientamento verticale
-            }
-            Image(
-                painter =painterResource(id = imageResource),
-                contentDescription = stringResource(id = R.string.splash_content_description),
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
-            )
+        ) {
+            ImageRotation(R.drawable.screen_yu_gi_db ,R.drawable.screen_yu_gi_db_ori,modifier.fillMaxSize())
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -109,6 +104,68 @@ fun MainScreen(modifier: Modifier = Modifier,navController: NavHostController? =
         )
     }
 }
+@Composable
+fun Main1Screen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
+   Box(modifier.fillMaxSize()){
+       ImageRotation( R.drawable.yu_gi_db_imgv, R.drawable.yu_gi_db_imgo,modifier.fillMaxSize())
+
+       Column(modifier = modifier
+           .align(Alignment.Center)
+           .verticalScroll(rememberScrollState())) {
+           Button(onClick = {}) {
+           Text(
+               text = stringResource(id = R.string.app_name),
+               style = MaterialTheme.typography.displayLarge,
+               textAlign = TextAlign.Center,
+               modifier = Modifier.fillMaxWidth(),
+           )}
+           Spacer(modifier = Modifier.height(50.dp))
+           val modifier=modifier
+               .fillMaxWidth()
+               .padding(20.dp)
+           Button(
+               onClick = {
+                   navController?.navigate(Screen.MainScreen.route)
+               },
+               // enabled = false, // Puoi disabilitare il bottone se necessario
+               modifier = modifier // Aggiunge un po' di spazio attorno
+           ) {
+               Text(text = stringResource(R.string.database))
+           }
+           Button(
+               onClick = {
+                   navController?.navigate(Screen.SavedCardsScreen.route)
+               },
+               // enabled = false, // Puoi disabilitare il bottone se necessario
+               modifier =modifier// Aggiunge un po' di spazio attorno
+           ) {
+               Text(text ="DEck")
+           }
+           Button(
+               onClick = {
+
+               },
+               // enabled = false, // Puoi disabilitare il bottone se necessario
+               modifier =modifier// Aggiunge un po' di spazio attorno
+           ) {
+               Text(text = "goat format's rules")
+           }
+
+           Button(
+               onClick = {
+                    navController?.navigate(Screen.InfoScreen.route)
+               },
+               // enabled = false, // Puoi disabilitare il bottone se necessario
+               modifier =modifier// Aggiunge un po' di spazio attorno
+           ) {
+               Text(text = stringResource(id = R.string.info_screen_title))
+           }
+
+       }
+
+   }
+}
+
 
 @Composable
 fun InitLargePlayingCardScreen(
@@ -137,13 +194,13 @@ fun InitLargePlayingCardScreen(
         navController = navController
     ) { innerPadding ->
         if(optionErrorView( // Assicurati che sia definita e importata
-            modifier = modifier.padding(innerPadding),
-            isLoading = isLoading,
-            errorMessage = error,
-            isEmpty = (largeCard == null)
+                modifier = modifier.padding(innerPadding),
+                isLoading = isLoading,
+                errorMessage = error,
+                isEmpty = (largeCard == null)
             ))
         {
-            LargeCardItemView(modifier.padding(innerPadding),card = largeCard, navController = navController) // Assicurati che sia definita e importata
+            LargeCardItemView2(modifier.padding(innerPadding),card = largeCard, navController = navController) // Assicurati che sia definita e importata
         }
     }
 }

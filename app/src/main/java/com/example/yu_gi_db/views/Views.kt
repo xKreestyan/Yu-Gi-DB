@@ -2,9 +2,15 @@ package com.example.yu_gi_db.views
 
 
 
+import android.content.res.Configuration
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.core.copy
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,15 +19,18 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -47,13 +56,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -101,7 +119,7 @@ fun AppScreen(
                 title = appBarTitle,
                 navController = navController,
 
-            )
+                )
         }
     ) { innerPadding ->
         content(innerPadding)
@@ -121,21 +139,21 @@ fun StandardTopAppBar(
     TopAppBar(
         modifier = modifier,
         title = {Column{
-                Text(
-                    stringResource(R.string.app_name),
-                    modifier = Modifier.clickable{
-                        navController.navigate(Screen.MainScreen.route) { // Inizia la lambda per NavOptionsBuilder
-                                popUpTo(Screen.MainScreen.route) { // Usa la route corretta di MainScreen
-                                    inclusive = true
-                                }
-                                launchSingleTop = true
+            Text(
+                stringResource(R.string.app_name ),
+                modifier = Modifier.clickable{
+                    navController.navigate(Screen.MainScreen.route) { // Inizia la lambda per NavOptionsBuilder
+                        popUpTo(Screen.MainScreen.route) { // Usa la route corretta di MainScreen
+                            inclusive = true
                         }
+                        launchSingleTop = true
                     }
-                )
-                if(title!= stringResource(R.string.app_name))
-                {Row(Modifier.horizontalScroll(rememberScrollState()) ){
-                    Text(title)} }}
-         },
+                }
+            )
+            if(title!= stringResource(R.string.app_name))
+            {Row(Modifier.horizontalScroll(rememberScrollState()) ){
+                Text(title)} }}
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -212,6 +230,12 @@ fun ErrorMessageView(text: String, modifier: Modifier = Modifier) {
             textAlign = TextAlign.Justify, // Considera TextAlign.Center se più appropriato
             modifier = Modifier.padding(16.dp)
         )
+        // ... (immagine di sfondo) ...
+
+// Box esterno per posizionamento e padding generale dell'overlay
+
+
+
     }
 }
 
@@ -221,33 +245,33 @@ fun optionErrorView(modifier: Modifier = Modifier,
                     isEmpty: Boolean=false,
                     errorMessage: String?=null,
                     isNotBlank: Boolean=true
-                    ): Boolean
+): Boolean
 {
     var ret=false
 
-        if (isLoading) {
-            Box(Modifier.fillMaxSize()) {
+    if (isLoading) {
+        Box(Modifier.fillMaxSize()) {
             WaitIndicatorView(
                 modifier
                     .align(Alignment.Center)
                     .fillMaxSize(0.7f)
             )}
-            // Ora WaitIndicatorView non ha testo e ha uno stile diverso
-        }
-        else if (errorMessage != null) {
-            ErrorMessageView(stringResource(R.string.error_message_generic) + ": $errorMessage")
-        }
-        else if (isEmpty) {
-            Log.d("CardsScreenView", "Displaying 'No cards found or saved' message.")
-            ErrorMessageView(
-                if (isNotBlank) stringResource(R.string.no_cards_found_search) else stringResource(
-                    R.string.no_cards_saved
-                )
+        // Ora WaitIndicatorView non ha testo e ha uno stile diverso
+    }
+    else if (errorMessage != null) {
+        ErrorMessageView(stringResource(R.string.error_message_generic) + ": $errorMessage")
+    }
+    else if (isEmpty) {
+        Log.d("CardsScreenView", "Displaying 'No cards found or saved' message.")
+        ErrorMessageView(
+            if (isNotBlank) stringResource(R.string.no_cards_found_search) else stringResource(
+                R.string.no_cards_saved
             )
-        }
-        else{
-            ret=true
-        }
+        )
+    }
+    else{
+        ret=true
+    }
 
     return ret
 }
@@ -312,11 +336,11 @@ fun CardsScreenView(
             })
         )
         if(optionErrorView(modifier = modifier,
-            isLoading = isLoading,
-            errorMessage = errorMessage,
-            isEmpty = cards.isEmpty(),
-            isNotBlank = searchQuery.isNotBlank()
-                            )
+                isLoading = isLoading,
+                errorMessage = errorMessage,
+                isEmpty = cards.isEmpty(),
+                isNotBlank = searchQuery.isNotBlank()
+            )
         ) {
             SmallCardsListView(cards = cards, navController = navController) // Passa navController
         }
@@ -360,14 +384,16 @@ fun SmallCardItemView(
 
         Box(
             //horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth().size(0.dp, 280.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .size(0.dp, 280.dp)
         ) {
             CardUrltoView(
                 url = card.imageUrlSmall,
                 modifier = modifier.fillMaxSize()// Adjusted size slightly
             )
             Card(modifier = Modifier.align(Alignment.BottomStart)
-                ){Text(
+            ){Text(
                 text = card.id.toString(),
                 style = MaterialTheme.typography.titleSmall, // Adjusted style
                 fontWeight = FontWeight.Bold,
@@ -450,6 +476,128 @@ fun LargeCardItemView(
         )
     }
 }
+
+
+@Composable
+fun LargeCardItemView2(
+    modifier: Modifier = Modifier, // Questo modifier si applica al Box radice
+    card: LargePlayingCard? = null,
+    navController: NavHostController? = null
+) {
+    val currentCard = card ?: return // Rinomina per chiarezza e per evitare shadowing
+    val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
+    val imageUrl: String = firstCardImage?.imageUrlSmall ?: ""
+
+    val detailTextBackgroundColor = Color.Black.copy(alpha =0.65f)
+    val detailTextPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+    val detailShape = RoundedCornerShape(6.dp)
+
+    Box( // Contenitore radice per gestire gli strati
+        modifier = modifier.verticalScroll(rememberScrollState()), // Applica il modifier passato qui
+    ) {
+        // 1. STRATO DI SFONDO (L'IMMAGINE DELLA CARTA)
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl)
+                .crossfade(true)
+                .build(),
+            placeholder = painterResource(R.drawable.ic_launcher_foreground),
+            error = painterResource(R.drawable.ic_launcher_background),
+            contentDescription = stringResource(R.string.card_image_description),
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Box(contentAlignment = Alignment.TopStart, modifier = Modifier.padding(30.dp,29.dp)) { // Aumentato lo spazio
+            Text(
+                text = currentCard.name.uppercase()+"                     ",
+                style = MaterialTheme.typography.headlineMedium, // headlineMedium potrebbe essere grande
+                color = Color.White, // Colore del testo per contrasto
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .background(
+                        detailTextBackgroundColor,
+                        detailShape
+                    )
+                    .fillMaxWidth()
+            )
+        Column(
+            modifier = Modifier.padding(0.dp,413.dp,)
+                //.verticalScroll(rememberScrollState())
+                .fillMaxSize(), // Occupa tutto lo spazio sopra l'immagine
+            horizontalAlignment = Alignment.CenterHorizontally
+        )
+        {
+
+               Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier.horizontalScroll(rememberScrollState())){
+                 Text(
+                     text = "Type: ${currentCard.type} / ${currentCard.race}",
+                     style = MaterialTheme.typography.titleMedium,
+                     color = Color.White,
+                     modifier = Modifier
+                         .background(detailTextBackgroundColor, detailShape)
+                         .padding(detailTextPadding)
+                 )
+                 currentCard.attribute?.let {
+                     Text(
+                         text = "Attribute: $it",
+                         style = MaterialTheme.typography.bodyLarge,
+                         color = Color.White,
+                         modifier = Modifier
+                             .background(detailTextBackgroundColor, detailShape)
+                             .padding(detailTextPadding)
+                     )
+                     Spacer(modifier = Modifier.height(10.dp))
+                 }
+
+                 currentCard.level?.let {
+                     Text(
+                         text = "Level/Rank: $it",
+                         style = MaterialTheme.typography.bodyLarge,
+                         color = Color.White,
+                         modifier = Modifier
+                             .background(detailTextBackgroundColor, detailShape)
+                             .padding(detailTextPadding)
+                     )
+                     Spacer(modifier = Modifier.height(10.dp))
+                 }
+             }
+             Column(Modifier.size(1000.dp, 68.dp).fillMaxWidth()) {
+                 Text(
+                     text = currentCard.desc,
+                     style = MaterialTheme.typography.bodyMedium,
+                     textAlign = TextAlign.Justify,
+                     color = Color.White,
+                     modifier = Modifier
+                         .verticalScroll(rememberScrollState())
+                         .fillMaxWidth() // La descrizione può prendere più larghezza
+                         .background(
+                             detailTextBackgroundColor,
+                             detailShape
+                         ) // Sfondo leggermente più opaco
+                         // Padding maggiore per il testo della descrizione
+                     // Permette lo scroll orizzontale
+                 )
+             }
+             if (currentCard.atk != null || currentCard.def != null) {
+                 val atkText = currentCard.atk?.toString() ?: "N/A"
+                 val defText = currentCard.def?.toString() ?: "N/A"
+                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomEnd) {
+                     Text(
+                         text = "ATK: $atkText / DEF: $defText",
+                         style = MaterialTheme.typography.bodyLarge,
+                         color = Color.White,
+                         textAlign = TextAlign.End,
+                         modifier = Modifier
+                             .background(detailTextBackgroundColor, detailShape)
+                             .padding(detailTextPadding)
+                     )
+                 }
+             }
+        }
+    }
+}
+}
+
 @Composable
 fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
     AsyncImage(
@@ -461,6 +609,21 @@ fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
         error = painterResource(R.drawable.ic_launcher_background), // Considera error placeholder specifici
         contentDescription = stringResource(R.string.card_image_description),
         contentScale = ContentScale.Fit,
+        modifier = modifier
+    )
+}
+@Composable
+fun ImageRotation(imageV: Int, imageO: Int, modifier: Modifier = Modifier ){
+    val configuration = LocalConfiguration.current
+    val imageResource = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        imageO// Immagine per l'orientamento orizzontale
+    } else {
+       imageV // Immagine per l'orientamento verticale
+    }
+    Image(
+        painter =painterResource(id = imageResource),
+        contentDescription = stringResource(id = R.string.error_message_generic),
+        contentScale = ContentScale.FillBounds,
         modifier = modifier
     )
 }
@@ -517,7 +680,7 @@ fun SmallCardsListPreview() {
 fun WaitIndicatorViewPreviewNew() {
     YuGiDBTheme {
         Box(modifier = Modifier, contentAlignment = Alignment.Center){ // Box per dare una dimensione
-           WaitIndicatorView()
+            WaitIndicatorView()
         }
     }
 }
@@ -527,7 +690,7 @@ fun WaitIndicatorViewPreviewNew() {
 @Composable
 fun MainScreenPreview2() {
     YuGiDBTheme {
-     StandardTopAppBar(modifier = Modifier.fillMaxSize(),title = "Preview Title")
+        StandardTopAppBar(modifier = Modifier.fillMaxSize(),title = "Preview Title")
     }
 }
 
@@ -618,5 +781,132 @@ fun LargeCardDetailPreview() {
             // Passa navController se necessario
 
         )
+    }
+}
+
+@Composable
+fun LargeCardItemView4(
+    modifier: Modifier = Modifier,
+) {
+
+    val detailTextBackgroundColor = Color.Black.copy(alpha = 0.55f)
+    val detailTextPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+    val detailShape = RoundedCornerShape(6.dp)
+    Box( // Contenitore radice per gestire gli strati
+        modifier = modifier.verticalScroll(rememberScrollState()), // Applica il modifier passato qui
+    ) {
+        // 1. STRATO DI SFONDO (L'IMMAGINE DELLA CARTA)
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data( "https://images.ygoprodeck.com/images/cards_small/34541863.jpg")
+                .crossfade(true)
+                .build(),
+            placeholder = painterResource(R.drawable.ic_launcher_foreground),
+            error = painterResource(R.drawable.ic_launcher_background),
+            contentDescription = stringResource(R.string.card_image_description),
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Box(contentAlignment = Alignment.TopStart) { // Aumentato lo spazio
+            Text(
+                text = "cxj skdkdsmdskmdskmlksdkdssccskkl.",
+                style = MaterialTheme.typography.headlineMedium, // headlineMedium potrebbe essere grande
+                textAlign = TextAlign.Start,
+                color = Color.White, // Colore del testo per contrasto
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = modifier
+                    .horizontalScroll(rememberScrollState())
+                    .background(detailTextBackgroundColor, detailShape)
+                    .padding(detailTextPadding)
+                    .fillMaxWidth().padding(start = 16.dp, top = 16.dp)
+            )
+            Column(
+                modifier = Modifier
+                    //.verticalScroll(rememberScrollState())
+                    .fillMaxSize() // Occupa tutto lo spazio sopra l'immagine
+                    .padding(all = 16.dp), // Padding uniforme per il contenuto della colonna
+                horizontalAlignment = Alignment.CenterHorizontally
+            )
+            {
+                Card(modifier.fillMaxSize()) {  }
+                Card(modifier.fillMaxSize()) {  }
+                Card(modifier.fillMaxSize()) {  }
+                Card(modifier.fillMaxSize()) {  }
+                /* Row {
+                     Text(
+                         text = "Type: ${currentCard.type} / ${currentCard.race}",
+                         style = MaterialTheme.typography.titleMedium,
+                         color = Color.White,
+                         modifier = Modifier
+                             .background(detailTextBackgroundColor, detailShape)
+                             .padding(detailTextPadding)
+                     )
+                     currentCard.attribute?.let {
+                         Text(
+                             text = "Attribute: $it",
+                             style = MaterialTheme.typography.bodyLarge,
+                             color = Color.White,
+                             modifier = Modifier
+                                 .background(detailTextBackgroundColor, detailShape)
+                                 .padding(detailTextPadding)
+                         )
+                         Spacer(modifier = Modifier.height(10.dp))
+                     }
+
+                     currentCard.level?.let {
+                         Text(
+                             text = "Level/Rank: $it",
+                             style = MaterialTheme.typography.bodyLarge,
+                             color = Color.White,
+                             modifier = Modifier
+                                 .background(detailTextBackgroundColor, detailShape)
+                                 .padding(detailTextPadding)
+                         )
+                         Spacer(modifier = Modifier.height(10.dp))
+                     }
+                 }
+                 Column(Modifier.size(1000.dp, 100.dp).fillMaxWidth()) {
+                     Text(
+                         text = currentCard.desc,
+                         style = MaterialTheme.typography.bodyMedium,
+                         textAlign = TextAlign.Justify,
+                         color = Color.White,
+                         modifier = Modifier
+                             .verticalScroll(rememberScrollState())
+                             .fillMaxWidth() // La descrizione può prendere più larghezza
+                             .background(
+                                 Color.Black.copy(alpha = 0.65f),
+                                 detailShape
+                             ) // Sfondo leggermente più opaco
+                             .padding(12.dp) // Padding maggiore per il testo della descrizione
+                         // Permette lo scroll orizzontale
+                     )
+                 }
+                 Spacer(modifier = Modifier.height(64.dp)) // Spazio alla fine per permettere lo scroll completo
+                 if (currentCard.atk != null || currentCard.def != null) {
+                     val atkText = currentCard.atk?.toString() ?: "N/A"
+                     val defText = currentCard.def?.toString() ?: "N/A"
+                     Text(
+                         text = "ATK: $atkText / DEF: $defText",
+                         style = MaterialTheme.typography.bodyLarge,
+                         color = Color.White,
+                         modifier = Modifier
+                             .background(detailTextBackgroundColor, detailShape)
+                             .padding(detailTextPadding)
+                     )
+                     Spacer(modifier = Modifier.height(10.dp))
+                 }
+     */
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "LargeCardDetail - Populated")
+@Composable
+fun LargeCardItemView2Preview() {
+    YuGiDBTheme {
+        LargeCardItemView2()
     }
 }

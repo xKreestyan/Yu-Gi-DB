@@ -18,5 +18,6 @@
     <string name="info_section_credits_content">I dati delle carte sono gentilmente forniti da YGOPRODeck API (ygoprodeck.com). Un ringraziamento speciale alla community di sviluppatori Android.</string>
     <string name="zoomed_card_title">zoom card</string>
     <string name="saved_cards_title">saved_cards_title</string>
+    <string name="database">Database</string>
 
 </resources>

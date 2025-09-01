@@ -13,6 +13,7 @@ sealed class Screen(val route: String) {
     object InitMainScreen : Screen("InitMainScreen")
     object SplashScreen : Screen("SplashScreen")
     object MainScreen : Screen("MainScreen")
+    object Main1Screen : Screen("Main1Screen")
     object InfoScreen : Screen("InfoScreen")
     object SavedCardsScreen : Screen("SavedCardsScreen")
     object CardScreen : Screen("CardScreen/{cardId}") { // route property is "CardScreen/{cardId}"
@@ -45,7 +46,8 @@ sealed class Screen(val route: String) {
 fun Navigation() {
     val navController = rememberNavController()
     YuGiDBTheme {
-        NavHost(navController = navController, startDestination = Screen.MainScreen.route) {
+        NavHost(navController = navController, startDestination = Screen.Main1Screen.route) {
+
             composable(Screen.InitMainScreen.route) { // Uses Screen.MainScreen.route ("MainScreen")
                 InitMainScreen(navController = navController)
             }
@@ -54,6 +56,9 @@ fun Navigation() {
             }
             composable(Screen.MainScreen.route) { // Uses Screen.MainScreen.route ("MainScreen")
                 MainScreen(navController = navController)
+            }
+            composable(Screen.Main1Screen.route) { // Uses Screen.MainScreen.route ("MainScreen")
+                Main1Screen(navController = navController)
             }
 
             composable(Screen.InfoScreen.route) {
