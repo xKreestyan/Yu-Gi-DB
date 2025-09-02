@@ -34,7 +34,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         text = "Hello $name!",
         modifier = modifier.padding(3.dp),
         fontSize = 24.sp,
-        fontFamily = FontFamily(Font(R.font.yu_gi_oh_matrix_regular_small_caps_2, weight = FontWeight.Normal, style = FontStyle.Normal))
+        fontFamily = FontFamily(Font(R.font.yu_gi_oh_itc_stone_serif_small_caps_bold, weight = FontWeight.Bold, style = FontStyle.Italic))
     )
 }
 
