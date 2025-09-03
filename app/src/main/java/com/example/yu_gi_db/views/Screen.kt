@@ -76,7 +76,7 @@ fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController?
                 .padding(innerPadding)
                 .fillMaxSize(),
         ) {
-            ImageRotation(R.drawable.screen_yu_gi_db ,R.drawable.screen_yu_gi_db_ori,modifier.fillMaxSize())
+            ImageRotation(R.drawable.yu_gi_oh_schermata_principale_o ,R.drawable.yu_gi_oh_schermata_principale_o,modifier.fillMaxSize())
             Box(
                 modifier = Modifier
                     .fillMaxSize()
