@@ -22,33 +22,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush // <-- IMPORTANTE: Aggiunto/Verificato
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
-// import androidx.compose.ui.graphics.RectangleShape // Non più di default
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.font.FontWeight
+// androidx.compose.ui.text.font.FontFamily // Non più necessario qui se textStyle lo gestisce
+// import androidx.compose.ui.text.font.FontWeight // Non più necessario qui se textStyle lo gestisce
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-// androidx.compose.ui.unit.sp // Non usato direttamente se textStyle lo gestisce
 
 // --- SHAPE PERSONALIZZATA PER PARALLELOGRAMMA ---
-/**
- * Una Shape che disegna un parallelogramma.
- * I lati superiore e inferiore sono orizzontali.
- * I lati sinistro e destro sono inclinati.
- *
- * @param shearFactor Un valore che determina l'inclinazione.
- *                    0f -> rettangolo.
- *                    Valori positivi -> inclinato verso destra in alto / sinistra in basso.
- *                    Valori negativi -> inclinato verso sinistra in alto / destra in basso.
- */
 class ParallelogramShape(private val shearFactor: Float = 0.2f) : Shape {
     override fun createOutline(
         size: Size,
@@ -66,10 +55,6 @@ class ParallelogramShape(private val shearFactor: Float = 0.2f) : Shape {
     }
 }
 
-/**
- * Alternativa per un parallelogramma con shear applicato in modo più classico
- * dove l'offset orizzontale dipende dall'altezza.
- */
 class SkewedParallelogramShape(private val horizontalShearPx: Float = 20f) : Shape {
     override fun createOutline(
         size: Size,
@@ -87,8 +72,6 @@ class SkewedParallelogramShape(private val horizontalShearPx: Float = 20f) : Sha
     }
 }
 
-
-// Funzione helper per scurire un colore
 fun Color.darken(factor: Float = 0.3f): Color {
     val hsv = FloatArray(3)
     android.graphics.Color.colorToHSV(this.toArgb(), hsv)
@@ -102,13 +85,14 @@ fun YugiohParallelepipedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    faceColor: Color = SapphireBlue,     // Mantenuto per fallback e bordo
-    faceBrush: Brush? = null,            // << PARAMETRO AGGIUNTO
+    faceColor: Color = SapphireBlue,
+    faceBrush: Brush? = null,
     sideColor: Color = faceColor.darken(),
     contentColor: Color = Color.White,
     depth: Dp = 5.dp,
     buttonShape: Shape = ParallelogramShape(shearFactor = 0.25f),
     textStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.labelLarge
+    // fontFamily: FontFamily? = null // RIMOSSO
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -129,7 +113,6 @@ fun YugiohParallelepipedButton(
                 onClick = onClick
             )
     ) {
-        // --- LATO DEL PARALLELEPIPEDO ---
         if (enabled) {
             Box(
                 modifier = Modifier
@@ -140,9 +123,7 @@ fun YugiohParallelepipedButton(
             )
         }
 
-        // --- FACCIA DEL PULSANTE ---
-        // Nuova logica per lo sfondo della faccia che usa faceBrush se disponibile
-        val faceBackgroundModifier = if (faceBrush != null && enabled) { // Applicare brush solo se abilitato
+        val faceBackgroundModifier = if (faceBrush != null && enabled) {
             Modifier.background(brush = faceBrush, shape = buttonShape)
         } else {
             Modifier.background(color = if (enabled) faceColor else faceColor.copy(alpha = 0.5f), shape = buttonShape)
@@ -153,9 +134,9 @@ fun YugiohParallelepipedButton(
                 .fillMaxWidth()
                 .heightIn(min = 50.dp)
                 .offset(x = currentFaceOffset, y = currentFaceOffset)
-                .clip(buttonShape)             // 1. Clip prima
-                .then(faceBackgroundModifier) // 2. Applica sfondo (colore o brush)
-                .border(                        // 3. Poi il bordo
+                .clip(buttonShape)
+                .then(faceBackgroundModifier)
+                .border(
                     BorderStroke(
                         1.dp,
                         if (enabled) faceColor.darken(0.1f) else Color.Transparent
@@ -168,14 +149,14 @@ fun YugiohParallelepipedButton(
             Text(
                 text = text.uppercase(),
                 color = if (enabled) contentColor else contentColor.copy(alpha = 0.7f),
-                style = textStyle,
-                fontWeight = FontWeight.Bold
+                style = textStyle // Utilizza lo stile completo passato
+                // fontWeight = FontWeight.Bold, // RIMOSSO per usare quello dello style
+                // fontFamily = fontFamily // RIMOSSO
             )
         }
     }
 }
 
-// --- Preview per testare il tuo pulsante parallelepipedo con bordi diagonali e gradienti ---
 @Preview(showBackground = true, name = "Yugioh Parallelepiped Diagonal Buttons")
 @Composable
 fun YugiohParallelepipedDiagonalButtonPreview() {
@@ -188,27 +169,30 @@ fun YugiohParallelepipedDiagonalButtonPreview() {
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(30.dp) // Aumentato lo spazio per visibilità
+                verticalArrangement = Arrangement.spacedBy(30.dp)
             ) {
-                // Esempio 1: Gradiente Verticale Semplice
                 YugiohParallelepipedButton(
-                    text = "GRADIENTE VERTICALE",
+                    text = "DATABASE",
                     onClick = { },
                     modifier = Modifier.width(280.dp),
-                    faceColor = DarkSlateBlue, // Colore base per bordo/fallback
+                    faceColor = DeepSkyBlueElectric,
                     faceBrush = Brush.verticalGradient(
                         colors = listOf(
-                            DarkSlateBlue.copy(alpha = 0.7f),
-                            DarkSlateBlue,
-                            DarkSlateBlue.darken(0.15f)
+                            RoyalBlueDark.darken(0.6f),
+                            MidnightBlue,
+                            SapphireBlue,
+                            ElectricCyan,
+                            SapphireBlue,
+                            MidnightBlue,
+                            RoyalBlueDark.darken(0.6f)
                         )
                     ),
-                    contentColor = Color.LightGray, // Modificato per leggibilità su DarkSlateBlue
-                    depth = 8.dp, // Aumentata profondità per questo esempio
-                    buttonShape = ParallelogramShape(shearFactor = 0.15f)
+                    contentColor = RoyalBlueDark.darken(factor = 0.6f),
+                    depth = 8.dp,
+                    buttonShape = ParallelogramShape(shearFactor = 0.15f),
+                    textStyle = AppTypography.labelLarge // Esempio di utilizzo nella preview
                 )
 
-                // Esempio 2: Gradiente Orizzontale
                 YugiohParallelepipedButton(
                     text = "GRADIENTE ORIZZONTALE",
                     onClick = { },
@@ -226,18 +210,16 @@ fun YugiohParallelepipedDiagonalButtonPreview() {
                     buttonShape = ParallelogramShape(shearFactor = -0.20f)
                 )
 
-                // Esempio 3: SKEWED PIXELS con colore solido (faceBrush = null)
                 YugiohParallelepipedButton(
                     text = "SKEWED PIXELS (SOLIDO)",
                     onClick = { },
                     modifier = Modifier.width(280.dp),
-                    faceColor = MidnightBlue, // faceBrush è null di default
+                    faceColor = MidnightBlue,
                     contentColor = Color.White,
                     depth = 5.dp,
                     buttonShape = SkewedParallelogramShape(horizontalShearPx = 35f)
                 )
 
-                // Esempio 4: RETTANGOLO con Gradiente Radiale
                 YugiohParallelepipedButton(
                     text = "RETTANGOLO RADIALE",
                     onClick = { },
@@ -252,10 +234,9 @@ fun YugiohParallelepipedDiagonalButtonPreview() {
                     ),
                     contentColor = Color.White,
                     depth = 3.dp,
-                    buttonShape = ParallelogramShape(shearFactor = 0f) // shearFactor = 0f per un rettangolo
+                    buttonShape = ParallelogramShape(shearFactor = 0f)
                 )
             }
         }
     }
 }
-
