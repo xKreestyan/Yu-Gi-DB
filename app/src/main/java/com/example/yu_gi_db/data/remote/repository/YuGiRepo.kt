@@ -18,7 +18,7 @@ import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll // NUOVO IMPORT
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -50,7 +50,7 @@ class YuGiRepo @Inject constructor(
         imageSubDir: File
     ): String? = withContext(Dispatchers.IO) {
         suspendCancellableCoroutine<String?> { continuation ->
-            val filename = "${cardId}_small.jpg"
+            val filename = "${cardId}.jpg" // MODIFICATO: Rimosso "_small"
             val localFile = File(imageSubDir, filename)
 
             if (localFile.exists()) {
@@ -62,8 +62,7 @@ class YuGiRepo @Inject constructor(
             Log.d(tag, "Downloading image from: $imageUrl to ${localFile.absolutePath}")
             val imageRequest = ImageRequest(
                 imageUrl,
-                {
-                        bitmap ->
+                { bitmap ->
                     try {
                         imageSubDir.mkdirs()
                         FileOutputStream(localFile).use { fos ->
@@ -80,8 +79,7 @@ class YuGiRepo @Inject constructor(
                 0, 0,
                 ImageView.ScaleType.CENTER_INSIDE,
                 Bitmap.Config.RGB_565,
-                {
-                        volleyError ->
+                { volleyError ->
                     Log.e(tag, "Volley error downloading image $imageUrl", volleyError)
                     if (continuation.isActive) continuation.resume(null)
                 }
@@ -95,31 +93,61 @@ class YuGiRepo @Inject constructor(
     }
 
     override suspend fun fetchAndSaveAllCards() {
-        Log.d(tag, "fetchAndSaveAllCards called - GOAT Format") // Modificato il log
+        Log.d(tag, "fetchAndSaveAllCards called - Processing multiple sets")
         try {
-            // 1. Fetch delle carte del formato GOAT
-            val goatCardsResponse = apiClient.fetchCards(mapOf("format" to "goat"))
-            val goatCards = goatCardsResponse?.data ?: emptyList()
+            val setNames = listOf(
+                "Legend of Blue Eyes White Dragon",
+                "Metal Raiders",
+                "Spell Ruler",
+                "Pharaoh's Servant",
+                "Labyrinth of Nightmare",
+                "Legacy of Darkness"
+            )
 
-            // 2. Rimuovi la logica di unione di stapleCards e lobCards
-            //    Ora usiamo direttamente goatCards come la nostra lista unica.
-            if (goatCards.isEmpty()) {
-                Log.d(tag, "No cards fetched from API for GOAT format or response was null/empty.")
+            val cardResponses = coroutineScope {
+                setNames.map { setName ->
+                    async(Dispatchers.IO) {
+                        Log.d(tag, "Fetching cards for set: $setName")
+                        apiClient.fetchCards(mapOf("cardset" to setName))
+                    }
+                }.awaitAll()
+            }
+
+            val allCardsFromApi = mutableListOf<LargePlayingCard>()
+            cardResponses.forEachIndexed { index, response ->
+                val setName = setNames[index]
+                if (response?.data != null && response.data.isNotEmpty()) {
+                    Log.d(tag, "Successfully fetched ${response.data.size} cards for set: $setName")
+                    allCardsFromApi.addAll(response.data)
+                } else {
+                    Log.w(tag, "No cards fetched or empty data for set: $setName. Response: $response")
+                }
+            }
+
+            if (allCardsFromApi.isEmpty()) {
+                Log.d(tag, "No cards fetched from any API set or all responses were null/empty.")
                 return
             }
-            Log.d(tag, "Processing ${goatCards.size} cards from GOAT format.")
 
-            // 3. Itera e processa le carte GOAT
-            goatCards.forEachIndexed { index, apiCard ->
-                Log.d(tag, "Processing card ${index + 1}/${goatCards.size}: ${apiCard.name} (ID: ${apiCard.id})")
+            val uniqueCardsMap = mutableMapOf<Int, LargePlayingCard>()
+            allCardsFromApi.forEach { apiCard ->
+                uniqueCardsMap[apiCard.id] = apiCard
+            }
+            val cardsToProcess = uniqueCardsMap.values.toList()
 
-                val imageUrlSmallApi = apiCard.cardImages.firstOrNull()?.imageUrlSmall
-                var localImagePath: String? = null
+            Log.d(tag, "Total unique cards to process after merging ${setNames.size} sets: ${cardsToProcess.size}")
 
-                if (!imageUrlSmallApi.isNullOrBlank()) {
-                    localImagePath = downloadAndSaveImageVolley(imageUrlSmallApi, apiCard.id, imageDir)
+            cardsToProcess.forEachIndexed { index, apiCard ->
+                Log.d(tag, "Processing card ${index + 1}/${cardsToProcess.size}: ${apiCard.name} (ID: ${apiCard.id})")
+
+                // MODIFICATO: Usa l'URL dell'immagine grande
+                val imageUrlApi = apiCard.cardImages.firstOrNull()?.imageUrl
+                var localImagePathResult: String? = null // Rinominata variabile per chiarezza
+
+                if (!imageUrlApi.isNullOrBlank()) {
+                    localImagePathResult = downloadAndSaveImageVolley(imageUrlApi, apiCard.id, imageDir)
                 } else {
-                    Log.w(tag, "No small image URL found for card ID ${apiCard.id}")
+                    Log.w(tag, "No large image URL found for card ID ${apiCard.id}") // Log aggiornato
                 }
 
                 val cardEntity = CardEntity(
@@ -134,7 +162,7 @@ class YuGiRepo @Inject constructor(
                     def = apiCard.def,
                     level = apiCard.level,
                     attribute = apiCard.attribute,
-                    localImageSmallPath = localImagePath,
+                    localImagePath = localImagePathResult, // MODIFICATO: Usa il campo rinominato
                     cardPrices = apiCard.cardPrices
                 )
                 yuGiDAO.insertCard(cardEntity)
@@ -153,54 +181,59 @@ class YuGiRepo @Inject constructor(
                 }
 
                 apiCard.cardSets?.forEach { apiSet ->
-                    var setEntity = yuGiDAO.getSetByName(apiSet.setName)
-                    val setId: Long
-                    if (setEntity == null) {
-                        setId = yuGiDAO.insertSet(SetEntity(name = apiSet.setName))
-                    } else {
-                        setId = setEntity.id
+                    if (setNames.contains(apiSet.setName)) {
+                        var setEntity = yuGiDAO.getSetByName(apiSet.setName)
+                        val setId: Long
+                        if (setEntity == null) {
+                            setId = yuGiDAO.insertSet(SetEntity(name = apiSet.setName))
+                        } else {
+                            setId = setEntity.id
+                        }
+                        val appearance = CardSetAppearanceEntity(
+                            cardId = apiCard.id,
+                            setId = setId,
+                            setSpecificCode = apiSet.setCode,
+                            rarity = apiSet.setRarity,
+                            rarityCode = apiSet.setRarityCode ?: "",
+                            price = apiSet.setPrice
+                        )
+                        yuGiDAO.insertCardSetAppearance(appearance)
                     }
-                    val appearance = CardSetAppearanceEntity(
-                        cardId = apiCard.id,
-                        setId = setId,
-                        setSpecificCode = apiSet.setCode,
-                        rarity = apiSet.setRarity,
-                        rarityCode = apiSet.setRarityCode ?: "",
-                        price = apiSet.setPrice
-                    )
-                    yuGiDAO.insertCardSetAppearance(appearance)
                 }
             }
-            Log.i(tag, "Successfully processed and saved ${goatCards.size} cards for GOAT format.")
+            Log.i(tag, "Successfully processed and saved ${cardsToProcess.size} unique cards from multiple sets.")
         } catch (e: Exception) {
-            Log.e(tag, "Error during fetchAndSaveAllCards (GOAT Format)", e) // Modificato il log
+            Log.e(tag, "Error during fetchAndSaveAllCards from multiple sets", e)
         }
     }
 
     override fun getSmallCardsStream(query: String?): Flow<List<SmallPlayingCard>> {
         Log.d(tag, "getSmallCardsStream called with query: $query")
-        // TODO: Implement actual query filtering if 'query' parameter is to be used
         return yuGiDAO.getAllCards().map { entities ->
             Log.d(tag, "Mapping ${entities.size} CardEntities to SmallPlayingCards")
             entities.map { entity ->
                 SmallPlayingCard(
                     id = entity.id,
-                    imageUrlSmall = entity.localImageSmallPath ?: ""
+                    // MODIFICATO: Usa il campo rinominato. Il campo in SmallPlayingCard rimane imageUrlSmall
+                    // per coerenza con l'uso (mostrare un'immagine), ma ora punta all'immagine grande.
+                    imageUrlSmall = entity.localImagePath ?: ""
                 )
             }
         }
     }
 
-    // --- NUOVA FUNZIONE HELPER PER MAPPARE CardEntity a LargePlayingCard ---
     private suspend fun mapCardEntityToLargePlayingCard(entity: CardEntity): LargePlayingCard = withContext(Dispatchers.IO) {
         val typelines = yuGiDAO.getTypeLineNamesForCard(entity.id)
         val cardImagesDomain = mutableListOf<com.example.yu_gi_db.model.CardImage>()
-        if (entity.localImageSmallPath != null) {
+
+        // MODIFICATO: Usa il campo rinominato
+        if (entity.localImagePath != null) {
             cardImagesDomain.add(com.example.yu_gi_db.model.CardImage(
                 id = entity.id,
-                imageUrl = "", // Non abbiamo l'URL originale completo qui, solo il percorso locale
-                imageUrlSmall = entity.localImageSmallPath,
-                imageUrlCropped = "" // Non abbiamo l'URL cropped qui
+                imageUrl = "", // L'URL originale completo non è memorizzato, solo il percorso locale
+                // MODIFICATO: Il campo in CardImage model rimane imageUrlSmall, ma ora punta all'immagine grande.
+                imageUrlSmall = entity.localImagePath,
+                imageUrlCropped = "" // L'URL cropped non è memorizzato
             ))
         }
 
@@ -249,6 +282,8 @@ class YuGiRepo @Inject constructor(
     }
 
     // --- IMPLEMENTAZIONE DELLE NUOVE FUNZIONI DI RICERCA ---
+    // (Queste funzioni non necessitano di modifiche dirette qui perché
+    // si basano su mapCardEntityToLargePlayingCard, che è già stato aggiornato)
 
     override fun getCardsByName(cardNameQuery: String): Flow<List<LargePlayingCard>> {
         return yuGiDAO.getCardsByNameQuery(cardNameQuery).map { entities ->
@@ -280,7 +315,7 @@ class YuGiRepo @Inject constructor(
         }
     }
 
-    override fun getCardsByHumanReadableType(hrTypeQuery: String): Flow<List<LargePlayingCard>> {
+     override fun getCardsByHumanReadableType(hrTypeQuery: String): Flow<List<LargePlayingCard>> {
         return yuGiDAO.getCardsByHumanReadableType(hrTypeQuery).map { entities ->
             coroutineScope {
                 entities.map { entity ->

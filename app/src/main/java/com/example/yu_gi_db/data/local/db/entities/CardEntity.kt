@@ -12,7 +12,7 @@ data class CardEntity(
     @PrimaryKey val id: Int,
     val name: String,
     val type: String,
-    val humanReadableCardType: String, // Questo dovrebbe venire dall'API ora
+    val humanReadableCardType: String,
     val frameType: String,
     val desc: String,
     val race: String,
@@ -20,8 +20,6 @@ data class CardEntity(
     val def: Int?,
     val level: Int?,
     val attribute: String?,
-    val localImageSmallPath: String?, // MODIFICATO: per memorizzare il percorso locale dell'immagine piccola
-    // val imageUrl: String?, // OPZIONALE: se vuoi salvare anche l'URL dell'immagine grande (non localmente)
+    val localImagePath: String?, // RINOMINATO da localImageSmallPath
     val cardPrices: List<CardPrice>
 )
-
