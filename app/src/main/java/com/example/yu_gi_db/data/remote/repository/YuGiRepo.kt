@@ -95,30 +95,23 @@ class YuGiRepo @Inject constructor(
     }
 
     override suspend fun fetchAndSaveAllCards() {
-        Log.d(tag, "fetchAndSaveAllCards called")
+        Log.d(tag, "fetchAndSaveAllCards called - GOAT Format") // Modificato il log
         try {
-            val (stapleCardsResponse, lobCardsResponse) = coroutineScope {
-                val stapleCardsDeferred = async(Dispatchers.IO) { apiClient.fetchCards(mapOf("staple" to "yes")) }
-                val lobCardsDeferred = async(Dispatchers.IO) { apiClient.fetchCards(mapOf("cardset" to "Legend of Blue Eyes White Dragon")) }
-                Pair(stapleCardsDeferred.await(), lobCardsDeferred.await())
-            }
+            // 1. Fetch delle carte del formato GOAT
+            val goatCardsResponse = apiClient.fetchCards(mapOf("format" to "goat"))
+            val goatCards = goatCardsResponse?.data ?: emptyList()
 
-            val stapleCards = stapleCardsResponse?.data ?: emptyList()
-            val lobCards = lobCardsResponse?.data ?: emptyList()
-
-            val allCardsMap = mutableMapOf<Int, LargePlayingCard>()
-            stapleCards.forEach { allCardsMap[it.id] = it }
-            lobCards.forEach { allCardsMap[it.id] = it }
-            val uniqueCards = allCardsMap.values.toList()
-
-            if (uniqueCards.isEmpty()) {
-                Log.d(tag, "No unique cards fetched from API or responses were null/empty.")
+            // 2. Rimuovi la logica di unione di stapleCards e lobCards
+            //    Ora usiamo direttamente goatCards come la nostra lista unica.
+            if (goatCards.isEmpty()) {
+                Log.d(tag, "No cards fetched from API for GOAT format or response was null/empty.")
                 return
             }
-            Log.d(tag, "Processing ${uniqueCards.size} unique cards in total.")
+            Log.d(tag, "Processing ${goatCards.size} cards from GOAT format.")
 
-            uniqueCards.forEachIndexed { index, apiCard ->
-                Log.d(tag, "Processing card ${index + 1}/${uniqueCards.size}: ${apiCard.name} (ID: ${apiCard.id})")
+            // 3. Itera e processa le carte GOAT
+            goatCards.forEachIndexed { index, apiCard ->
+                Log.d(tag, "Processing card ${index + 1}/${goatCards.size}: ${apiCard.name} (ID: ${apiCard.id})")
 
                 val imageUrlSmallApi = apiCard.cardImages.firstOrNull()?.imageUrlSmall
                 var localImagePath: String? = null
@@ -178,9 +171,9 @@ class YuGiRepo @Inject constructor(
                     yuGiDAO.insertCardSetAppearance(appearance)
                 }
             }
-            Log.i(tag, "Successfully processed and saved ${uniqueCards.size} cards.")
+            Log.i(tag, "Successfully processed and saved ${goatCards.size} cards for GOAT format.")
         } catch (e: Exception) {
-            Log.e(tag, "Error during fetchAndSaveAllCards", e)
+            Log.e(tag, "Error during fetchAndSaveAllCards (GOAT Format)", e) // Modificato il log
         }
     }
 
