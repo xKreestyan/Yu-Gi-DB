@@ -410,7 +410,7 @@ fun SmallCardItemView(
 
 
 @Composable
-fun LargeCardItemView(
+fun LargeCardItemView2(
     modifier: Modifier = Modifier,
     card: LargePlayingCard ?=null,
     navController: NavHostController? = null // Aggiunto NavController
@@ -479,7 +479,7 @@ fun LargeCardItemView(
 
 
 @Composable
-fun LargeCardItemView2(
+fun LargeCardItemView(
     modifier: Modifier = Modifier, // Questo modifier si applica al Box radice
     card: LargePlayingCard? = null,
     navController: NavHostController? = null

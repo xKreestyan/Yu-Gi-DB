@@ -106,69 +106,6 @@ fun MainScreen(modifier: Modifier = Modifier,navController: NavHostController? =
         )
     }
 }
-/*
-@Composable
-fun Main1Screen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
-   Box(modifier.fillMaxSize()){
-       ImageRotation( R.drawable.yu_gi_db_imgv, R.drawable.yu_gi_db_imgo,modifier.fillMaxSize())
-
-       Column(modifier = modifier
-           .align(Alignment.Center)
-           .verticalScroll(rememberScrollState())) {
-           Button(onClick = {}) {
-           Text(
-               text = stringResource(id = R.string.app_name),
-               style = MaterialTheme.typography.displayLarge,
-               textAlign = TextAlign.Center,
-               modifier = Modifier.fillMaxWidth(),
-           )}
-           Spacer(modifier = Modifier.height(50.dp))
-           val modifier=modifier
-               .fillMaxWidth()
-               .padding(20.dp)
-           Button(
-               onClick = {
-                   navController?.navigate(Screen.MainScreen.route)
-               },
-               // enabled = false, // Puoi disabilitare il bottone se necessario
-               modifier = modifier // Aggiunge un po' di spazio attorno
-           ) {
-               Text(text = stringResource(R.string.database))
-           }
-           Button(
-               onClick = {
-                   navController?.navigate(Screen.SavedCardsScreen.route)
-               },
-               // enabled = false, // Puoi disabilitare il bottone se necessario
-               modifier =modifier// Aggiunge un po' di spazio attorno
-           ) {
-               Text(text = stringResource(R.string.deck))
-           }
-           Button(
-               onClick = {
-
-               },
-               // enabled = false, // Puoi disabilitare il bottone se necessario
-               modifier =modifier// Aggiunge un po' di spazio attorno
-           ) {
-               Text(text = stringResource(R.string.goat_format_s_rules))
-           }
-
-           Button(
-               onClick = {
-                    navController?.navigate(Screen.InfoScreen.route)
-               },
-               // enabled = false, // Puoi disabilitare il bottone se necessario
-               modifier =modifier// Aggiunge un po' di spazio attorno
-           ) {
-               Text(text = stringResource(id = R.string.info_screen_title))
-           }
-
-       }
-
-   }
-}
-*/
 
 @Composable
 fun Main1Screen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
