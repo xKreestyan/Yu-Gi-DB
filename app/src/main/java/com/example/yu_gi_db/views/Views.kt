@@ -623,7 +623,7 @@ fun ImageRotation(imageV: Int, imageO: Int, modifier: Modifier = Modifier ){
     Image(
         painter =painterResource(id = imageResource),
         contentDescription = stringResource(id = R.string.error_message_generic),
-        contentScale = ContentScale.FillBounds,
+        contentScale = ContentScale.Crop,
         modifier = modifier
     )
 }
