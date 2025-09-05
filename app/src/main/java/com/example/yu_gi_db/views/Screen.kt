@@ -49,6 +49,7 @@ import androidx.room.Database
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
+import com.example.yu_gi_db.ui.theme.MenuScreen
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 
@@ -104,6 +105,7 @@ fun MainScreen(modifier: Modifier = Modifier,navController: NavHostController? =
         )
     }
 }
+/*
 @Composable
 fun Main1Screen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
    Box(modifier.fillMaxSize()){
@@ -164,6 +166,12 @@ fun Main1Screen(modifier: Modifier = Modifier,navController: NavHostController? 
        }
 
    }
+}
+*/
+
+@Composable
+fun Main1Screen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
+    MenuScreen(navController)
 }
 
 

@@ -627,6 +627,16 @@ fun ImageRotation(imageV: Int, imageO: Int, modifier: Modifier = Modifier ){
         modifier = modifier
     )
 }
+@Composable
+fun RotationScreen(screenV: @Composable () -> Unit, screenO: @Composable () -> Unit,modifier: Modifier = Modifier ){
+    val configuration = LocalConfiguration.current
+    val imageResource = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        screenO()// Immagine per l'orientamento orizzontale
+    } else {
+        screenV() // Immagine per l'orientamento verticale
+    }
+
+}
 
 
 
@@ -910,3 +920,5 @@ fun LargeCardItemView2Preview() {
         LargeCardItemView2()
     }
 }
+
+

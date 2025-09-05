@@ -20,10 +20,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.ChainStyle
+import androidx.navigation.NavController
 import com.example.yu_gi_db.R
 
 @Composable
-fun MenuScreen() {
+fun MenuScreen(navController: NavController? = null) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -127,7 +128,7 @@ fun MenuScreen() {
 
             YugiohParallelepipedButton(
                 text = "DATABASE",
-                onClick = { /* Azione per DATABASE */ },
+                onClick = { navController?.navigate("MainScreen") },
                 modifier = Modifier.layoutId("button1"),
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,
@@ -139,7 +140,7 @@ fun MenuScreen() {
 
             YugiohParallelepipedButton(
                 text = "PREFERITI",
-                onClick = { /* Azione per PREFERITI */ },
+                onClick = { navController?.navigate("SavedCardsScreen") },
                 modifier = Modifier.layoutId("button2"),
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,
@@ -163,7 +164,7 @@ fun MenuScreen() {
 
             YugiohParallelepipedButton(
                 text = "OPZIONI",
-                onClick = { /* Azione per OPZIONI */ },
+                onClick = {  navController?.navigate("InfoScreen")},
                 modifier = Modifier.layoutId("button4"),
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,
