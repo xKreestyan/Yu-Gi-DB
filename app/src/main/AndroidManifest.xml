@@ -16,7 +16,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.YuGiDB">
+            android:theme="@style/Theme.App.Starting"> <!-- MODIFICATO QUI -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

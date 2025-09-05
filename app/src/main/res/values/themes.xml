@@ -2,4 +2,17 @@
 <resources>
 
     <style name="Theme.YuGiDB" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Colore di sfondo VISIBILE DIETRO L'IMMAGINE/ICONA se questa ha trasparenze o non riempie tutto -->
+        <item name="windowSplashScreenBackground">@android:color/black</item>
+        <!-- L'icona/immagine da mostrare al centro e animare -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/yu_gi_oh_schermata_principale_v</item>
+        <!-- Durata dell'animazione dell'icona (opzionale, default è 1000ms) -->
+        <!-- <item name="windowSplashScreenAnimationDuration">1000</item> -->
+        <!-- Tema da applicare dopo lo splash screen -->
+        <item name="postSplashScreenTheme">@style/Theme.YuGiDB</item>
+    </style>
+
 </resources>
