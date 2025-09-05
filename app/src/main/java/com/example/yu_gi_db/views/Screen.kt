@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -64,6 +65,7 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
     }
     else {
         //MainScreen(modifier = modifier,navController)
+
         Navigation()
         //navController?.navigate(Screen.MainScreen.route)
     }
@@ -71,11 +73,10 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
 
 @Composable
 fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
-    Scaffold { innerPadding ->
+    Box{
         BoxWithConstraints(
             modifier = modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
+                .fillMaxHeight()
         ) {
             ImageRotation(R.drawable.yu_gi_oh_schermata_principale_o ,R.drawable.yu_gi_oh_schermata_principale_o,modifier.fillMaxSize())
             Box(
