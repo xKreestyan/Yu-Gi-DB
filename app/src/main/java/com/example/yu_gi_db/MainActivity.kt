@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
-        text = "Hello $name!",
+        text = "Hello $name!", //Hello Android
         modifier = modifier.padding(3.dp),
         fontSize = 24.sp,
         fontFamily = FontFamily(Font(R.font.yu_gi_oh_itc_stone_serif_small_caps_bold, weight = FontWeight.Bold, style = FontStyle.Italic))
