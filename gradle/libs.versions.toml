@@ -18,6 +18,7 @@ gson = "2.13.1"
 hilt = "2.57.1"
 ksp = "2.2.10-2.0.2"
 constraintLayoutCompose = "1.1.1"
+appcompat = "1.7.1" # Aggiunto
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,6 +47,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintLayoutCompose" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" } # Aggiunto
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
