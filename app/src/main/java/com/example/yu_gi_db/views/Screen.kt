@@ -192,7 +192,6 @@ fun InformationScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LanguageSwitcherButton()
             InfoSection( // Assicurati che sia definita e importata
                 title = stringResource(R.string.info_section_about_title)
             ) {

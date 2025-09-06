@@ -24,5 +24,13 @@
     <string name="version">1.0.0 (Build 1)</string>
     <string name="name_and_company">Il Tuo Nome / Nome Azienda</string>
     <string name="loading_indicator_description">Indicatore di caricamento</string>
-
+    <string name="no_cards_in_default_list">Nessuna carta nel set predefinito.</string>
+    <string name="search_bar_label_name_hint">Cerca per nome...</string>
+    <string name="search_bar_label_type_hint">Tipo (es. Spell Card)</string>
+    <string name="search_bar_label_attribute_hint">Attributo (es. LIGHT)</string>
+    <string name="search_bar_label_level_hint">Livello/Rango</string>
+    <string name="search_bar_label_atk_min_hint">ATK Min</string>
+    <string name="search_bar_label_atk_max_hint">ATK Max</string>
+    <string name="search_bar_label_def_min_hint">DEF Min</string>
+    <string name="search_bar_label_def_max_hint">DEF Max</string>
 </resources>

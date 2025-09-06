@@ -1,7 +1,5 @@
 package com.example.yu_gi_db.views
 
-
-
 import android.content.res.Configuration
 import android.os.Build
 import android.util.Log
@@ -23,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,6 +30,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -40,7 +38,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-//import androidx.compose.material3.CircularProgressIndicator // Rimosso se non più usato altrove
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -71,6 +69,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -80,9 +79,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController // Importa NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
-import coil.decode.ImageDecoderDecoder // Import per il decoder delle GIF
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
+import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.model.CardImage
 import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
@@ -91,16 +90,23 @@ import com.example.yu_gi_db.viewmodels.CardListViewModel
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
+// NOTA: Assicurati che le seguenti stringhe siano definite in strings.xml:
+// <string name="search_bar_label_name_hint">Cerca per nome...</string>
+// <string name="search_bar_label_type_hint">Tipo (es. Spell Card)</string>
+// <string name="search_bar_label_attribute_hint">Attributo (es. LIGHT)</string>
+// <string name="search_bar_label_level_hint">Livello/Rango</string>
+// <string name="search_bar_label_atk_min_hint">ATK Min</string>
+// <string name="search_bar_label_atk_max_hint">ATK Max</string>
+// <string name="search_bar_label_def_min_hint">DEF Min</string>
+// <string name="search_bar_label_def_max_hint">DEF Max</string>
+// <string name="no_cards_in_default_list">Nessuna carta nel set predefinito.</string>
+
 @Composable
 fun MyScreenWithAToastButton() {
-    // 1. Ottieni il Context corrente
     val context = LocalContext.current
-
     Button(onClick = {
-        // 2. Crea e mostra il Toast quando il bottone viene cliccato
         val message = "Questo è un Toast da Compose!"
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-        // Puoi usare Toast.LENGTH_LONG per una durata maggiore
     }) {
         Text("Mostra Toast")
     }
@@ -121,22 +127,20 @@ fun AppScreen(
             StandardTopAppBar(
                 title = appBarTitle,
                 navController = navController,
-
-                )
+            )
         }
     ) { innerPadding ->
         content(innerPadding)
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class) // Aggiungi se non già presente e usi componenti Material 3
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StandardTopAppBar(
     modifier: Modifier = Modifier,
     navController: NavHostController? = null,
     title: String="",
 ) {
-
     val navBackStackEntry by (navController ?: return).currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     TopAppBar(
@@ -145,8 +149,8 @@ fun StandardTopAppBar(
             Text(
                 stringResource(R.string.app_name ),
                 modifier = Modifier.clickable{
-                    navController.navigate(Screen.MainScreen.route) { // Inizia la lambda per NavOptionsBuilder
-                        popUpTo(Screen.MainScreen.route) { // Usa la route corretta di MainScreen
+                    navController.navigate(Screen.MainScreen.route) { 
+                        popUpTo(Screen.MainScreen.route) { 
                             inclusive = true
                         }
                         launchSingleTop = true
@@ -162,7 +166,6 @@ fun StandardTopAppBar(
             titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         navigationIcon = {
-
             if (navController.previousBackStackEntry != null) {
                 IconButton(onClick = { navController.navigateUp() }) {
                     Icon(
@@ -171,18 +174,13 @@ fun StandardTopAppBar(
                     )
                 }
             }
-
-
-
         },
         actions = {
             Row {
-
                 if (currentRoute!=Screen.SavedCardsScreen.route && currentRoute!=Screen.InfoScreen.route
                 ) {
                     IconButton(onClick = {
                         navController.navigate(Screen.SavedCardsScreen.route)
-
                     })
                     {
                         Icon(
@@ -192,7 +190,6 @@ fun StandardTopAppBar(
                     }
                     IconButton(onClick = {
                         navController.navigate(Screen.InfoScreen.route)
-
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
@@ -200,43 +197,18 @@ fun StandardTopAppBar(
                         )
                     }
                 }
-
             }
-
-
         }
     )
-
 }
 
 @Composable
-fun WaitIndicatorView(modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    val configuration = LocalConfiguration.current // Ottieni la configurazione corrente
-
-    // Determina se il dispositivo è in modalità landscape
-    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-
-    // Applica modificatori diversi in base all'orientamento
-    val imageModifier = if (isLandscape) {
-        modifier
-            .size(150.dp) // Rimpicciolisci la GIF in landscape
-            .offset(y = 50.dp) // Abbassa la GIF in landscape
-    } else {
-        modifier
-            .fillMaxSize(0.7f) // Mantieni le dimensioni originali in portrait
-    }
-
-    Box(Modifier.fillMaxSize()) { // Usa Box per centrare se necessario
-        AsyncImage(
-            model = ImageRequest.Builder(context)
-                .data(R.drawable.infinito_elettrico)
-                .decoderFactory(ImageDecoderDecoder.Factory())
-                .build(),
-            contentDescription = stringResource(R.string.loading_indicator_description),
-            modifier = imageModifier.align(Alignment.Center) // Centra l'immagine nel Box
-        )
-    }
+fun WaitIndicatorView(modifier: Modifier = Modifier){
+    CircularProgressIndicator(
+        modifier = modifier, 
+        color = MaterialTheme.colorScheme.primaryContainer, 
+        strokeWidth = 10.dp 
+    )
 }
 
 
@@ -251,15 +223,9 @@ fun ErrorMessageView(text: String, modifier: Modifier = Modifier) {
             text = text,
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Justify, // Considera TextAlign.Center se più appropriatoo
+            textAlign = TextAlign.Justify, 
             modifier = Modifier.padding(16.dp)
         )
-        // ... (immagine di sfondo) ...
-
-// Box esterno per posizionamento e padding generale dell'overlay
-
-
-
     }
 }
 
@@ -268,7 +234,7 @@ fun optionErrorView(modifier: Modifier = Modifier,
                     isLoading: Boolean=false,
                     isEmpty: Boolean=false,
                     errorMessage: String?=null,
-                    isNotBlank: Boolean=true
+                    isSearchActive: Boolean=true // True if an active search query is not blank
 ): Boolean
 {
     var ret=false
@@ -280,17 +246,15 @@ fun optionErrorView(modifier: Modifier = Modifier,
                     .align(Alignment.Center)
                     .fillMaxSize(0.7f)
             )}
-        // Ora WaitIndicatorView non ha testo e ha uno stile diverso
     }
     else if (errorMessage != null) {
         ErrorMessageView(stringResource(R.string.error_message_generic) + ": $errorMessage")
     }
     else if (isEmpty) {
-        Log.d("CardsScreenView", "Displaying 'No cards found or saved' message.")
+        Log.d("optionErrorView", "IsEmpty: true. isSearchActive: $isSearchActive")
         ErrorMessageView(
-            if (isNotBlank) stringResource(R.string.no_cards_found_search) else stringResource(
-                R.string.no_cards_saved
-            )
+            if (isSearchActive) stringResource(R.string.no_cards_found_search) 
+            else stringResource(R.string.no_cards_in_default_list) // Specific message for empty default list
         )
     }
     else{
@@ -305,31 +269,59 @@ fun optionErrorView(modifier: Modifier = Modifier,
 fun InitCardsScreenView(
     modifier: Modifier = Modifier,
     cardListViewModel: CardListViewModel = hiltViewModel(),
-    navController: NavHostController? = null // Aggiunto per riceverlo e passarlo a CardsScreenView
+    navController: NavHostController? = null
 ) {
-    val cards by cardListViewModel.smallCards.collectAsStateWithLifecycle()
-    val isLoading by cardListViewModel.isLoadingInitialData.collectAsStateWithLifecycle()
-    val error by cardListViewModel.initialDataError.collectAsStateWithLifecycle()
-    var searchQuery by rememberSaveable { mutableStateOf("") }
+    // Stati per la lista di default (LOB)
+    val defaultCards by cardListViewModel.smallCards.collectAsStateWithLifecycle()
+    val isLoadingInitial by cardListViewModel.isLoadingInitialData.collectAsStateWithLifecycle()
+    val initialError by cardListViewModel.initialDataError.collectAsStateWithLifecycle()
 
-    Log.d("InitCardsScreenView", "Number of cards from ViewModel: ${cards.size}")
+    // Stati per la ricerca avanzata
+    val searchCriteria by cardListViewModel.searchCriteria.collectAsStateWithLifecycle()
+    val advancedSearchResults by cardListViewModel.advancedSearchResults.collectAsStateWithLifecycle()
+    val isSearchingAdvanced by cardListViewModel.isSearchingAdvanced.collectAsStateWithLifecycle()
+    val advancedSearchError by cardListViewModel.advancedSearchError.collectAsStateWithLifecycle()
 
-    val filteredCards = if (searchQuery.isBlank()) {
-        cards
-    } else {
-        cards.filter {
-            it.id.toString().contains(searchQuery, ignoreCase = true)
-        }
+    // Log per debug chiavi duplicate
+    if (defaultCards.isNotEmpty()) { // Log solo se la lista non è vuota per evitare spam
+        Log.d("DEBUG_KEYS_DEFAULT", "Default cards IDs: ${defaultCards.map { it.id }.joinToString()}")
     }
+    if (advancedSearchResults.isNotEmpty()) { // Log solo se la lista non è vuota
+        Log.d("DEBUG_KEYS_SEARCH", "Search results IDs: ${advancedSearchResults.map { it.id }.joinToString()}")
+    }
+
+    val cardsToDisplay: List<SmallPlayingCard>
+    val isLoadingDisplay: Boolean
+    val errorDisplay: String?
+
+    // Determina quale lista mostrare e gli stati di caricamento/errore associati
+    // Se i criteri di ricerca non sono quelli di default (vuoti), allora una ricerca è attiva o è stata tentata.
+    if (searchCriteria != AdvancedSearchCriteria()) { 
+        cardsToDisplay = advancedSearchResults
+        isLoadingDisplay = isSearchingAdvanced
+        errorDisplay = advancedSearchError
+    } else {
+        // Nessuna ricerca attiva, mostra la lista di default (LOB)
+        cardsToDisplay = defaultCards
+        isLoadingDisplay = isLoadingInitial
+        errorDisplay = initialError
+    }
+
+    Log.d("InitCardsScreenView", 
+        "SearchCriteria: $searchCriteria, Displaying ${cardsToDisplay.size} cards. " +
+        "Loading: $isLoadingDisplay, Error: $errorDisplay. "
+    )
 
     CardsScreenView(
         modifier = modifier,
-        cards = filteredCards,
-        isLoading = isLoading,
-        errorMessage = error,
-        searchQuery = searchQuery,
-        onSearchQueryChange = { newQuery -> searchQuery = newQuery },
-        navController = navController // Passa navController
+        cards = cardsToDisplay,
+        isLoading = isLoadingDisplay,
+        errorMessage = errorDisplay,
+        searchCriteria = searchCriteria, 
+        onSearchCriteriaChange = { newCriteria ->
+            cardListViewModel.updateAdvancedSearchCriteria(newCriteria)
+        },
+        navController = navController
     )
 }
 
@@ -339,36 +331,149 @@ fun CardsScreenView(
     cards: List<SmallPlayingCard>,
     isLoading: Boolean,
     errorMessage: String?,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    navController: NavHostController? = null // Aggiunto per riceverlo e passarlo a SmallCardsListView
+    searchCriteria: AdvancedSearchCriteria, 
+    onSearchCriteriaChange: (AdvancedSearchCriteria) -> Unit, 
+    navController: NavHostController? = null
 ){
-    Log.d("CardsScreenView", "Number of cards received: ${cards.size}, isLoading: $isLoading, error: $errorMessage")
+    Log.d("CardsScreenView", "Render. Cards: ${cards.size}, Loading: $isLoading, Error: $errorMessage, SearchCriteria: $searchCriteria")
     val focusManager = LocalFocusManager.current
+    val scrollState = rememberScrollState()
+
     Column(modifier = modifier.fillMaxSize()) {
-        OutlinedTextField(
-            shape = MaterialTheme.shapes.medium ,
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
+        // Contenitore per i campi di ricerca, scrollabile verticalmente se non ci stanno tutti
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            label = { Text(stringResource(R.string.search_bar_label)) },
-            singleLine = true,
-            keyboardActions = KeyboardActions(onSearch = {
-                focusManager.clearFocus()
-            })
-        )
-        if(optionErrorView(modifier = modifier,
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .verticalScroll(scrollState) // Permette lo scroll dei campi di ricerca
+        ) {
+            OutlinedTextField(
+                value = searchCriteria.name ?: "",
+                onValueChange = { newValue -> 
+                    onSearchCriteriaChange(searchCriteria.copy(name = newValue.ifBlank { null })) 
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.search_bar_label_name_hint)) }, 
+                singleLine = true,
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                })
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = searchCriteria.type ?: "",
+                onValueChange = { newValue -> 
+                    onSearchCriteriaChange(searchCriteria.copy(type = newValue.ifBlank { null })) 
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.search_bar_label_type_hint)) }, 
+                singleLine = true,
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                })
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = searchCriteria.attribute ?: "",
+                onValueChange = { newValue -> 
+                    onSearchCriteriaChange(searchCriteria.copy(attribute = newValue.ifBlank { null })) 
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.search_bar_label_attribute_hint)) }, 
+                singleLine = true,
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                })
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = searchCriteria.level?.toString() ?: "",
+                onValueChange = { newValue -> 
+                    onSearchCriteriaChange(searchCriteria.copy(level = newValue.toIntOrNull())) 
+                },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(stringResource(R.string.search_bar_label_level_hint)) }, 
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                })
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                OutlinedTextField(
+                    value = searchCriteria.atkMin?.toString() ?: "",
+                    onValueChange = { newValue -> 
+                        onSearchCriteriaChange(searchCriteria.copy(atkMin = newValue.toIntOrNull())) 
+                    },
+                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    label = { Text(stringResource(R.string.search_bar_label_atk_min_hint)) }, 
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                    })
+                )
+                OutlinedTextField(
+                    value = searchCriteria.atkMax?.toString() ?: "",
+                    onValueChange = { newValue -> 
+                        onSearchCriteriaChange(searchCriteria.copy(atkMax = newValue.toIntOrNull())) 
+                    },
+                    modifier = Modifier.weight(1f).padding(start = 4.dp),
+                    label = { Text(stringResource(R.string.search_bar_label_atk_max_hint)) }, 
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                    })
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                OutlinedTextField(
+                    value = searchCriteria.defMin?.toString() ?: "",
+                    onValueChange = { newValue -> 
+                        onSearchCriteriaChange(searchCriteria.copy(defMin = newValue.toIntOrNull())) 
+                    },
+                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    label = { Text(stringResource(R.string.search_bar_label_def_min_hint)) }, 
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                    })
+                )
+                OutlinedTextField(
+                    value = searchCriteria.defMax?.toString() ?: "",
+                    onValueChange = { newValue -> 
+                        onSearchCriteriaChange(searchCriteria.copy(defMax = newValue.toIntOrNull())) 
+                    },
+                    modifier = Modifier.weight(1f).padding(start = 4.dp),
+                    label = { Text(stringResource(R.string.search_bar_label_def_max_hint)) }, 
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                    })
+                )
+            }
+        }
+
+        val isSearchActive = searchCriteria != AdvancedSearchCriteria()
+        if(optionErrorView(
+                modifier = modifier.weight(1f), // Aggiungi weight per riempire lo spazio rimanente
                 isLoading = isLoading,
                 errorMessage = errorMessage,
                 isEmpty = cards.isEmpty(),
-                isNotBlank = searchQuery.isNotBlank()
+                isSearchActive = isSearchActive 
             )
         ) {
-            SmallCardsListView(cards = cards, navController = navController) // Passa navController
+            SmallCardsListView(
+                cards = cards, 
+                navController = navController,
+                modifier = Modifier.weight(1f) // Aggiungi weight per riempire lo spazio rimanente
+            )
         }
-
     }
 }
 
@@ -377,18 +482,18 @@ fun CardsScreenView(
 fun SmallCardsListView(
     cards: List<SmallPlayingCard>,
     modifier: Modifier = Modifier,
-    navController: NavHostController? = null // Aggiunto per passarlo a SmallCardItemView
+    navController: NavHostController? = null
 ) {
-    Log.d("CardsScreenView", "Displaying LazyVerticalGrid with ${cards.size} cards.")
+    Log.d("SmallCardsListView", "Displaying LazyVerticalGrid with ${cards.size} cards.")
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(180.dp),//.Fixed(2),
-        modifier = modifier.fillMaxSize(),
+        columns = GridCells.Adaptive(180.dp),
+        modifier = modifier.fillMaxSize(), // Rimosso fillMaxSize() da qui se il Column padre ha già weight
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(cards, key = { card -> card.id }) { card ->
-            SmallCardItemView(modifier = modifier,card = card, navController = navController) // Passa navController
+            SmallCardItemView(modifier = modifier,card = card, navController = navController)
         }
     }
 }
@@ -400,34 +505,30 @@ fun SmallCardItemView(
     navController: NavHostController? = null
 ) {
     Card(
-        modifier = modifier, // Reduced padding slightly
+        modifier = modifier,
         onClick = {
             navController?.navigate(Screen.CardScreen.createRoute(card.id.toString()))
         }
     ) {
-
         Box(
-            //horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .size(0.dp, 280.dp)
+                .size(0.dp, 280.dp) 
         ) {
             CardUrltoView(
                 url = card.imageUrlSmall,
-                modifier = modifier.fillMaxSize()// Adjusted size slightly
+                modifier = modifier.fillMaxSize()
             )
             Card(modifier = Modifier.align(Alignment.BottomStart)
             ){Text(
-                text = card.id.toString(),
-                style = MaterialTheme.typography.titleSmall, // Adjusted style
+                text = card.id.toString(), 
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                modifier = Modifier,
-                maxLines = 1, // Allow for slightly longer names
+                modifier = Modifier.padding(horizontal = 4.dp), 
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )}
-
-
-
         }
     }
 }
@@ -437,26 +538,25 @@ fun SmallCardItemView(
 fun LargeCardItemView2(
     modifier: Modifier = Modifier,
     card: LargePlayingCard ?=null,
-    navController: NavHostController? = null // Aggiunto NavController
+    navController: NavHostController? = null
 ) {
     Column(
-        modifier = modifier // Rimosso padding(innerPadding) da qui perché già gestito da AppScreen e optionErrorView
+        modifier = modifier
             .fillMaxSize()
-            .padding(16.dp) // Padding per il contenuto interno
+            .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
-    )
-    {
+    ) {
         val card = card ?: return@Column
         val firstCardImage: CardImage? = card.cardImages.firstOrNull()
-        val smallImageUrl: String = firstCardImage?.imageUrlSmall ?: ""
+        val imageUrl: String = firstCardImage?.imageUrlSmall ?: "" 
 
         CardUrltoView(
-            smallImageUrl,
+            imageUrl, 
             modifier = Modifier
                 .size(260.dp, 350.dp)
-                .clickable(enabled = navController != null && smallImageUrl.isNotEmpty()) {
-                    smallImageUrl.let { url ->
+                .clickable(enabled = navController != null && imageUrl.isNotEmpty()) {
+                    imageUrl.let { url ->
                         val encodedUrl =
                             URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
                         navController?.navigate("cardZoom/$encodedUrl")
@@ -504,11 +604,11 @@ fun LargeCardItemView2(
 
 @Composable
 fun LargeCardItemView(
-    modifier: Modifier = Modifier, // Questo modifier si applica al Box radice
+    modifier: Modifier = Modifier,
     card: LargePlayingCard? = null,
     navController: NavHostController? = null
 ) {
-    val currentCard = card ?: return // Rinomina per chiarezza e per evitare shadowing
+    val currentCard = card ?: return
     val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
     val imageUrl: String = firstCardImage?.imageUrlSmall ?: ""
 
@@ -516,10 +616,9 @@ fun LargeCardItemView(
     val detailTextPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
     val detailShape = RoundedCornerShape(6.dp)
 
-    Box( // Contenitore radice per gestire gli strati
-        modifier = modifier.verticalScroll(rememberScrollState()), // Applica il modifier passato qui
+    Box(
+        modifier = modifier.verticalScroll(rememberScrollState()),
     ) {
-        // 1. STRATO DI SFONDO (L'IMMAGINE DELLA CARTA)
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(imageUrl)
@@ -531,11 +630,11 @@ fun LargeCardItemView(
             contentScale = ContentScale.FillWidth,
             modifier = Modifier.fillMaxWidth()
         )
-        Box(contentAlignment = Alignment.TopStart, modifier = Modifier.padding(30.dp,29.dp)) { // Aumentato lo spazio
+        Box(contentAlignment = Alignment.TopStart, modifier = Modifier.padding(30.dp,29.dp)) {
             Text(
                 text = currentCard.name.uppercase()+"                     ",
-                style = MaterialTheme.typography.headlineMedium, // headlineMedium potrebbe essere grande
-                color = Color.White, // Colore del testo per contrasto
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color.White,
                 modifier = Modifier
                     .horizontalScroll(rememberScrollState())
                     .background(
@@ -544,93 +643,88 @@ fun LargeCardItemView(
                     )
                     .fillMaxWidth()
             )
+        }
         Column(
-            modifier = Modifier.padding(0.dp,413.dp,)
-                //.verticalScroll(rememberScrollState())
-                .fillMaxSize(), // Occupa tutto lo spazio sopra l'immagine
+            modifier = Modifier.padding(0.dp,413.dp) 
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
-        )
-        {
-
-               Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier.horizontalScroll(rememberScrollState())){
-                 Text(
-                     text = "Type: ${currentCard.type} / ${currentCard.race}",
-                     style = MaterialTheme.typography.titleMedium,
-                     color = Color.White,
-                     modifier = Modifier
-                         .background(detailTextBackgroundColor, detailShape)
-                         .padding(detailTextPadding)
-                 )
-                 currentCard.attribute?.let {
-                     Text(
-                         text = "Attribute: $it",
-                         style = MaterialTheme.typography.bodyLarge,
-                         color = Color.White,
-                         modifier = Modifier
-                             .background(detailTextBackgroundColor, detailShape)
-                             .padding(detailTextPadding)
-                     )
-                     Spacer(modifier = Modifier.height(10.dp))
-                 }
-
-                 currentCard.level?.let {
-                     Text(
-                         text = "Level/Rank: $it",
-                         style = MaterialTheme.typography.bodyLarge,
-                         color = Color.White,
-                         modifier = Modifier
-                             .background(detailTextBackgroundColor, detailShape)
-                             .padding(detailTextPadding)
-                     )
-                     Spacer(modifier = Modifier.height(10.dp))
-                 }
-             }
-             Column(Modifier.size(1000.dp, 68.dp).fillMaxWidth()) {
-                 Text(
-                     text = currentCard.desc,
-                     style = MaterialTheme.typography.bodyMedium,
-                     textAlign = TextAlign.Justify,
-                     color = Color.White,
-                     modifier = Modifier
-                         .verticalScroll(rememberScrollState())
-                         .fillMaxWidth() // La descrizione può prendere più larghezza
-                         .background(
-                             detailTextBackgroundColor,
-                             detailShape
-                         ) // Sfondo leggermente più opaco
-                         // Padding maggiore per il testo della descrizione
-                     // Permette lo scroll orizzontale
-                 )
-             }
-             if (currentCard.atk != null || currentCard.def != null) {
-                 val atkText = currentCard.atk?.toString() ?: "N/A"
-                 val defText = currentCard.def?.toString() ?: "N/A"
-                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomEnd) {
-                     Text(
-                         text = "ATK: $atkText / DEF: $defText",
-                         style = MaterialTheme.typography.bodyLarge,
-                         color = Color.White,
-                         textAlign = TextAlign.End,
-                         modifier = Modifier
-                             .background(detailTextBackgroundColor, detailShape)
-                             .padding(detailTextPadding)
-                     )
-                 }
-             }
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier.horizontalScroll(rememberScrollState())){
+                Text(
+                    text = "Type: ${currentCard.type} / ${currentCard.race}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    modifier = Modifier
+                        .background(detailTextBackgroundColor, detailShape)
+                        .padding(detailTextPadding)
+                )
+                currentCard.attribute?.let {
+                    Text(
+                        text = "Attribute: $it",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier
+                            .background(detailTextBackgroundColor, detailShape)
+                            .padding(detailTextPadding)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+                currentCard.level?.let {
+                    Text(
+                        text = "Level/Rank: $it",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        modifier = Modifier
+                            .background(detailTextBackgroundColor, detailShape)
+                            .padding(detailTextPadding)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
+            Column(Modifier.size(1000.dp, 68.dp).fillMaxWidth()) { 
+                Text(
+                    text = currentCard.desc,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Justify,
+                    color = Color.White,
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .fillMaxWidth()
+                        .background(
+                            detailTextBackgroundColor,
+                            detailShape
+                        ) 
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+            if (currentCard.atk != null || currentCard.def != null) {
+                val atkText = currentCard.atk?.toString() ?: "N/A"
+                val defText = currentCard.def?.toString() ?: "N/A"
+                Box(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), contentAlignment = Alignment.BottomEnd) {
+                    Text(
+                        text = "ATK: $atkText / DEF: $defText",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color.White,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier
+                            .background(detailTextBackgroundColor, detailShape)
+                            .padding(detailTextPadding)
+                    )
+                }
+            }
         }
     }
-}
 }
 
 @Composable
 fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
-            .data(url)
+            .data(url) 
             .crossfade(true)
             .build(),
-        placeholder = painterResource(R.drawable.ic_launcher_foreground), // Considera placeholder specifici
-        error = painterResource(R.drawable.ic_launcher_background), // Considera error placeholder specifici
+        placeholder = painterResource(R.drawable.ic_launcher_foreground),
+        error = painterResource(R.drawable.ic_launcher_background),
         contentDescription = stringResource(R.string.card_image_description),
         contentScale = ContentScale.Fit,
         modifier = modifier
@@ -640,9 +734,9 @@ fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
 fun ImageRotation(imageV: Int, imageO: Int, modifier: Modifier = Modifier ){
     val configuration = LocalConfiguration.current
     val imageResource = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-        imageO// Immagine per l'orientamento orizzontale
+        imageO
     } else {
-       imageV // Immagine per l'orientamento verticale
+       imageV
     }
     Image(
         painter =painterResource(id = imageResource),
@@ -654,12 +748,11 @@ fun ImageRotation(imageV: Int, imageO: Int, modifier: Modifier = Modifier ){
 @Composable
 fun RotationScreen(screenV: @Composable () -> Unit, screenO: @Composable () -> Unit,modifier: Modifier = Modifier ){
     val configuration = LocalConfiguration.current
-    val imageResource = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-        screenO()// Immagine per l'orientamento orizzontale
+    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        screenO()
     } else {
-        screenV() // Immagine per l'orientamento verticale
+        screenV()
     }
-
 }
 
 
@@ -682,6 +775,7 @@ fun InfoSection(
 }
 
 /*------------------------------------------------------------*/
+// Preview functions
 
 @Preview(showBackground = true)
 @Composable
@@ -689,7 +783,6 @@ fun CardItemPreview() {
     YuGiDBTheme {
         SmallCardItemView(
             card = SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg")
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
         )
     }
 }
@@ -703,17 +796,15 @@ fun SmallCardsListPreview() {
                 SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
                 SmallPlayingCard(id = 2, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/6983839.jpg")
             )
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
         )
     }
 }
 
-// Preview per WaitIndicatorView modificato
-@Preview(showBackground = true, name = "WaitIndicatorView (New)")
+@Preview(showBackground = true, name = "WaitIndicatorView") 
 @Composable
-fun WaitIndicatorViewPreviewNew() {
+fun WaitIndicatorViewPreview() { 
     YuGiDBTheme {
-        Box(modifier = Modifier.size(100.dp), contentAlignment = Alignment.Center){ // Box per dare una dimensione
+        Box(modifier = Modifier.size(100.dp), contentAlignment = Alignment.Center){ 
             WaitIndicatorView()
         }
     }
@@ -728,9 +819,9 @@ fun MainScreenPreview2() {
     }
 }
 
-@Preview(showBackground = true, name = "CardsScreen - Populated")
+@Preview(showBackground = true, name = "CardsScreen - Populated Default")
 @Composable
-fun CardsScreenPopulatedPreview() {
+fun CardsScreenPopulatedDefaultPreview() {
     YuGiDBTheme {
         CardsScreenView(
             cards = listOf(
@@ -739,69 +830,69 @@ fun CardsScreenPopulatedPreview() {
             ),
             isLoading = false,
             errorMessage = null,
-            searchQuery = "",
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
+            searchCriteria = AdvancedSearchCriteria(name = ""), 
+            onSearchCriteriaChange = {},
+            navController = null
         )
     }
 }
 
-@Preview(showBackground = true, name = "CardsScreen - Loading")
+@Preview(showBackground = true, name = "CardsScreen - Loading Initial")
 @Composable
-fun CardsScreenLoadingPreview() {
+fun CardsScreenLoadingInitialPreview() {
     YuGiDBTheme {
         CardsScreenView(
             cards = emptyList(),
-            isLoading = true,
+            isLoading = true, 
             errorMessage = null,
-            searchQuery = "",
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
+            searchCriteria = AdvancedSearchCriteria(),
+            onSearchCriteriaChange = {},
+            navController = null
         )
     }
 }
 
-@Preview(showBackground = true, name = "CardsScreen - Error")
+@Preview(showBackground = true, name = "CardsScreen - Error Initial")
 @Composable
-fun CardsScreenErrorPreview() {
+fun CardsScreenErrorInitialPreview() {
     YuGiDBTheme {
         CardsScreenView(
             cards = emptyList(),
             isLoading = false,
-            errorMessage = "Failed to load cards. Please try again.",
-            searchQuery = "",
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
+            errorMessage = "Failed to load default cards.",
+            searchCriteria = AdvancedSearchCriteria(),
+            onSearchCriteriaChange = {},
+            navController = null
         )
     }
 }
 
-@Preview(showBackground = true, name = "CardsScreen - No Cards Saved")
+@Preview(showBackground = true, name = "CardsScreen - Searching by Name")
 @Composable
-fun CardsScreenNoCardsSavedPreview() {
+fun CardsScreenSearchingByNamePreview() {
     YuGiDBTheme {
         CardsScreenView(
-            cards = emptyList(),
-            isLoading = false,
+            cards = emptyList(), 
+            isLoading = true,    
             errorMessage = null,
-            searchQuery = "", // Stringa di ricerca vuota
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
+            searchCriteria = AdvancedSearchCriteria(name = "Blue-Eyes"), 
+            onSearchCriteriaChange = {},
+            navController = null
         )
     }
 }
 
-@Preview(showBackground = true, name = "CardsScreen - No Cards Found Search")
+@Preview(showBackground = true, name = "CardsScreen - No Results for Name Search")
 @Composable
-fun CardsScreenNoCardsFoundSearchPreview() {
+fun CardsScreenNoResultsNameSearchPreview() {
     YuGiDBTheme {
         CardsScreenView(
             cards = emptyList(),
             isLoading = false,
-            errorMessage = null,
-            searchQuery = "nonExistentCard", // Stringa di ricerca non vuota
-            onSearchQueryChange = {}
-            // Non passiamo navController nelle preview statiche se non necessario per la UI base
+            errorMessage = null, 
+            searchCriteria = AdvancedSearchCriteria(name = "NonExistentCardNameXYZ"), 
+            onSearchCriteriaChange = {},
+            navController = null
         )
     }
 }
@@ -810,139 +901,16 @@ fun CardsScreenNoCardsFoundSearchPreview() {
 @Composable
 fun LargeCardDetailPreview() {
     YuGiDBTheme {
-        InitLargePlayingCardScreen(
-            cardId = 12345,
-            // Passa navController se necessario
-
+        InitLargePlayingCardScreen( 
+            cardId = 12345 
         )
     }
 }
 
-@Composable
-fun LargeCardItemView4(
-    modifier: Modifier = Modifier,
-) {
-
-    val detailTextBackgroundColor = Color.Black.copy(alpha = 0.55f)
-    val detailTextPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-    val detailShape = RoundedCornerShape(6.dp)
-    Box( // Contenitore radice per gestire gli strati
-        modifier = modifier.verticalScroll(rememberScrollState()), // Applica il modifier passato qui
-    ) {
-        // 1. STRATO DI SFONDO (L'IMMAGINE DELLA CARTA)
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data( "https://images.ygoprodeck.com/images/cards_small/34541863.jpg")
-                .crossfade(true)
-                .build(),
-            placeholder = painterResource(R.drawable.ic_launcher_foreground),
-            error = painterResource(R.drawable.ic_launcher_background),
-            contentDescription = stringResource(R.string.card_image_description),
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Box(contentAlignment = Alignment.TopStart) { // Aumentato lo spazio
-            Text(
-                text = "cxj skdkdsmdskmdskmlksdkdssccskkl.",
-                style = MaterialTheme.typography.headlineMedium, // headlineMedium potrebbe essere grande
-                textAlign = TextAlign.Start,
-                color = Color.White, // Colore del testo per contrasto
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = modifier
-                    .horizontalScroll(rememberScrollState())
-                    .background(detailTextBackgroundColor, detailShape)
-                    .padding(detailTextPadding)
-                    .fillMaxWidth().padding(start = 16.dp, top = 16.dp)
-            )
-            Column(
-                modifier = Modifier
-                    //.verticalScroll(rememberScrollState())
-                    .fillMaxSize() // Occupa tutto lo spazio sopra l'immagine
-                    .padding(all = 16.dp), // Padding uniforme per il contenuto della colonna
-                horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
-                Card(modifier.fillMaxSize()) {  }
-                Card(modifier.fillMaxSize()) {  }
-                Card(modifier.fillMaxSize()) {  }
-                Card(modifier.fillMaxSize()) {  }
-                /* Row {
-                     Text(
-                         text = "Type: ${currentCard.type} / ${currentCard.race}",
-                         style = MaterialTheme.typography.titleMedium,
-                         color = Color.White,
-                         modifier = Modifier
-                             .background(detailTextBackgroundColor, detailShape)
-                             .padding(detailTextPadding)
-                     )
-                     currentCard.attribute?.let {
-                         Text(
-                             text = "Attribute: $it",
-                             style = MaterialTheme.typography.bodyLarge,
-                             color = Color.White,
-                             modifier = Modifier
-                                 .background(detailTextBackgroundColor, detailShape)
-                                 .padding(detailTextPadding)
-                         )
-                         Spacer(modifier = Modifier.height(10.dp))
-                     }
-
-                     currentCard.level?.let {
-                         Text(
-                             text = "Level/Rank: $it",
-                             style = MaterialTheme.typography.bodyLarge,
-                             color = Color.White,
-                             modifier = Modifier
-                                 .background(detailTextBackgroundColor, detailShape)
-                                 .padding(detailTextPadding)
-                         )
-                         Spacer(modifier = Modifier.height(10.dp))
-                     }
-                 }
-                 Column(Modifier.size(1000.dp, 100.dp).fillMaxWidth()) {
-                     Text(
-                         text = currentCard.desc,
-                         style = MaterialTheme.typography.bodyMedium,
-                         textAlign = TextAlign.Justify,
-                         color = Color.White,
-                         modifier = Modifier
-                             .verticalScroll(rememberScrollState())
-                             .fillMaxWidth() // La descrizione può prendere più larghezza
-                             .background(
-                                 Color.Black.copy(alpha = 0.65f),
-                                 detailShape
-                             ) // Sfondo leggermente più opaco
-                             .padding(12.dp) // Padding maggiore per il testo della descrizione
-                         // Permette lo scroll orizzontale
-                     )
-                 }
-                 Spacer(modifier = Modifier.height(64.dp)) // Spazio alla fine per permettere lo scroll completo
-                 if (currentCard.atk != null || currentCard.def != null) {
-                     val atkText = currentCard.atk?.toString() ?: "N/A"
-                     val defText = currentCard.def?.toString() ?: "N/A"
-                     Text(
-                         text = "ATK: $atkText / DEF: $defText",
-                         style = MaterialTheme.typography.bodyLarge,
-                         color = Color.White,
-                         modifier = Modifier
-                             .background(detailTextBackgroundColor, detailShape)
-                             .padding(detailTextPadding)
-                     )
-                     Spacer(modifier = Modifier.height(10.dp))
-                 }
-     */
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "LargeCardDetail - Populated")
+@Preview(showBackground = true, name = "LargeCardItemView2 Preview")
 @Composable
 fun LargeCardItemView2Preview() {
     YuGiDBTheme {
-        LargeCardItemView2()
+        //LargeCardItemView2(card = LargePlayingCard(id=1, name="Blue-Eyes White Dragon", type="Dragon", race="Dragon", desc="This legendary dragon is a powerful engine of destruction.", atk=3000, def=2500, level=8, attribute="LIGHT", cardImages=emptyList(), cardSets=emptyList(), cardPrices=emptyList()))
     }
 }
-
-

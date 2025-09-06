@@ -50,7 +50,7 @@ interface YuGiDAO {
 
     // MODIFICATA/RINOMINATA: Per caricare SmallPlayingCard del set di default (es. LOB)
     @Query("""
-        SELECT c.id, c.localImagePath AS imageUrlSmall
+        SELECT DISTINCT c.id, c.localImagePath AS imageUrlSmall
         FROM cards AS c
         INNER JOIN card_set_appearances AS csa ON c.id = csa.cardId
         INNER JOIN sets AS s ON csa.setId = s.id
