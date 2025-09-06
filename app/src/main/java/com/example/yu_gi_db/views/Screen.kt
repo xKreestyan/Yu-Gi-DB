@@ -86,7 +86,7 @@ fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController?
                 contentAlignment = Alignment.BottomCenter
             ) {
                 WaitIndicatorView( // Assicurati che sia definita e importata
-                    Modifier.size(this@BoxWithConstraints.maxWidth / 3)
+                    Modifier.size(this@BoxWithConstraints.maxWidth / 5) // <<< DIMENSIONE MODIFICATA
                 )
             }
         }

@@ -39,7 +39,7 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+//import androidx.compose.material3.CircularProgressIndicator // Rimosso se non più usato altrove
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -79,6 +79,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController // Importa NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
+import coil.decode.ImageDecoderDecoder // Import per il decoder delle GIF
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.CardImage
@@ -88,6 +89,7 @@ import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+
 @Composable
 fun MyScreenWithAToastButton() {
     // 1. Ottieni il Context corrente
@@ -207,11 +209,15 @@ fun StandardTopAppBar(
 }
 
 @Composable
-fun WaitIndicatorView(modifier: Modifier = Modifier){
-    CircularProgressIndicator(
-        modifier = modifier, // Il modifier passato viene applicato qui
-        color = MaterialTheme.colorScheme.primaryContainer, // Colore per migliore visibilità
-        strokeWidth = 10.dp // Spessore del tratto per migliore visibilità
+fun WaitIndicatorView(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    AsyncImage(
+        model = ImageRequest.Builder(context)
+            .data(R.drawable.infinito_elettrico) // GIF CAMBIATA
+            .decoderFactory(ImageDecoderDecoder.Factory()) // Per animare le GIF
+            .build(),
+        contentDescription = stringResource(R.string.loading_indicator_description), // Aggiungi questa stringa in strings.xml
+        modifier = modifier
     )
 }
 
@@ -689,7 +695,7 @@ fun SmallCardsListPreview() {
 @Composable
 fun WaitIndicatorViewPreviewNew() {
     YuGiDBTheme {
-        Box(modifier = Modifier, contentAlignment = Alignment.Center){ // Box per dare una dimensione
+        Box(modifier = Modifier.size(100.dp), contentAlignment = Alignment.Center){ // Box per dare una dimensione
             WaitIndicatorView()
         }
     }

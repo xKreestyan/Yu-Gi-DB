@@ -28,6 +28,7 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomVersion" }
 android-volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
 coil-kt-coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+coil-kt-coil-gif = { group = "io.coil-kt", name = "coil-gif", version.ref = "coil" } # <--- RIGA AGGIUNTA
 google-gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }

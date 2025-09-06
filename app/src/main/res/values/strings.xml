@@ -23,5 +23,6 @@
     <string name="goat_format_s_rules">Goat Format\'s rules</string>
     <string name="version">1.0.0 (Build 1)</string>
     <string name="name_and_company">Il Tuo Nome / Nome Azienda</string>
+    <string name="loading_indicator_description">Indicatore di caricamento</string>
 
 </resources>

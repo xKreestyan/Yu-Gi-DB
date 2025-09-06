@@ -53,6 +53,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.android.volley)
     implementation(libs.coil.kt.coil.compose)
+    implementation(libs.coil.kt.coil.gif)
     implementation(libs.google.gson)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.hilt.android)
