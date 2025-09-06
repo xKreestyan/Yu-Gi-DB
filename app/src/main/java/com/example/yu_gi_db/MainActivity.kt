@@ -30,9 +30,12 @@ class MainActivity : ComponentActivity() {
 
 /*
 * Cose da fare:
+* Ricerca tramite ID
+* Compressione foto per la lista di smallcards (migliorerà le prestazioni)
 * Lingue
 * Toast
 * Selezione iniziale dei set
 * Carte preferite
 * Documentazione finale
+* Rimuovere warning
 * */
