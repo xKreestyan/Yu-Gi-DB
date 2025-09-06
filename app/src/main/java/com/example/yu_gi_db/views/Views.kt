@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -211,14 +212,31 @@ fun StandardTopAppBar(
 @Composable
 fun WaitIndicatorView(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    AsyncImage(
-        model = ImageRequest.Builder(context)
-            .data(R.drawable.infinito_elettrico) // GIF CAMBIATA
-            .decoderFactory(ImageDecoderDecoder.Factory()) // Per animare le GIF
-            .build(),
-        contentDescription = stringResource(R.string.loading_indicator_description), // Aggiungi questa stringa in strings.xml
-        modifier = modifier
-    )
+    val configuration = LocalConfiguration.current // Ottieni la configurazione corrente
+
+    // Determina se il dispositivo è in modalità landscape
+    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+
+    // Applica modificatori diversi in base all'orientamento
+    val imageModifier = if (isLandscape) {
+        modifier
+            .size(150.dp) // Rimpicciolisci la GIF in landscape
+            .offset(y = 50.dp) // Abbassa la GIF in landscape
+    } else {
+        modifier
+            .fillMaxSize(0.7f) // Mantieni le dimensioni originali in portrait
+    }
+
+    Box(Modifier.fillMaxSize()) { // Usa Box per centrare se necessario
+        AsyncImage(
+            model = ImageRequest.Builder(context)
+                .data(R.drawable.infinito_elettrico)
+                .decoderFactory(ImageDecoderDecoder.Factory())
+                .build(),
+            contentDescription = stringResource(R.string.loading_indicator_description),
+            modifier = imageModifier.align(Alignment.Center) // Centra l'immagine nel Box
+        )
+    }
 }
 
 
