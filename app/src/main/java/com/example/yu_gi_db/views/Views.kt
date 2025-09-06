@@ -1,16 +1,16 @@
 package com.example.yu_gi_db.views
 
 
-
+import androidx.appcompat.app.AppCompatDelegate
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.Configuration
-import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.animation.core.copy
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,13 +19,11 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -37,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,22 +46,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getCurrentCompositionErrors
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -88,6 +84,10 @@ import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import androidx.compose.ui.text.intl.Locale // Già presente nel tuo file
+import androidx.core.os.LocaleListCompat
+
+
 @Composable
 fun MyScreenWithAToastButton() {
     // 1. Ottieni il Context corrente
@@ -140,7 +140,7 @@ fun StandardTopAppBar(
         modifier = modifier,
         title = {Column{
             Text(
-                stringResource(R.string.app_name ),
+                stringResource(R.string.app_name )+"-"+GetCurrentAppDisplayLanguage(),
                 modifier = Modifier.clickable{
                     navController.navigate(Screen.MainScreen.route) { // Inizia la lambda per NavOptionsBuilder
                         popUpTo(Screen.MainScreen.route) { // Usa la route corretta di MainScreen
@@ -159,7 +159,6 @@ fun StandardTopAppBar(
             titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         navigationIcon = {
-
             if (navController.previousBackStackEntry != null) {
                 IconButton(onClick = { navController.navigateUp() }) {
                     Icon(
@@ -248,7 +247,6 @@ fun optionErrorView(modifier: Modifier = Modifier,
 ): Boolean
 {
     var ret=false
-
     if (isLoading) {
         Box(Modifier.fillMaxSize()) {
             WaitIndicatorView(
@@ -410,7 +408,7 @@ fun SmallCardItemView(
 
 
 @Composable
-fun LargeCardItemView2(
+fun LargeCardItemView(
     modifier: Modifier = Modifier,
     card: LargePlayingCard ?=null,
     navController: NavHostController? = null // Aggiunto NavController
@@ -479,7 +477,7 @@ fun LargeCardItemView2(
 
 
 @Composable
-fun LargeCardItemView(
+fun LargeCardItemView6(
     modifier: Modifier = Modifier, // Questo modifier si applica al Box radice
     card: LargePlayingCard? = null,
     navController: NavHostController? = null
@@ -492,7 +490,8 @@ fun LargeCardItemView(
     val detailTextPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
     val detailShape = RoundedCornerShape(6.dp)
 
-    Box( // Contenitore radice per gestire gli strati
+    Box(
+        // Contenitore radice per gestire gli strati
         modifier = modifier.verticalScroll(rememberScrollState()), // Applica il modifier passato qui
     ) {
         // 1. STRATO DI SFONDO (L'IMMAGINE DELLA CARTA)
@@ -521,7 +520,8 @@ fun LargeCardItemView(
                     .fillMaxWidth()
             )
         Column(
-            modifier = Modifier.padding(0.dp,413.dp,)
+            modifier = Modifier
+                .padding(0.dp, 413.dp)
                 //.verticalScroll(rememberScrollState())
                 .fillMaxSize(), // Occupa tutto lo spazio sopra l'immagine
             horizontalAlignment = Alignment.CenterHorizontally
@@ -561,7 +561,9 @@ fun LargeCardItemView(
                      Spacer(modifier = Modifier.height(10.dp))
                  }
              }
-             Column(Modifier.size(1000.dp, 68.dp).fillMaxWidth()) {
+             Column(Modifier
+                 .size(1000.dp, 68.dp)
+                 .fillMaxWidth()) {
                  Text(
                      text = currentCard.desc,
                      style = MaterialTheme.typography.bodyMedium,
@@ -627,18 +629,6 @@ fun ImageRotation(imageV: Int, imageO: Int, modifier: Modifier = Modifier ){
         modifier = modifier
     )
 }
-@Composable
-fun RotationScreen(screenV: @Composable () -> Unit, screenO: @Composable () -> Unit,modifier: Modifier = Modifier ){
-    val configuration = LocalConfiguration.current
-    val imageResource = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-        screenO()// Immagine per l'orientamento orizzontale
-    } else {
-        screenV() // Immagine per l'orientamento verticale
-    }
-
-}
-
-
 
 @Composable
 fun InfoSection(
@@ -654,9 +644,95 @@ fun InfoSection(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Column(content = content)
+        Spacer(modifier = Modifier.height(16.dp)) // Aggiungo uno spacer per separazione
+        // Aggiungo il bottone qui
     }
 }
 
+
+
+@Composable
+fun GetCurrentAppDisplayLanguage(): String {
+    // Ottiene direttamente l'oggetto Locale di Compose per la configurazione corrente
+    val currentComposeLocale: Locale = Locale.current
+
+    // Restituisce il nome della lingua visualizzabile (es. "Italiano")
+    return currentComposeLocale.language
+    // Per ottenere il codice della lingua (es. "it"), potresti usare:
+    // return currentComposeLocale.language
+    // Per ottenere il language tag BCP 47 (es. "it-IT"):
+    // return currentComposeLocale.toLanguageTag()
+}
+fun Context.findActivity(): ComponentActivity? = when (this) {
+    is ComponentActivity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
+@androidx.compose.runtime.Composable
+fun LanguageSwitcherButton(
+    // Questa è una semplificazione. Idealmente, questa logica
+    // sarebbe in un ViewModel che interagisce con DataStore e l'Activity.
+    // Qui passiamo direttamente il context per l'esempio.
+    context: Context = androidx.compose.ui.platform.LocalContext.current
+) {
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    val supportedLanguages = listOf(
+        "en" to "English",
+        "it" to "Italiano",
+        "es" to "Español" // Aggiungi altre lingue supportate
+    )
+
+    androidx.compose.material3.Button(onClick = { showLanguageDialog = true }) {
+        androidx.compose.material3.Text("Change Language") // O usa stringResource per tradurla
+    }
+
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { androidx.compose.material3.Text("Select Language") }, // Traduci
+            text = {
+                androidx.compose.foundation.layout.Column {
+                    supportedLanguages.forEach { (langCode, langName) ->
+                        androidx.compose.material3.Text(
+                            text = langName,
+                            modifier = androidx.compose.ui.Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    // 1. Salva la preferenza (es. usando DataStore) - NON MOSTRATO QUI
+                                    // saveLanguagePreference(context, langCode)
+
+                                    // 2. Applica il cambio di lingua
+                                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                        // Per Android 13+
+                                        AppCompatDelegate.setApplicationLocales(
+                                            LocaleListCompat.forLanguageTags(langCode)
+                                        )
+                                        // L'app dovrebbe aggiornarsi automaticamente.
+                                        // Potrebbe essere necessario un piccolo ritardo o un modo per forzare
+                                        // la ricomposizione se non avviene immediatamente.
+                                    } else {
+                                        // Per versioni precedenti ad Android 13
+                                        // Questa è la parte più complessa e di solito richiede
+                                        // di impostare il Locale e ricreare l'Activity.
+                                        // setAppLocaleLegacy(context, langCode)
+                                        context.findActivity()?.recreate() // Ricrea l'activity
+                                    }
+                                    showLanguageDialog = false
+                                }
+                                .padding(16.dp)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    androidx.compose.material3.Text("Cancel") // Traduci
+                }
+            }
+        )
+    }
+}
 /*------------------------------------------------------------*/
 
 @Preview(showBackground = true)
@@ -784,140 +860,9 @@ fun CardsScreenNoCardsFoundSearchPreview() {
 
 @Preview(showBackground = true, name = "LargeCardDetail - Populated")
 @Composable
-fun LargeCardDetailPreview() {
+fun LargeCardItemViewPreview() {
     YuGiDBTheme {
-        InitLargePlayingCardScreen(
-            cardId = 12345,
-            // Passa navController se necessario
-
-        )
-    }
-}
-
-@Composable
-fun LargeCardItemView4(
-    modifier: Modifier = Modifier,
-) {
-
-    val detailTextBackgroundColor = Color.Black.copy(alpha = 0.55f)
-    val detailTextPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-    val detailShape = RoundedCornerShape(6.dp)
-    Box( // Contenitore radice per gestire gli strati
-        modifier = modifier.verticalScroll(rememberScrollState()), // Applica il modifier passato qui
-    ) {
-        // 1. STRATO DI SFONDO (L'IMMAGINE DELLA CARTA)
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data( "https://images.ygoprodeck.com/images/cards_small/34541863.jpg")
-                .crossfade(true)
-                .build(),
-            placeholder = painterResource(R.drawable.ic_launcher_foreground),
-            error = painterResource(R.drawable.ic_launcher_background),
-            contentDescription = stringResource(R.string.card_image_description),
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Box(contentAlignment = Alignment.TopStart) { // Aumentato lo spazio
-            Text(
-                text = "cxj skdkdsmdskmdskmlksdkdssccskkl.",
-                style = MaterialTheme.typography.headlineMedium, // headlineMedium potrebbe essere grande
-                textAlign = TextAlign.Start,
-                color = Color.White, // Colore del testo per contrasto
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = modifier
-                    .horizontalScroll(rememberScrollState())
-                    .background(detailTextBackgroundColor, detailShape)
-                    .padding(detailTextPadding)
-                    .fillMaxWidth().padding(start = 16.dp, top = 16.dp)
-            )
-            Column(
-                modifier = Modifier
-                    //.verticalScroll(rememberScrollState())
-                    .fillMaxSize() // Occupa tutto lo spazio sopra l'immagine
-                    .padding(all = 16.dp), // Padding uniforme per il contenuto della colonna
-                horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
-                Card(modifier.fillMaxSize()) {  }
-                Card(modifier.fillMaxSize()) {  }
-                Card(modifier.fillMaxSize()) {  }
-                Card(modifier.fillMaxSize()) {  }
-                /* Row {
-                     Text(
-                         text = "Type: ${currentCard.type} / ${currentCard.race}",
-                         style = MaterialTheme.typography.titleMedium,
-                         color = Color.White,
-                         modifier = Modifier
-                             .background(detailTextBackgroundColor, detailShape)
-                             .padding(detailTextPadding)
-                     )
-                     currentCard.attribute?.let {
-                         Text(
-                             text = "Attribute: $it",
-                             style = MaterialTheme.typography.bodyLarge,
-                             color = Color.White,
-                             modifier = Modifier
-                                 .background(detailTextBackgroundColor, detailShape)
-                                 .padding(detailTextPadding)
-                         )
-                         Spacer(modifier = Modifier.height(10.dp))
-                     }
-
-                     currentCard.level?.let {
-                         Text(
-                             text = "Level/Rank: $it",
-                             style = MaterialTheme.typography.bodyLarge,
-                             color = Color.White,
-                             modifier = Modifier
-                                 .background(detailTextBackgroundColor, detailShape)
-                                 .padding(detailTextPadding)
-                         )
-                         Spacer(modifier = Modifier.height(10.dp))
-                     }
-                 }
-                 Column(Modifier.size(1000.dp, 100.dp).fillMaxWidth()) {
-                     Text(
-                         text = currentCard.desc,
-                         style = MaterialTheme.typography.bodyMedium,
-                         textAlign = TextAlign.Justify,
-                         color = Color.White,
-                         modifier = Modifier
-                             .verticalScroll(rememberScrollState())
-                             .fillMaxWidth() // La descrizione può prendere più larghezza
-                             .background(
-                                 Color.Black.copy(alpha = 0.65f),
-                                 detailShape
-                             ) // Sfondo leggermente più opaco
-                             .padding(12.dp) // Padding maggiore per il testo della descrizione
-                         // Permette lo scroll orizzontale
-                     )
-                 }
-                 Spacer(modifier = Modifier.height(64.dp)) // Spazio alla fine per permettere lo scroll completo
-                 if (currentCard.atk != null || currentCard.def != null) {
-                     val atkText = currentCard.atk?.toString() ?: "N/A"
-                     val defText = currentCard.def?.toString() ?: "N/A"
-                     Text(
-                         text = "ATK: $atkText / DEF: $defText",
-                         style = MaterialTheme.typography.bodyLarge,
-                         color = Color.White,
-                         modifier = Modifier
-                             .background(detailTextBackgroundColor, detailShape)
-                             .padding(detailTextPadding)
-                     )
-                     Spacer(modifier = Modifier.height(10.dp))
-                 }
-     */
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "LargeCardDetail - Populated")
-@Composable
-fun LargeCardItemView2Preview() {
-    YuGiDBTheme {
-        LargeCardItemView2()
+        LargeCardItemView()
     }
 }
 
