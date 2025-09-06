@@ -233,7 +233,7 @@ fun ErrorMessageView(text: String, modifier: Modifier = Modifier) {
             text = text,
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Justify, // Considera TextAlign.Center se più appropriato
+            textAlign = TextAlign.Justify, // Considera TextAlign.Center se più appropriatoo
             modifier = Modifier.padding(16.dp)
         )
         // ... (immagine di sfondo) ...
