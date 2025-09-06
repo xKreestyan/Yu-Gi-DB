@@ -4,17 +4,20 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.yu_gi_db.domain.repository.YuGiRepoInterface
+import com.example.yu_gi_db.model.AdvancedSearchCriteria // Assicurati che l'import sia corretto
 import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow // Added import
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,79 +28,143 @@ class CardListViewModel @Inject constructor(
 
     private val _tag = "CardListViewModel"
 
-    // State for initial data loading (all cards for the main list)
-    private val _isLoadingInitialData = MutableStateFlow(false)
+    // --- Stati per il Caricamento API Iniziale e Lista di Default (LOB) ---
+    private val _isLoadingInitialData = MutableStateFlow(false) // NOME MANTENUTO per UI
     val isLoadingInitialData: StateFlow<Boolean> = _isLoadingInitialData.asStateFlow()
 
-    private val _initialDataError = MutableStateFlow<String?>(null)
+    private val _initialDataError = MutableStateFlow<String?>(null) // NOME MANTENUTO per UI
     val initialDataError: StateFlow<String?> = _initialDataError.asStateFlow()
 
-    // State for the main list of small cards
-    private val _smallCards = MutableStateFlow<List<SmallPlayingCard>>(emptyList())
+    private val _smallCards = MutableStateFlow<List<SmallPlayingCard>>(emptyList()) // NOME MANTENUTO per UI
     val smallCards: StateFlow<List<SmallPlayingCard>> = _smallCards.asStateFlow()
 
-    // State for the selected large card details
-    private val _selectedLargeCard = MutableStateFlow<LargePlayingCard?>(null)
+    // --- Stati per la NUOVA Ricerca Avanzata ---
+    private val _searchCriteria = MutableStateFlow(AdvancedSearchCriteria())
+    val searchCriteria: StateFlow<AdvancedSearchCriteria> = _searchCriteria.asStateFlow()
+
+    private val _isSearchingAdvanced = MutableStateFlow(false)
+    val isSearchingAdvanced: StateFlow<Boolean> = _isSearchingAdvanced.asStateFlow()
+
+    private val _advancedSearchResults = MutableStateFlow<List<SmallPlayingCard>>(emptyList())
+    val advancedSearchResults: StateFlow<List<SmallPlayingCard>> = _advancedSearchResults.asStateFlow()
+
+    private val _advancedSearchError = MutableStateFlow<String?>(null)
+    val advancedSearchError: StateFlow<String?> = _advancedSearchError.asStateFlow()
+
+    private var advancedSearchJob: Job? = null
+
+    // --- Stati per la Carta Selezionata (Dettagli) ---
+    private val _selectedLargeCard = MutableStateFlow<LargePlayingCard?>(null) // NOME MANTENUTO
     val selectedLargeCard: StateFlow<LargePlayingCard?> = _selectedLargeCard.asStateFlow()
 
-    private val _isLoadingLargeCard = MutableStateFlow(false)
+    private val _isLoadingLargeCard = MutableStateFlow(false) // NOME MANTENUTO
     val isLoadingLargeCard: StateFlow<Boolean> = _isLoadingLargeCard.asStateFlow()
 
-    private val _largeCardError = MutableStateFlow<String?>(null)
+    private val _largeCardError = MutableStateFlow<String?>(null) // NOME MANTENUTO
     val largeCardError: StateFlow<String?> = _largeCardError.asStateFlow()
-
-    // --- NEW StateFlows for Search Functionality ---
-    private val _isSearching = MutableStateFlow(false)
-    val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
-
-    private val _searchResults = MutableStateFlow<List<LargePlayingCard>>(emptyList())
-    val searchResults: StateFlow<List<LargePlayingCard>> = _searchResults.asStateFlow()
-
-    private val _searchError = MutableStateFlow<String?>(null)
-    val searchError: StateFlow<String?> = _searchError.asStateFlow()
-
-    private var currentSearchJob: Job? = null
 
     init {
         Log.d(_tag, "ViewModel initialized")
-        triggerInitialDataLoad() // Load all cards initially
-        observeSmallCards()      // Observe the stream of small cards
-    }
-
-    private fun observeSmallCards() {
-        viewModelScope.launch {
-            yuGiRepo.getSmallCardsStream()
-                .catch { e ->
-                    Log.e(_tag, "Error observing small cards: ${e.message}", e)
-                    // Optionally update a specific error state for the main list
-                }
-                .collect { cards ->
-                    Log.d(_tag, "Observed ${cards.size} small cards from DB.")
-                    _smallCards.value = cards
-                }
-        }
+        triggerInitialDataLoad() // Carica i dati dall'API al DB se necessario
+        observeSmallCards()      // Osserva le carte del set LOB (_smallCards) dal DB
+        observeAndPerformAdvancedSearch() // Inizia ad ascoltare i cambiamenti dei criteri per la ricerca avanzata
     }
 
     fun triggerInitialDataLoad() {
         _isLoadingInitialData.value = true
         _initialDataError.value = null
-        Log.d(_tag, "Triggering initial data load...")
+        Log.d(_tag, "Triggering initial data load (API fetch)...")
         viewModelScope.launch {
             try {
                 yuGiRepo.fetchAndSaveAllCards()
-                Log.d(_tag, "Initial data load successful.")
+                Log.d(_tag, "Initial data load (API fetch) successful.")
             } catch (e: Exception) {
-                Log.e(_tag, "Error fetching initial data: ${e.message}", e)
-                _initialDataError.value = e.message ?: "Unknown error during initial data load"
+                Log.e(_tag, "Error fetching initial API data: ${e.message}", e)
+                _initialDataError.value = e.message ?: "Unknown error during initial API data fetch"
             } finally {
                 _isLoadingInitialData.value = false
             }
         }
     }
 
-    fun fetchLargeCardById(cardId: Int) {
+    private fun observeSmallCards() { // Osserva il set di default LOB
+        viewModelScope.launch {
+            yuGiRepo.getDefaultSetSmallCardsStream()
+                .catch { e ->
+                    Log.e(_tag, "Error observing default set (_smallCards): ${e.message}", e)
+                    _initialDataError.value = "Error loading default cards: ${e.message}" // Può sovrascrivere errore API fetch
+                }
+                .collect { cards ->
+                    Log.d(_tag, "Observed ${cards.size} default set cards for _smallCards.")
+                    _smallCards.value = cards
+                }
+        }
+    }
+
+    // --- Logica per la Ricerca Avanzata ---
+
+    fun updateAdvancedSearchCriteria(newCriteria: AdvancedSearchCriteria) {
+        _searchCriteria.value = newCriteria
+        // La ricerca verrà triggerata automaticamente da observeAndPerformAdvancedSearch
+    }
+
+    private fun AdvancedSearchCriteria.isEffectivelyEmpty(): Boolean {
+        return name.isNullOrBlank() &&
+               type.isNullOrBlank() &&
+               attribute.isNullOrBlank() &&
+               level == null &&
+               atkMin == null && atkMax == null &&
+               defMin == null && defMax == null
+    }
+
+    private fun observeAndPerformAdvancedSearch() {
+        advancedSearchJob?.cancel()
+        advancedSearchJob = _searchCriteria
+            .debounce(350L) // Debounce per input testuali
+            .distinctUntilChanged()
+            .onEach { criteria ->
+                if (criteria.isEffectivelyEmpty()) {
+                    Log.d(_tag, "Advanced search criteria are empty. Clearing advanced search results.")
+                    _isSearchingAdvanced.value = false
+                    _advancedSearchError.value = null
+                    _advancedSearchResults.value = emptyList()
+                } else {
+                    Log.d(_tag, "Advanced search criteria updated: $criteria. Setting isSearchingAdvanced=true.")
+                    _isSearchingAdvanced.value = true
+                    _advancedSearchError.value = null // Pulisci errore precedente
+                    // _advancedSearchResults.value = emptyList() // Opzionale: pulire subito i risultati
+                }
+            }
+            .flatMapLatest { criteria ->
+                if (criteria.isEffectivelyEmpty()) {
+                    kotlinx.coroutines.flow.flowOf(emptyList<SmallPlayingCard>()) // Flow vuoto se i criteri sono vuoti
+                } else {
+                    Log.d(_tag, "flatMapLatest: Executing ADVANCED search for criteria: $criteria")
+                    yuGiRepo.searchSmallCards(criteria)
+                        .catch { e ->
+                            Log.e(_tag, "Error from ADVANCED searchSmallCards for '$criteria': ${e.message}", e)
+                            _advancedSearchError.value = e.message ?: "Unknown advanced search error"
+                            emit(emptyList<SmallPlayingCard>()) // Emetti lista vuota in caso di errore
+                        }
+                }
+            }
+            .onEach { results ->
+                Log.d(_tag, "Advanced search for '${_searchCriteria.value}' collected ${results.size} results.")
+                _advancedSearchResults.value = results
+                if (!_searchCriteria.value.isEffectivelyEmpty()) { // Solo se una ricerca è stata eseguita
+                    _isSearchingAdvanced.value = false
+                    Log.d(_tag, "Advanced search completed. isSearchingAdvanced set to false.")
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+
+    // --- Logica per la Selezione della Carta (Dettagli) ---
+    fun fetchLargeCardById(cardId: Int) { // NOME MANTENUTO per compatibilità con Screen.kt
         _isLoadingLargeCard.value = true
         _largeCardError.value = null
+        _selectedLargeCard.value = null
         Log.d(_tag, "Fetching large card with ID: $cardId")
         viewModelScope.launch {
             try {
@@ -118,164 +185,16 @@ class CardListViewModel @Inject constructor(
         }
     }
 
-    fun selectCardFromResults(card: LargePlayingCard) {
-        _selectedLargeCard.value = card
-        _isLoadingLargeCard.value = false // No loading involved
-        _largeCardError.value = null    // Clear previous error
-        Log.d(_tag, "Card selected directly from results: ${card.name}")
-    }
-
-    fun clearSelectedLargeCard() {
+    fun clearSelectedLargeCard() { // NOME MANTENUTO
         _selectedLargeCard.value = null
-        _isLoadingLargeCard.value = false
-        _largeCardError.value = null
         Log.d(_tag, "Selected large card cleared.")
     }
 
-    // --- NEW Search Functions ---
-
-    private fun <T> executeSearch(
-        queryParameter: T,
-        searchFlowProvider: (T) -> Flow<List<LargePlayingCard>>
-    ) {
-        currentSearchJob?.cancel() // Cancel any previous search
-        currentSearchJob = viewModelScope.launch {
-            searchFlowProvider(queryParameter)
-                .onStart {
-                    Log.d(_tag, "Search started for: $queryParameter")
-                    _isSearching.value = true
-                    _searchError.value = null // Clear previous search error on new search start
-                    _searchResults.value = emptyList() // Clear previous results immediately
-                }
-                .catch { e ->
-                    Log.e(_tag, "Error during search for '$queryParameter': ${e.message}", e)
-                    _searchError.value = e.message ?: "Unknown search error"
-                    _searchResults.value = emptyList() // Ensure results are empty on error
-                    // _isSearching will be handled by onCompletion
-                }
-                .onCompletion {
-                    Log.d(_tag, "Search completed for: $queryParameter. IsSearching set to false.")
-                    _isSearching.value = false
-                }
-                .collect { results ->
-                    Log.d(_tag, "Search for '$queryParameter' yielded ${results.size} results.")
-                    _searchResults.value = results
-                }
-        }
-    }
-
-    fun searchCardsByName(nameQuery: String) {
-        if (nameQuery.isBlank()) {
-            Log.d(_tag, "Name query is blank, clearing search results.")
-            clearSearchResults()
-            return
-        }
-        executeSearch(nameQuery, yuGiRepo::getCardsByName)
-    }
-
-    fun searchCardsByType(type: String) {
-        if (type.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(type, yuGiRepo::getCardsByType)
-    }
-
-    fun searchCardsByHumanReadableType(hrTypeQuery: String) {
-        if (hrTypeQuery.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(hrTypeQuery, yuGiRepo::getCardsByHumanReadableType)
-    }
-
-    fun searchCardsByFrameType(frameType: String) {
-        if (frameType.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(frameType, yuGiRepo::getCardsByFrameType)
-    }
-
-    fun searchCardsByDescription(descQuery: String) {
-        if (descQuery.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(descQuery, yuGiRepo::getCardsByDescription)
-    }
-
-    fun searchCardsByRace(race: String) {
-        if (race.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(race, yuGiRepo::getCardsByRace)
-    }
-
-    fun searchCardsByLevel(level: Int) {
-        // Assuming level 0 is not a valid search, or handle as needed
-        if (level < 0) { // Or some other validation for Int
-            clearSearchResults(); return
-        }
-        executeSearch(level, yuGiRepo::getCardsByLevel)
-    }
-
-    fun searchCardsByAtk(atk: Int) {
-        if (atk < 0) { // ATK can be 0, but negative is invalid
-            clearSearchResults(); return
-        }
-        executeSearch(atk, yuGiRepo::getCardsByAtk)
-    }
-
-    fun searchCardsByDef(def: Int) {
-         if (def < 0) { // DEF can be 0, but negative is invalid
-            clearSearchResults(); return
-        }
-        executeSearch(def, yuGiRepo::getCardsByDef)
-    }
-
-    fun searchCardsByAttribute(attributeName: String) {
-        if (attributeName.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(attributeName, yuGiRepo::getCardsByAttribute)
-    }
-
-    fun searchCardsByTypeLine(typeLineQuery: String) {
-        if (typeLineQuery.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(typeLineQuery, yuGiRepo::getCardsByTypeLine)
-    }
-
-    fun searchCardsBySetName(setNameQuery: String) {
-        if (setNameQuery.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(setNameQuery, yuGiRepo::getCardsBySetName) // Corrected here
-    }
-
-    fun searchCardsBySetRarity(rarityQuery: String) {
-        if (rarityQuery.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(rarityQuery, yuGiRepo::getCardsBySetRarity)
-    }
-
-    fun searchCardsBySetCode(setCodeQuery: String) {
-        if (setCodeQuery.isBlank()) {
-            clearSearchResults(); return
-        }
-        executeSearch(setCodeQuery, yuGiRepo::getCardsBySetCode)
-    }
-
-    fun clearSearchResults() {
-        currentSearchJob?.cancel()
-        _searchResults.value = emptyList()
-        _searchError.value = null
-        _isSearching.value = false // Explicitly set for immediate UI feedback
-        Log.d(_tag, "Search results cleared.")
-    }
+    // Le vecchie funzioni di ricerca (searchCardsByName, etc.) e executeSearch sono state rimosse.
 
     override fun onCleared() {
         super.onCleared()
-        currentSearchJob?.cancel() // Ensure job is cancelled when ViewModel is cleared
-        Log.d(_tag, "ViewModel cleared, search job cancelled.")
+        advancedSearchJob?.cancel()
+        Log.d(_tag, "ViewModel cleared, advancedSearchJob cancelled.")
     }
 }

@@ -1,9 +1,9 @@
 package com.example.yu_gi_db.domain.repository
 
+import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
 import kotlinx.coroutines.flow.Flow
-
 
 interface YuGiRepoInterface {
 
@@ -11,49 +11,28 @@ interface YuGiRepoInterface {
      * Recupera le carte dall'API (se necessario) e le salva nel database locale.
      * Questa funzione gestirà la logica di popolamento/aggiornamento.
      */
-    suspend fun fetchAndSaveAllCards()
+    suspend fun fetchAndSaveAllCards() // INVARIATA
 
     /**
-     * Recupera una lista di anteprime di carte (SmallPlayingCard) dal database locale.
-     * Può includere una query per la ricerca.
+     * Recupera una lista di anteprime di carte (SmallPlayingCard) per il set di default (es. LOB)
+     * dal database locale.
      * Restituisce un Flow per osservare i cambiamenti.
      */
-    fun getSmallCardsStream(query: String? = null): Flow<List<SmallPlayingCard>>
+    fun getDefaultSetSmallCardsStream(): Flow<List<SmallPlayingCard>> // RINOMINATA e MODIFICATA (rimosso query param)
 
     /**
      * Recupera i dettagli completi di una singola carta (LargePlayingCard)
      * dal database locale usando il suo ID.
      */
-    suspend fun getLargeCardById(cardId: Int): LargePlayingCard?
+    suspend fun getLargeCardById(cardId: Int): LargePlayingCard? // INVARIATA
 
-    // --- Funzioni di Ricerca Avanzata nel Database Locale ---
+    /**
+     * Esegue una ricerca flessibile nel database locale basata sui criteri forniti
+     * e restituisce una lista di anteprime di carte (SmallPlayingCard).
+     * Restituisce un Flow per osservare i cambiamenti.
+     * @param criteria I criteri di ricerca (nome, tipo, attributi, ecc.).
+     */
+    fun searchSmallCards(criteria: AdvancedSearchCriteria): Flow<List<SmallPlayingCard>> // NUOVA FUNZIONE DI RICERCA FLESSIBILE
 
-    fun getCardsByName(cardNameQuery: String): Flow<List<LargePlayingCard>>
-
-    fun getCardsByAttribute(attributeName: String): Flow<List<LargePlayingCard>>
-
-    fun getCardsByType(type: String): Flow<List<LargePlayingCard>>
-
-    fun getCardsByHumanReadableType(hrTypeQuery: String): Flow<List<LargePlayingCard>>
-
-    fun getCardsByFrameType(frameType: String): Flow<List<LargePlayingCard>>
-
-    fun getCardsByDescription(descQuery: String): Flow<List<LargePlayingCard>>
-
-    fun getCardsByRace(race: String): Flow<List<LargePlayingCard>>
-
-    fun getCardsByLevel(level: Int): Flow<List<LargePlayingCard>>
-
-    fun getCardsByAtk(atk: Int): Flow<List<LargePlayingCard>>
-
-    fun getCardsByDef(def: Int): Flow<List<LargePlayingCard>>
-
-    fun getCardsByTypeLine(typeLineQuery: String): Flow<List<LargePlayingCard>>
-
-    fun getCardsBySetName(setNameQuery: String): Flow<List<LargePlayingCard>> // Rinominata da getCardsBySetNameQuery per coerenza
-
-    fun getCardsBySetRarity(rarityQuery: String): Flow<List<LargePlayingCard>>
-
-    fun getCardsBySetCode(setCodeQuery: String): Flow<List<LargePlayingCard>>
-
+    // Le vecchie funzioni di ricerca specifiche come getCardsByName, getCardsByAttribute, etc., sono state rimosse.
 }
