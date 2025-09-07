@@ -22,6 +22,7 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.navigation.NavController
 import com.example.yu_gi_db.R
+import com.example.yu_gi_db.views.Screen
 
 @Composable
 fun MenuScreen(navController: NavController? = null) {
@@ -128,7 +129,7 @@ fun MenuScreen(navController: NavController? = null) {
 
             YugiohParallelepipedButton(
                 text = "DATABASE",
-                onClick = { navController?.navigate("MainScreen") },
+                onClick = { navController?.navigate(Screen.DataBaseScreen1.route) },
                 modifier = Modifier.layoutId("button1"),
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,
@@ -140,7 +141,7 @@ fun MenuScreen(navController: NavController? = null) {
 
             YugiohParallelepipedButton(
                 text = "PREFERITI",
-                onClick = { navController?.navigate("SavedCardsScreen") },
+                onClick = { navController?.navigate(Screen.SavedCardsScreen.route) },
                 modifier = Modifier.layoutId("button2"),
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,
@@ -164,7 +165,7 @@ fun MenuScreen(navController: NavController? = null) {
 
             YugiohParallelepipedButton(
                 text = "OPZIONI",
-                onClick = {  navController?.navigate("InfoScreen")},
+                onClick = {  navController?.navigate(Screen.InfoScreen.route)},
                 modifier = Modifier.layoutId("button4"),
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,

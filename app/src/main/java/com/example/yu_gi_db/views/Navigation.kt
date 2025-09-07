@@ -12,8 +12,8 @@ import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 sealed class Screen(val route: String) {
     object InitMainScreen : Screen("InitMainScreen")
     object SplashScreen : Screen("SplashScreen")
-    object MainScreen : Screen("MainScreen")
-    object Main1Screen : Screen("Main1Screen")
+    object DataBaseScreen1 : Screen("DataBaseScreen1")
+    object MenuScreen1 : Screen("MenuScreen1")
     object InfoScreen : Screen("InfoScreen")
     object SavedCardsScreen : Screen("SavedCardsScreen")
     object CardScreen : Screen("CardScreen/{cardId}") { // route property is "CardScreen/{cardId}"
@@ -34,7 +34,7 @@ sealed class Screen(val route: String) {
 
 }
 /*
-  navController?.navigate(Screen.MainScreen.route) {
+  navController?.navigate(Screen.DataBaseScreen1.route) {
             // Opzione per pulire lo stack in modo che l'utente non torni alla SplashScreen premendo "indietro"
             popUpTo(Screen.SplashScreen.route) { inclusive = true }
         }
@@ -46,19 +46,19 @@ sealed class Screen(val route: String) {
 fun Navigation() {
     val navController = rememberNavController()
     YuGiDBTheme {
-        NavHost(navController = navController, startDestination = Screen.Main1Screen.route) {
+        NavHost(navController = navController, startDestination = Screen.MenuScreen1.route) {
 
-            composable(Screen.InitMainScreen.route) { // Uses Screen.MainScreen.route ("MainScreen")
+            composable(Screen.InitMainScreen.route) { // Uses Screen.DataBaseScreen1.route ("DataBaseScreen1")
                 InitMainScreen(navController = navController)
             }
             composable(Screen.SplashScreen.route) { // Uses Screen.SplashScreen.route ("SplashScreen")
                 SplashScreen(navController = navController)
             }
-            composable(Screen.MainScreen.route) { // Uses Screen.MainScreen.route ("MainScreen")
-                MainScreen(navController = navController)
+            composable(Screen.DataBaseScreen1.route) { // Uses Screen.DataBaseScreen1.route ("DataBaseScreen1")
+                DataBaseScreen1(navController = navController)
             }
-            composable(Screen.Main1Screen.route) { // Uses Screen.MainScreen.route ("MainScreen")
-                Main1Screen(navController = navController)
+            composable(Screen.MenuScreen1.route) { // Uses Screen.DataBaseScreen1.route ("DataBaseScreen1")
+                MenuScreen1(navController = navController)
             }
 
             composable(Screen.InfoScreen.route) {

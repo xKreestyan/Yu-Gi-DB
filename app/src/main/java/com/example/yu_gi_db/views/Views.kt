@@ -1,14 +1,12 @@
 package com.example.yu_gi_db.views
 
+
+
 import android.content.res.Configuration
-import android.os.Build
 import android.util.Log
 import android.widget.Toast
-import androidx.compose.animation.core.copy
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,19 +15,16 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -37,14 +32,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -52,17 +48,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.BlurredEdgeTreatment
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -91,17 +80,7 @@ import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-
-// NOTA: Assicurati che le seguenti stringhe siano definite in strings.xml:
-// <string name="search_bar_label_name_hint">Cerca per nome...</string>
-// <string name="search_bar_label_type_hint">Tipo (es. Spell Card)</string>
-// <string name="search_bar_label_attribute_hint">Attributo (es. LIGHT)</string>
-// <string name="search_bar_label_level_hint">Livello/Rango</string>
-// <string name="search_bar_label_atk_min_hint">ATK Min</string>
-// <string name="search_bar_label_atk_max_hint">ATK Max</string>
-// <string name="search_bar_label_def_min_hint">DEF Min</string>
-// <string name="search_bar_label_def_max_hint">DEF Max</string>
-// <string name="no_cards_in_default_list">Nessuna carta nel set predefinito.</string>
+import kotlin.math.roundToInt
 
 @Composable
 fun MyScreenWithAToastButton() {
@@ -113,7 +92,6 @@ fun MyScreenWithAToastButton() {
         Text("Mostra Toast")
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,8 +129,8 @@ fun StandardTopAppBar(
             Text(
                 stringResource(R.string.app_name ),
                 modifier = Modifier.clickable{
-                    navController.navigate(Screen.MainScreen.route) { 
-                        popUpTo(Screen.MainScreen.route) { 
+                    navController.navigate(Screen.DataBaseScreen1.route) {
+                        popUpTo(Screen.DataBaseScreen1.route) {
                             inclusive = true
                         }
                         launchSingleTop = true
@@ -288,6 +266,161 @@ fun optionErrorView(modifier: Modifier = Modifier,
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyRangeSlider(
+    title: String,
+    currentRange: ClosedFloatingPointRange<Float>, // Es: 0f..100f
+    onRangeChange: (ClosedFloatingPointRange<Float>) -> Unit,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..100f, // Il range totale possibile dello slider
+    steps: Int = 0, // Numero di step discreti (0 per continuo)
+    enabled: Boolean = true
+) {
+    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+        Text(
+            text = "$title: ${currentRange.start.roundToInt()} - ${currentRange.endInclusive.roundToInt()}",
+            style = MaterialTheme.typography.titleMedium
+        )
+        RangeSlider(
+            value = currentRange,
+            onValueChange = onRangeChange,
+            valueRange = valueRange,
+            steps = steps,
+            enabled = enabled,
+            // Puoi personalizzare i colori qui se necessario
+            // colors = RangeSliderDefaults.colors(...)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class) // Se MyRangeSlider o altri componenti lo richiedono
+@Composable
+fun TextFieldView(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    label: @Composable () -> Unit,
+    singleLine: Boolean = false,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    searchCriteria: AdvancedSearchCriteria,
+    onSearchCriteriaChange: (AdvancedSearchCriteria) -> Unit
+) {
+    var searchAdvanced by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+
+    Column(modifier = modifier) { // Il modifier principale è applicato alla Column radice
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(), // Il campo di testo principale riempie la larghezza
+            label = label,
+            singleLine = singleLine,
+            keyboardActions = keyboardActions,
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Search, // Icona per "filtri" o "impostazioni avanzate".
+                    contentDescription = "",
+                    modifier = Modifier.clickable { searchAdvanced = !searchAdvanced }
+                )
+            }
+        )
+
+        if (searchAdvanced) {
+            Column(modifier = Modifier.padding(top = 16.dp)) {
+                OutlinedTextField(
+                    value = searchCriteria.type ?: "",
+                    onValueChange = { newValue ->
+                        onSearchCriteriaChange(searchCriteria.copy(type = newValue.ifBlank { null }))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.search_bar_label_type_hint)) },
+                    singleLine = true,
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                    })
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = searchCriteria.attribute ?: "",
+                    onValueChange = { newValue ->
+                        onSearchCriteriaChange(searchCriteria.copy(attribute = newValue.ifBlank { null }))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.search_bar_label_attribute_hint)) },
+                    singleLine = true,
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                    })
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = searchCriteria.level?.toString() ?: "",
+                    onValueChange = { newValue ->
+                        onSearchCriteriaChange(searchCriteria.copy(level = newValue.toIntOrNull()))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.search_bar_label_level_hint)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                    })
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ATK Range Slider
+                val atkValueRange = 0f..5000f // Intervallo possibile per ATK
+                val currentAtkStart = searchCriteria.atkMin?.toFloat() ?: atkValueRange.start
+                val currentAtkEnd = searchCriteria.atkMax?.toFloat() ?: atkValueRange.endInclusive
+
+                MyRangeSlider(
+                    title =stringResource(R.string.search_bar_label_atk_min_hint)+"/"+stringResource(R.string.search_bar_label_atk_max_hint),
+                    currentRange = currentAtkStart..currentAtkEnd,
+                    onRangeChange = { newRange ->
+                        val newAtkMin =
+                            if (newRange.start <= atkValueRange.start) null else newRange.start.roundToInt()
+                        val newAtkMax =
+                            if (newRange.endInclusive >= atkValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
+                        onSearchCriteriaChange(
+                            searchCriteria.copy(
+                                atkMin = newAtkMin,
+                                atkMax = newAtkMax
+                            )
+                        )
+                    },
+                    valueRange = atkValueRange,
+                    steps = 49 // Slider continuo
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // DEF Range Slider
+                val defValueRange = 0f..5000f // Intervallo possibile per DEF
+                val currentDefStart = searchCriteria.defMin?.toFloat() ?: defValueRange.start
+                val currentDefEnd = searchCriteria.defMax?.toFloat() ?: defValueRange.endInclusive
+
+                MyRangeSlider(
+                    title =stringResource(R.string.search_bar_label_def_min_hint)+"/"+stringResource(R.string.search_bar_label_def_max_hint),
+                    currentRange = currentDefStart..currentDefEnd,
+                    onRangeChange = { newRange ->
+                        val newDefMin =
+                            if (newRange.start <= defValueRange.start) null else newRange.start.roundToInt()
+                        val newDefMax =
+                            if (newRange.endInclusive >= defValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
+                        onSearchCriteriaChange(
+                            searchCriteria.copy(
+                                defMin = newDefMin,
+                                defMax = newDefMax
+                            )
+                        )
+                    },
+                    valueRange = defValueRange,
+                    steps = 49 // Slider continuo
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun InitCardsScreenView(
     modifier: Modifier = Modifier,
@@ -360,127 +493,21 @@ fun CardsScreenView(
 ){
     Log.d("CardsScreenView", "Render. Cards: ${cards.size}, Loading: $isLoading, Error: $errorMessage, SearchCriteria: $searchCriteria")
     val focusManager = LocalFocusManager.current
-    val scrollState = rememberScrollState()
-
     Column(modifier = modifier.fillMaxSize()) {
-        // Contenitore per i campi di ricerca, scrollabile verticalmente se non ci stanno tutti
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .verticalScroll(scrollState) // Permette lo scroll dei campi di ricerca
-        ) {
-            OutlinedTextField(
-                value = searchCriteria.name ?: "",
-                onValueChange = { newValue -> 
-                    onSearchCriteriaChange(searchCriteria.copy(name = newValue.ifBlank { null })) 
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.search_bar_label_name_hint)) }, 
-                singleLine = true,
-                keyboardActions = KeyboardActions(onDone = {
-                    focusManager.clearFocus()
-                })
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = searchCriteria.type ?: "",
-                onValueChange = { newValue -> 
-                    onSearchCriteriaChange(searchCriteria.copy(type = newValue.ifBlank { null })) 
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.search_bar_label_type_hint)) }, 
-                singleLine = true,
-                keyboardActions = KeyboardActions(onDone = {
-                    focusManager.clearFocus()
-                })
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = searchCriteria.attribute ?: "",
-                onValueChange = { newValue -> 
-                    onSearchCriteriaChange(searchCriteria.copy(attribute = newValue.ifBlank { null })) 
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.search_bar_label_attribute_hint)) }, 
-                singleLine = true,
-                keyboardActions = KeyboardActions(onDone = {
-                    focusManager.clearFocus()
-                })
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = searchCriteria.level?.toString() ?: "",
-                onValueChange = { newValue -> 
-                    onSearchCriteriaChange(searchCriteria.copy(level = newValue.toIntOrNull())) 
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.search_bar_label_level_hint)) }, 
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                keyboardActions = KeyboardActions(onDone = {
-                    focusManager.clearFocus()
-                })
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                OutlinedTextField(
-                    value = searchCriteria.atkMin?.toString() ?: "",
-                    onValueChange = { newValue -> 
-                        onSearchCriteriaChange(searchCriteria.copy(atkMin = newValue.toIntOrNull())) 
-                    },
-                    modifier = Modifier.weight(1f).padding(end = 4.dp),
-                    label = { Text(stringResource(R.string.search_bar_label_atk_min_hint)) }, 
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    keyboardActions = KeyboardActions(onDone = {
-                        focusManager.clearFocus()
-                    })
-                )
-                OutlinedTextField(
-                    value = searchCriteria.atkMax?.toString() ?: "",
-                    onValueChange = { newValue -> 
-                        onSearchCriteriaChange(searchCriteria.copy(atkMax = newValue.toIntOrNull())) 
-                    },
-                    modifier = Modifier.weight(1f).padding(start = 4.dp),
-                    label = { Text(stringResource(R.string.search_bar_label_atk_max_hint)) }, 
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    keyboardActions = KeyboardActions(onDone = {
-                        focusManager.clearFocus()
-                    })
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                OutlinedTextField(
-                    value = searchCriteria.defMin?.toString() ?: "",
-                    onValueChange = { newValue -> 
-                        onSearchCriteriaChange(searchCriteria.copy(defMin = newValue.toIntOrNull())) 
-                    },
-                    modifier = Modifier.weight(1f).padding(end = 4.dp),
-                    label = { Text(stringResource(R.string.search_bar_label_def_min_hint)) }, 
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    keyboardActions = KeyboardActions(onDone = {
-                        focusManager.clearFocus()
-                    })
-                )
-                OutlinedTextField(
-                    value = searchCriteria.defMax?.toString() ?: "",
-                    onValueChange = { newValue -> 
-                        onSearchCriteriaChange(searchCriteria.copy(defMax = newValue.toIntOrNull())) 
-                    },
-                    modifier = Modifier.weight(1f).padding(start = 4.dp),
-                    label = { Text(stringResource(R.string.search_bar_label_def_max_hint)) }, 
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    keyboardActions = KeyboardActions(onDone = {
-                        focusManager.clearFocus()
-                    })
-                )
-            }
-        }
+        TextFieldView( value = searchCriteria.name ?: "",
+            onValueChange = { newValue ->
+                onSearchCriteriaChange(searchCriteria.copy(name = newValue.ifBlank { null }))
+            },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.search_bar_label_name_hint)) },
+            singleLine = true,
+            keyboardActions = KeyboardActions(onDone = {
+                focusManager.clearFocus()
+            }),
+            searchCriteria = searchCriteria,
+            onSearchCriteriaChange = { newCriteria ->
+                onSearchCriteriaChange(newCriteria)}
+        )
 
         val isSearchActive = searchCriteria != AdvancedSearchCriteria()
         if(optionErrorView(
@@ -558,7 +585,7 @@ fun SmallCardItemView(
 
 
 @Composable
-fun LargeCardItemView2(
+fun LargeCardItemView(
     modifier: Modifier = Modifier,
     card: LargePlayingCard ?=null,
     navController: NavHostController? = null
@@ -626,120 +653,6 @@ fun LargeCardItemView2(
 
 
 @Composable
-fun LargeCardItemView(
-    modifier: Modifier = Modifier,
-    card: LargePlayingCard? = null,
-    navController: NavHostController? = null
-) {
-    val currentCard = card ?: return
-    val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
-    val imageUrl: String = firstCardImage?.imageUrlSmall ?: ""
-
-    val detailTextBackgroundColor = Color.Black.copy(alpha =0.65f)
-    val detailTextPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-    val detailShape = RoundedCornerShape(6.dp)
-
-    Box(
-        modifier = modifier.verticalScroll(rememberScrollState()),
-    ) {
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(imageUrl)
-                .crossfade(true)
-                .build(),
-            placeholder = painterResource(R.drawable.ic_launcher_foreground),
-            error = painterResource(R.drawable.ic_launcher_background),
-            contentDescription = stringResource(R.string.card_image_description),
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Box(contentAlignment = Alignment.TopStart, modifier = Modifier.padding(30.dp,29.dp)) {
-            Text(
-                text = currentCard.name.uppercase()+"                     ",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White,
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .background(
-                        detailTextBackgroundColor,
-                        detailShape
-                    )
-                    .fillMaxWidth()
-            )
-        }
-        Column(
-            modifier = Modifier.padding(0.dp,413.dp) 
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier.horizontalScroll(rememberScrollState())){
-                Text(
-                    text = "Type: ${currentCard.type} / ${currentCard.race}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White,
-                    modifier = Modifier
-                        .background(detailTextBackgroundColor, detailShape)
-                        .padding(detailTextPadding)
-                )
-                currentCard.attribute?.let {
-                    Text(
-                        text = "Attribute: $it",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White,
-                        modifier = Modifier
-                            .background(detailTextBackgroundColor, detailShape)
-                            .padding(detailTextPadding)
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
-                currentCard.level?.let {
-                    Text(
-                        text = "Level/Rank: $it",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White,
-                        modifier = Modifier
-                            .background(detailTextBackgroundColor, detailShape)
-                            .padding(detailTextPadding)
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
-            }
-            Column(Modifier.size(1000.dp, 68.dp).fillMaxWidth()) { 
-                Text(
-                    text = currentCard.desc,
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Justify,
-                    color = Color.White,
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState())
-                        .fillMaxWidth()
-                        .background(
-                            detailTextBackgroundColor,
-                            detailShape
-                        ) 
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                )
-            }
-            if (currentCard.atk != null || currentCard.def != null) {
-                val atkText = currentCard.atk?.toString() ?: "N/A"
-                val defText = currentCard.def?.toString() ?: "N/A"
-                Box(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), contentAlignment = Alignment.BottomEnd) {
-                    Text(
-                        text = "ATK: $atkText / DEF: $defText",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.White,
-                        textAlign = TextAlign.End,
-                        modifier = Modifier
-                            .background(detailTextBackgroundColor, detailShape)
-                            .padding(detailTextPadding)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
@@ -769,19 +682,7 @@ fun ImageRotation(imageV: Int, imageO: Int, modifier: Modifier = Modifier ){
     )
 }
 @Composable
-fun RotationScreen(screenV: @Composable () -> Unit, screenO: @Composable () -> Unit,modifier: Modifier = Modifier ){
-    val configuration = LocalConfiguration.current
-    if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-        screenO()
-    } else {
-        screenV()
-    }
-}
-
-
-
-@Composable
-fun InfoSection(
+fun InfoSectionView(
     title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -810,18 +711,6 @@ fun CardItemPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "SmallCardsList - Populated")
-@Composable
-fun SmallCardsListPreview() {
-    YuGiDBTheme {
-        SmallCardsListView(
-            cards = listOf(
-                SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
-                SmallPlayingCard(id = 2, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/6983839.jpg")
-            )
-        )
-    }
-}
 
 @Preview(showBackground = true, name = "WaitIndicatorView") 
 @Composable
@@ -834,13 +723,6 @@ fun WaitIndicatorViewPreview() {
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview2() {
-    YuGiDBTheme {
-        StandardTopAppBar(modifier = Modifier.fillMaxSize(),title = "Preview Title")
-    }
-}
 
 @Preview(showBackground = true, name = "CardsScreen - Populated Default")
 @Composable
@@ -920,20 +802,57 @@ fun CardsScreenNoResultsNameSearchPreview() {
     }
 }
 
-@Preview(showBackground = true, name = "LargeCardDetail - Populated")
-@Composable
-fun LargeCardDetailPreview() {
-    YuGiDBTheme {
-        InitLargePlayingCardScreen( 
-            cardId = 12345 
-        )
-    }
-}
 
-@Preview(showBackground = true, name = "LargeCardItemView2 Preview")
+
+@Preview(showBackground = true)
 @Composable
-fun LargeCardItemView2Preview() {
-    YuGiDBTheme {
-        //LargeCardItemView2(card = LargePlayingCard(id=1, name="Blue-Eyes White Dragon", type="Dragon", race="Dragon", desc="This legendary dragon is a powerful engine of destruction.", atk=3000, def=2500, level=8, attribute="LIGHT", cardImages=emptyList(), cardSets=emptyList(), cardPrices=emptyList()))
+fun MyRangeSliderPreview() {
+    // Stato per il range di ATK
+    var atkRange by remember { mutableStateOf(2000f..8000f) }
+    val possibleAtkValueRange = 0f..10000f // Valore minimo e massimo possibile per ATK
+
+    // Stato per il range di DEF (con step)
+    var defRange by remember { mutableStateOf(10f..50f) } // Range in decine, ad es. 100-500
+    val possibleDefValueRange = 0f..100f // Range in decine (0-1000)
+    val defSteps = 9 // (100-0)/10 - 1 = 9 step per avere intervalli di 10
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Filtri Valori Mostro", style = MaterialTheme.typography.headlineSmall)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        MyRangeSlider(
+            title = "ATK Range",
+            currentRange = atkRange,
+            onRangeChange = { newRange -> atkRange = newRange },
+            valueRange = possibleAtkValueRange,
+            steps = 0 // Slider continuo per ATK
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        MyRangeSlider(
+            title = "DEF Range (x10)", // Esempio: i valori rappresentano DEF/10
+            currentRange = defRange,
+            onRangeChange = { newRange -> defRange = newRange },
+            valueRange = possibleDefValueRange,
+            steps = defSteps // Slider con step per DEF
+        )
+        Text(
+            text = "DEF Effettivo: ${defRange.start.roundToInt() * 10} - ${defRange.endInclusive.roundToInt() * 10}",
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Esempio disabilitato
+        var disabledRange by remember { mutableStateOf(30f..70f) }
+        MyRangeSlider(
+            title = "Range Disabilitato",
+            currentRange = disabledRange,
+            onRangeChange = { disabledRange = it },
+            valueRange = 0f..100f,
+            enabled = false
+        )
     }
 }

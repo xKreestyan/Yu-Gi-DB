@@ -55,10 +55,10 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
         SplashScreen(modifier = modifier,navController)
     }
     else {
-        //MainScreen(modifier = modifier,navController)
+        //DataBaseScreen1(modifier = modifier,navController)
 
         Navigation()
-        //navController?.navigate(Screen.MainScreen.route)
+        //navController?.navigate(Screen.DataBaseScreen1.route)
     }
 }
 
@@ -85,7 +85,13 @@ fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController?
 }
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
+fun MenuScreen1(modifier: Modifier = Modifier,navController: NavHostController? = null) {
+    MenuScreen(navController)
+}
+
+
+@Composable
+fun DataBaseScreen1(modifier: Modifier = Modifier, navController: NavHostController? = null) {
     AppScreen(
         modifier = modifier,
         appBarTitle = stringResource(id = R.string.app_name),
@@ -96,11 +102,6 @@ fun MainScreen(modifier: Modifier = Modifier,navController: NavHostController? =
             navController = navController
         )
     }
-}
-
-@Composable
-fun Main1Screen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
-    MenuScreen(navController)
 }
 
 
@@ -192,7 +193,7 @@ fun InformationScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            InfoSection( // Assicurati che sia definita e importata
+            InfoSectionView( // Assicurati che sia definita e importata
                 title = stringResource(R.string.info_section_about_title)
             ) {
                 Text(
@@ -202,7 +203,7 @@ fun InformationScreen(
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
-            InfoSection(
+            InfoSectionView(
                 title = stringResource(R.string.info_section_version_title)
             ) {
                 Text(
@@ -211,7 +212,7 @@ fun InformationScreen(
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
-            InfoSection(
+            InfoSectionView(
                 title = stringResource(R.string.info_section_developer_title)
             ) {
                 Text(
@@ -220,7 +221,7 @@ fun InformationScreen(
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
-            InfoSection(
+            InfoSectionView(
                 title = stringResource(R.string.info_section_credits_title)
             ) {
                 Text(
@@ -309,9 +310,9 @@ fun SplashScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun MainScreenPreview() {
+fun DataBaseScreen1Preview() {
     YuGiDBTheme {
-        MainScreen()
+        DataBaseScreen1()
     }
 }
 
