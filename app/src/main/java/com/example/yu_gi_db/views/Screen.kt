@@ -240,60 +240,16 @@ fun SavedCardsScreen(
     navController: NavHostController? = null,
     cardListViewModel: CardListViewModel = hiltViewModel()
 ) {
-    /*
-    val savedCards by viewModel.savedCardsList.collectAsStateWithLifecycle() // Assicurati che savedCardsList esista nel ViewModel
-    val isLoading by viewModel.isLoadingSavedCards.collectAsStateWithLifecycle() // Assicurati che isLoadingSavedCards esista
-
-    LaunchedEffect(Unit) {
-        viewModel.fetchSavedCards() // Assicurati che fetchSavedCards esista
-    }*/
-    val cards by cardListViewModel.smallCards.collectAsStateWithLifecycle()
-    val isLoading by cardListViewModel.isLoadingInitialData.collectAsStateWithLifecycle()
-    val error by cardListViewModel.initialDataError.collectAsStateWithLifecycle()
-    var searchQuery by rememberSaveable { mutableStateOf("") }
-
-    Log.d("InitCardsScreenView", "Number of cards from ViewModel: ${cards.size}")
-
-    val filteredCards = if (searchQuery.isBlank()) {
-        cards
-    } else {
-        cards.filter {
-            it.id.toString().contains(searchQuery, ignoreCase = true)
-        }
-    }
-
     AppScreen(
         modifier = modifier,
-        appBarTitle = stringResource(id = R.string.saved_cards_title), // Aggiungi questa stringa a strings.xml
+        appBarTitle = stringResource(id = R.string.saved_cards_title),
         navController = navController
     ) { innerPadding ->
-        if (optionErrorView(
-                modifier = Modifier.padding(innerPadding), // optionErrorView si posizionerà all'interno di questo Box
-                isLoading = isLoading,
-                isEmpty = cards.isEmpty(),
-                errorMessage = error,
-                //isNotBlank = false // Per usare R.string.no_cards_saved quando isEmpty
-            )
-        ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize(), // La griglia riempie il Box con padding
-                contentPadding = PaddingValues(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(cards, key = { card -> card.id }) { card ->
-                    // Assumendo che SmallPlayingCardView esista e accetti questi parametri
-                    // e che SmallPlayingCard abbia un campo 'name' e 'card_images'
-                    SmallCardItemView(
-                        card = card,
-                        navController = navController
-                    )
-                }
-            }
-        }
+        InitCardsScreenView( // Assicurati che sia definita e importata
+            modifier = Modifier.padding(innerPadding),
+            navController = navController,
+            initialSearchCriteria = AdvancedSearchCriteria()
+        )
     }
 }
 

@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -33,6 +34,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -74,6 +77,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController // Importa NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
@@ -366,7 +370,9 @@ fun TextFieldView(
         )
 
         if (searchAdvanced) {
-            Column(modifier = Modifier.padding(top = 16.dp).verticalScroll(rememberScrollState())) {
+            Column(modifier = Modifier
+                .padding(top = 16.dp)
+                .verticalScroll(rememberScrollState())) {
                 // Dropdown per TYPE
                 ExposedDropdownMenuBox(
                     expanded = typeDropdownExpanded,
@@ -379,7 +385,9 @@ fun TextFieldView(
                         readOnly = true,
                         label = { Text(stringResource(R.string.search_bar_label_type_hint)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeDropdownExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth() // Importante per l'ancoraggio del menu
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth() // Importante per l'ancoraggio del menu
                     )
                     ExposedDropdownMenu(
                         expanded = typeDropdownExpanded,
@@ -411,7 +419,9 @@ fun TextFieldView(
                         readOnly = true,
                         label = { Text(stringResource(R.string.search_bar_label_attribute_hint)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = attributeDropdownExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
                         expanded = attributeDropdownExpanded,
@@ -439,6 +449,20 @@ fun TextFieldView(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(stringResource(R.string.search_bar_label_level_hint)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardActions = KeyboardActions(onDone = {
+                        focusManager.clearFocus()
+                    })
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = searchCriteria.idQuery?: "",
+                    onValueChange = { newValue ->
+                        onSearchCriteriaChange(searchCriteria.copy(idQuery = newValue ))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.search_id)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     keyboardActions = KeyboardActions(onDone = {
@@ -495,6 +519,7 @@ fun TextFieldView(
                     valueRange = defValueRange,
                     steps = 49 // Slider continuo
                 )
+                //Icon(fill)
             }
         }
     }
@@ -634,7 +659,8 @@ fun SmallCardsListView(
 fun SmallCardItemView(
     card: SmallPlayingCard,
     modifier: Modifier = Modifier,
-    navController: NavHostController? = null
+    navController: NavHostController? = null,
+    cardListViewModel: CardListViewModel ?= hiltViewModel()
 ) {
     Card(
         modifier = modifier,
@@ -652,15 +678,33 @@ fun SmallCardItemView(
                 modifier = modifier.fillMaxSize()
             )
             Card(modifier = Modifier.align(Alignment.BottomStart)
-            ){Text(
-                text = card.id.toString(),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 4.dp),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )}
+            )
+            {Row{
+                val icon =
+                    if (card.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
+                val contentDesc =
+                    if (card.isFavorite) stringResource(R.string.isfavorite) else stringResource(R.string.notfavorite)
+                Icon(
+                    imageVector = icon,
+                    contentDescription = contentDesc, // Descrizione per l'accessibilità
+                    modifier = Modifier
+                        .size(15.dp, 15.dp)
+                        .clickable { cardListViewModel?.toggleFavoriteStatus(card.id) }
+                )
+                Text(
+                    text = card.id.toString(),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+            }
+
+            }
+
         }
     }
 }
@@ -695,7 +739,9 @@ private fun ClickableSearchText(
 fun LargeCardItemView(
     modifier: Modifier = Modifier,
     card: LargePlayingCard? = null,
-    navController: NavHostController? = null
+    navController: NavHostController? = null,
+    cardListViewModel: CardListViewModel ?= hiltViewModel()
+
 ) {
     Column(
         modifier = modifier
@@ -729,7 +775,7 @@ fun LargeCardItemView(
                 value = currentCard.type,
                 navController = navController,
                 searchCriteriaAction = {
-                    Screen.DataBaseAdvancedSearchType.createRoute(type = currentCard.type)
+                    Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type)
                 }
             )
             currentCard.race.let {
@@ -749,6 +795,20 @@ fun LargeCardItemView(
                        Screen.DataBaseAdvancedSearchType.createRoute(type = it) // Ricerca per razza come tipo
                    }
                )*/
+
+                var favoriteBoolean by remember { mutableStateOf(card.isFavorite) }
+                val icon =
+                    if (favoriteBoolean) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
+                val contentDesc =
+                    if (favoriteBoolean) stringResource(R.string.isfavorite) else stringResource(R.string.notfavorite)
+                Icon(
+                    imageVector = icon,
+                    contentDescription = contentDesc, // Descrizione per l'accessibilità
+                    modifier = Modifier
+                        .clickable { cardListViewModel?.toggleFavoriteStatus(card.id)
+                        favoriteBoolean=!favoriteBoolean
+                        }
+                )
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -760,7 +820,7 @@ fun LargeCardItemView(
                 value = it,
                 navController = navController,
                 searchCriteriaAction = {
-                    Screen.DataBaseAdvancedSearchAttribute.createRoute(attribute = it)
+                    Screen.DataBaseAdvancedSearch.createRouteForAttribute(attribute = it)
                 }
             )
         }
@@ -773,7 +833,7 @@ fun LargeCardItemView(
                 value = it.toString(),
                 navController = navController,
                 searchCriteriaAction = {
-                    Screen.DataBaseAdvancedSearchLivello.createRoute(Livello = it)
+                    Screen.DataBaseAdvancedSearch.createRouteForLevel(level = it)
                 }
             )
         }
@@ -849,7 +909,8 @@ fun InfoSectionView(
 fun CardItemPreview() {
     YuGiDBTheme {
         SmallCardItemView(
-            card = SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg")
+            card = SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
+            cardListViewModel=null
         )
     }
 }

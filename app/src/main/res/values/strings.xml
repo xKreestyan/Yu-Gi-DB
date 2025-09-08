@@ -40,4 +40,7 @@
     <string name="card_label_type">card_label_type</string>
     <string name="search_options_expand">search_options_expand</string>
     <string name="card_label_attribute">card_label_attribute</string>
+    <string name="isfavorite">isFavorite</string>
+    <string name="notfavorite">notFavorite</string>
+    <string name="search_id">search_id</string>
 </resources>
