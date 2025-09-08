@@ -29,13 +29,13 @@ class CardListViewModel @Inject constructor(
     private val _tag = "CardListViewModel"
 
     // --- Stati per il Caricamento API Iniziale e Lista di Default (LOB) ---
-    private val _isLoadingInitialData = MutableStateFlow(false) // NOME MANTENUTO per UI
+    private val _isLoadingInitialData = MutableStateFlow(false)
     val isLoadingInitialData: StateFlow<Boolean> = _isLoadingInitialData.asStateFlow()
 
-    private val _initialDataError = MutableStateFlow<String?>(null) // NOME MANTENUTO per UI
+    private val _initialDataError = MutableStateFlow<String?>(null)
     val initialDataError: StateFlow<String?> = _initialDataError.asStateFlow()
 
-    private val _smallCards = MutableStateFlow<List<SmallPlayingCard>>(emptyList()) // NOME MANTENUTO per UI
+    private val _smallCards = MutableStateFlow<List<SmallPlayingCard>>(emptyList())
     val smallCards: StateFlow<List<SmallPlayingCard>> = _smallCards.asStateFlow()
 
     // --- Stati per la NUOVA Ricerca Avanzata ---
@@ -54,20 +54,28 @@ class CardListViewModel @Inject constructor(
     private var advancedSearchJob: Job? = null
 
     // --- Stati per la Carta Selezionata (Dettagli) ---
-    private val _selectedLargeCard = MutableStateFlow<LargePlayingCard?>(null) // NOME MANTENUTO
+    private val _selectedLargeCard = MutableStateFlow<LargePlayingCard?>(null)
     val selectedLargeCard: StateFlow<LargePlayingCard?> = _selectedLargeCard.asStateFlow()
 
-    private val _isLoadingLargeCard = MutableStateFlow(false) // NOME MANTENUTO
+    private val _isLoadingLargeCard = MutableStateFlow(false)
     val isLoadingLargeCard: StateFlow<Boolean> = _isLoadingLargeCard.asStateFlow()
 
-    private val _largeCardError = MutableStateFlow<String?>(null) // NOME MANTENUTO
+    private val _largeCardError = MutableStateFlow<String?>(null)
     val largeCardError: StateFlow<String?> = _largeCardError.asStateFlow()
+
+    // --- Stati per le Carte Preferite ---
+    private val _favoriteCards = MutableStateFlow<List<SmallPlayingCard>>(emptyList())
+    val favoriteCards: StateFlow<List<SmallPlayingCard>> = _favoriteCards.asStateFlow()
+
+    private val _favoritesError = MutableStateFlow<String?>(null)
+    val favoritesError: StateFlow<String?> = _favoritesError.asStateFlow()
 
     init {
         Log.d(_tag, "ViewModel initialized")
         triggerInitialDataLoad() // Carica i dati dall'API al DB se necessario
         observeSmallCards()      // Osserva le carte del set LOB (_smallCards) dal DB
         observeAndPerformAdvancedSearch() // Inizia ad ascoltare i cambiamenti dei criteri per la ricerca avanzata
+        observeFavoriteCards()      // Osserva le carte preferite
     }
 
     fun triggerInitialDataLoad() {
@@ -105,7 +113,6 @@ class CardListViewModel @Inject constructor(
 
     fun updateAdvancedSearchCriteria(newCriteria: AdvancedSearchCriteria) {
         _searchCriteria.value = newCriteria
-        // La ricerca verrà triggerata automaticamente da observeAndPerformAdvancedSearch
     }
 
     private fun AdvancedSearchCriteria.isEffectivelyEmpty(): Boolean {
@@ -120,7 +127,7 @@ class CardListViewModel @Inject constructor(
     private fun observeAndPerformAdvancedSearch() {
         advancedSearchJob?.cancel()
         advancedSearchJob = _searchCriteria
-            .debounce(350L) // Debounce per input testuali
+            .debounce(350L) 
             .distinctUntilChanged()
             .onEach { criteria ->
                 if (criteria.isEffectivelyEmpty()) {
@@ -131,27 +138,26 @@ class CardListViewModel @Inject constructor(
                 } else {
                     Log.d(_tag, "Advanced search criteria updated: $criteria. Setting isSearchingAdvanced=true.")
                     _isSearchingAdvanced.value = true
-                    _advancedSearchError.value = null // Pulisci errore precedente
-                    // _advancedSearchResults.value = emptyList() // Opzionale: pulire subito i risultati
+                    _advancedSearchError.value = null 
                 }
             }
             .flatMapLatest { criteria ->
                 if (criteria.isEffectivelyEmpty()) {
-                    kotlinx.coroutines.flow.flowOf(emptyList<SmallPlayingCard>()) // Flow vuoto se i criteri sono vuoti
+                    kotlinx.coroutines.flow.flowOf(emptyList<SmallPlayingCard>())
                 } else {
                     Log.d(_tag, "flatMapLatest: Executing ADVANCED search for criteria: $criteria")
                     yuGiRepo.searchSmallCards(criteria)
                         .catch { e ->
                             Log.e(_tag, "Error from ADVANCED searchSmallCards for '$criteria': ${e.message}", e)
                             _advancedSearchError.value = e.message ?: "Unknown advanced search error"
-                            emit(emptyList<SmallPlayingCard>()) // Emetti lista vuota in caso di errore
+                            emit(emptyList<SmallPlayingCard>())
                         }
                 }
             }
             .onEach { results ->
                 Log.d(_tag, "Advanced search for '${_searchCriteria.value}' collected ${results.size} results.")
                 _advancedSearchResults.value = results
-                if (!_searchCriteria.value.isEffectivelyEmpty()) { // Solo se una ricerca è stata eseguita
+                if (!_searchCriteria.value.isEffectivelyEmpty()) { 
                     _isSearchingAdvanced.value = false
                     Log.d(_tag, "Advanced search completed. isSearchingAdvanced set to false.")
                 }
@@ -161,7 +167,7 @@ class CardListViewModel @Inject constructor(
 
 
     // --- Logica per la Selezione della Carta (Dettagli) ---
-    fun fetchLargeCardById(cardId: Int) { // NOME MANTENUTO per compatibilità con Screen.kt
+    fun fetchLargeCardById(cardId: Int) {
         _isLoadingLargeCard.value = true
         _largeCardError.value = null
         _selectedLargeCard.value = null
@@ -185,12 +191,39 @@ class CardListViewModel @Inject constructor(
         }
     }
 
-    fun clearSelectedLargeCard() { // NOME MANTENUTO
+    fun clearSelectedLargeCard() {
         _selectedLargeCard.value = null
         Log.d(_tag, "Selected large card cleared.")
     }
 
-    // Le vecchie funzioni di ricerca (searchCardsByName, etc.) e executeSearch sono state rimosse.
+    // --- Logica per le Carte Preferite ---
+    private fun observeFavoriteCards() {
+        viewModelScope.launch {
+            yuGiRepo.getFavoriteSmallCardsStream()
+                .catch { e ->
+                    Log.e(_tag, "Error observing favorite cards: ${e.message}", e)
+                    _favoritesError.value = "Error loading favorite cards: ${e.message}"
+                }
+                .collect { cards ->
+                    Log.d(_tag, "Observed ${cards.size} favorite cards.")
+                    _favoriteCards.value = cards
+                    _favoritesError.value = null // Pulisci errore precedente se i dati arrivano
+                }
+        }
+    }
+
+    fun toggleFavoriteStatus(cardId: Int) {
+        viewModelScope.launch {
+            try {
+                Log.d(_tag, "Toggling favorite status for card ID: $cardId")
+                yuGiRepo.toggleFavoriteStatus(cardId)
+            } catch (e: Exception) {
+                Log.e(_tag, "Error toggling favorite status for card ID $cardId: ${e.message}", e)
+                // Considera di esporre questo errore se necessario
+                _favoritesError.value = "Error updating favorite status: ${e.message}" // Ad esempio
+            }
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()

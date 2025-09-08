@@ -4,7 +4,7 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.util.Log
 import android.widget.ImageView
-import androidx.sqlite.db.SimpleSQLiteQuery // NUOVO IMPORT
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.ImageRequest
 import com.example.yu_gi_db.data.local.db.dao.YuGiDAO
@@ -15,7 +15,7 @@ import com.example.yu_gi_db.data.local.db.entities.SetEntity
 import com.example.yu_gi_db.data.local.db.entities.TypeLineEntity
 import com.example.yu_gi_db.data.remote.ApiClient
 import com.example.yu_gi_db.domain.repository.YuGiRepoInterface
-import com.example.yu_gi_db.model.AdvancedSearchCriteria // NUOVO IMPORT (assicurati esista)
+import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +23,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-// Rimosso import: kotlinx.coroutines.flow.map (non più usato da getDefaultSetSmallCardsStream)
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -139,6 +138,10 @@ class YuGiRepo @Inject constructor(
             cardsToProcess.forEachIndexed { index, apiCard ->
                 Log.d(tag, "Processing card ${index + 1}/${cardsToProcess.size}: ${apiCard.name} (ID: ${apiCard.id})")
 
+                // RECUPERA LO STATO PREFERITO ESISTENTE
+                val existingCardEntity = yuGiDAO.getCardById(apiCard.id)
+                val currentIsFavoriteState = existingCardEntity?.isFavorite ?: false
+
                 val imageUrlApi = apiCard.cardImages.firstOrNull()?.imageUrl
                 var localImagePathResult: String? = null
 
@@ -161,7 +164,8 @@ class YuGiRepo @Inject constructor(
                     level = apiCard.level,
                     attribute = apiCard.attribute,
                     localImagePath = localImagePathResult,
-                    cardPrices = apiCard.cardPrices
+                    cardPrices = apiCard.cardPrices,
+                    isFavorite = currentIsFavoriteState // USA LO STATO PREFERITO ESISTENTE
                 )
                 yuGiDAO.insertCard(cardEntity)
 
@@ -205,13 +209,11 @@ class YuGiRepo @Inject constructor(
         }
     }
 
-    // RINOMINATA e MODIFICATA
     override fun getDefaultSetSmallCardsStream(): Flow<List<SmallPlayingCard>> {
         Log.d(tag, "getDefaultSetSmallCardsStream called for set: $defaultSetName")
         return yuGiDAO.getInitialSmallCardsBySetName(defaultSetName)
     }
 
-    // Funzione helper per mappare CardEntity a LargePlayingCard (INVARIATA)
     private suspend fun mapCardEntityToLargePlayingCard(entity: CardEntity): LargePlayingCard = withContext(Dispatchers.IO) {
         val typelines = yuGiDAO.getTypeLineNamesForCard(entity.id)
         val cardImagesDomain = mutableListOf<com.example.yu_gi_db.model.CardImage>()
@@ -219,9 +221,9 @@ class YuGiRepo @Inject constructor(
         if (entity.localImagePath != null) {
             cardImagesDomain.add(com.example.yu_gi_db.model.CardImage(
                 id = entity.id,
-                imageUrl = "", // Non abbiamo l'URL originale completo qui, solo il path locale
-                imageUrlSmall = entity.localImagePath, // Usiamo il path locale per small
-                imageUrlCropped = "" // Non abbiamo l'URL cropped qui
+                imageUrl = "",
+                imageUrlSmall = entity.localImagePath,
+                imageUrlCropped = ""
             ))
         }
 
@@ -255,11 +257,11 @@ class YuGiRepo @Inject constructor(
             attribute = entity.attribute,
             cardImages = cardImagesDomain,
             cardSets = cardSetsDomain,
-            cardPrices = entity.cardPrices
+            cardPrices = entity.cardPrices,
+            isFavorite = entity.isFavorite // AGGIUNTO QUESTO
         )
     }
 
-    // INVARIATA
     override suspend fun getLargeCardById(cardId: Int): LargePlayingCard? = withContext(Dispatchers.IO) {
         Log.d(tag, "getLargeCardById called for ID: $cardId")
         val entity = yuGiDAO.getCardById(cardId)
@@ -270,11 +272,11 @@ class YuGiRepo @Inject constructor(
         return@withContext mapCardEntityToLargePlayingCard(entity)
     }
 
-    // NUOVA FUNZIONE DI RICERCA FLESSIBILE
     override fun searchSmallCards(criteria: AdvancedSearchCriteria): Flow<List<SmallPlayingCard>> {
         Log.d(tag, "searchSmallCards called with criteria: $criteria")
 
-        val queryBuilder = StringBuilder("SELECT c.id, c.localImagePath AS imageUrlSmall FROM cards c WHERE 1=1")
+        // MODIFICATA LA SELECT per includere isFavorite
+        val queryBuilder = StringBuilder("SELECT c.id, c.localImagePath AS imageUrlSmall, c.isFavorite FROM cards c WHERE 1=1")
         val args = mutableListOf<Any>()
 
         criteria.name?.takeIf { it.isNotBlank() }?.let {
@@ -310,7 +312,7 @@ class YuGiRepo @Inject constructor(
             args.add(it)
         }
 
-        queryBuilder.append(" ORDER BY c.name ASC") // Opzionale: ordinare i risultati
+        queryBuilder.append(" ORDER BY c.name ASC")
 
         val simpleSQLiteQuery = SimpleSQLiteQuery(queryBuilder.toString(), args.toTypedArray())
         Log.d(tag, "Executing search query: ${simpleSQLiteQuery.sql} with args: ${args.joinToString()}")
@@ -318,5 +320,22 @@ class YuGiRepo @Inject constructor(
         return yuGiDAO.searchSmallCards(simpleSQLiteQuery)
     }
 
-    // Le vecchie funzioni di ricerca specifiche sono state rimosse.
+    // --- Favorite Card Operations ---
+
+    override suspend fun toggleFavoriteStatus(cardId: Int) { // MODIFICATO: Rimosso '=' e reso corpo di blocco
+        withContext(Dispatchers.IO) {
+            val card = yuGiDAO.getCardById(cardId)
+            if (card != null) {
+                yuGiDAO.setFavoriteStatus(cardId, !card.isFavorite) // Assumendo che setFavoriteStatus sia suspend e aggiorni il DB
+                Log.d(tag, "Toggled favorite status for card ID $cardId to ${!card.isFavorite}")
+            } else {
+                Log.w(tag, "Card not found with ID $cardId, cannot toggle favorite status.")
+            }
+        }
+    }
+
+    override fun getFavoriteSmallCardsStream(): Flow<List<SmallPlayingCard>> {
+        Log.d(tag, "getFavoriteSmallCardsStream called")
+        return yuGiDAO.getFavoriteSmallCards()
+    }
 }
