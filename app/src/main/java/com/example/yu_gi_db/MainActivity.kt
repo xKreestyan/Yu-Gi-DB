@@ -30,7 +30,6 @@ class MainActivity : ComponentActivity() {
 
 /*
 * Cose da fare:
-* Compressione foto per la lista di smallcards (migliorerà le prestazioni)
 * Lingue
 * Toast
 * Selezione iniziale dei set da scaricare
