@@ -275,10 +275,13 @@ class YuGiRepo @Inject constructor(
     override fun searchSmallCards(criteria: AdvancedSearchCriteria): Flow<List<SmallPlayingCard>> {
         Log.d(tag, "searchSmallCards called with criteria: $criteria")
 
-        // MODIFICATA LA SELECT per includere isFavorite
         val queryBuilder = StringBuilder("SELECT c.id, c.localImagePath AS imageUrlSmall, c.isFavorite FROM cards c WHERE 1=1")
         val args = mutableListOf<Any>()
 
+        criteria.idQuery?.takeIf { it.isNotBlank() }?.let {
+            queryBuilder.append(" AND CAST(c.id AS TEXT) LIKE ?") // Filtro per ID come testo
+            args.add("%$it%")
+        }
         criteria.name?.takeIf { it.isNotBlank() }?.let {
             queryBuilder.append(" AND c.name LIKE ?")
             args.add("%$it%")
@@ -312,7 +315,18 @@ class YuGiRepo @Inject constructor(
             args.add(it)
         }
 
-        queryBuilder.append(" ORDER BY c.name ASC")
+        // Modifica dell'ordinamento: se idQuery è l'unico criterio non nullo, ordina per ID, altrimenti per nome.
+        if (criteria.idQuery?.isNotBlank() == true &&
+            criteria.name.isNullOrBlank() &&
+            criteria.type.isNullOrBlank() &&
+            criteria.attribute.isNullOrBlank() &&
+            criteria.level == null &&
+            criteria.atkMin == null && criteria.atkMax == null &&
+            criteria.defMin == null && criteria.defMax == null) {
+            queryBuilder.append(" ORDER BY c.id ASC")
+        } else {
+            queryBuilder.append(" ORDER BY c.name ASC")
+        }
 
         val simpleSQLiteQuery = SimpleSQLiteQuery(queryBuilder.toString(), args.toTypedArray())
         Log.d(tag, "Executing search query: ${simpleSQLiteQuery.sql} with args: ${args.joinToString()}")

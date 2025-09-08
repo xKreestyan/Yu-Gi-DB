@@ -121,7 +121,8 @@ class CardListViewModel @Inject constructor(
                attribute.isNullOrBlank() &&
                level == null &&
                atkMin == null && atkMax == null &&
-               defMin == null && defMax == null
+               defMin == null && defMax == null &&
+               idQuery.isNullOrBlank() // AGGIUNTO CONTROLLO PER idQuery
     }
 
     private fun observeAndPerformAdvancedSearch() {
