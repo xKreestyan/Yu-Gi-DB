@@ -89,10 +89,8 @@ fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController?
 fun MenuScreen1(modifier: Modifier = Modifier,navController: NavHostController? = null) {
     MenuScreen(navController)
 }
-
-
 @Composable
-fun DataBaseScreen1(modifier: Modifier = Modifier,initialSearchCriteria: AdvancedSearchCriteria? =  AdvancedSearchCriteria(name = "Drago"), navController: NavHostController? = null) {
+fun DataBaseScreen1(modifier: Modifier = Modifier,initialSearchCriteria: AdvancedSearchCriteria? = null, navController: NavHostController? = null) {
     AppScreen(
         modifier = modifier,
         appBarTitle = stringResource(id = R.string.app_name),
@@ -170,7 +168,7 @@ fun CardZoomScreen(
                 placeholder = painterResource(R.drawable.ic_launcher_foreground),
                 error = painterResource(R.drawable.ic_launcher_background),
                 contentDescription = stringResource(R.string.card_image_description),
-                contentScale = ContentScale.FillBounds,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize()
             )
         }

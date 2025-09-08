@@ -33,10 +33,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -132,8 +137,8 @@ fun StandardTopAppBar(
             Text(
                 stringResource(R.string.app_name ),
                 modifier = Modifier.clickable{
-                    navController.navigate(Screen.DataBaseScreen1.route) {
-                        popUpTo(Screen.DataBaseScreen1.route) {
+                    navController.navigate(Screen.MenuScreen1.route) {
+                        popUpTo(Screen.MenuScreen1.route) {
                             inclusive = true
                         }
                         launchSingleTop = true
@@ -175,7 +180,7 @@ fun StandardTopAppBar(
                         navController.navigate(Screen.InfoScreen.route)
                     }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                            imageVector = Icons.Filled.Info,
                             contentDescription = stringResource(R.string.card_detail_title_default)
                         )
                     }
@@ -227,7 +232,7 @@ fun ErrorMessageView(text: String, modifier: Modifier = Modifier) {
             text = text,
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Justify, 
+            textAlign = TextAlign.Justify,
             modifier = Modifier.padding(16.dp)
         )
     }
@@ -257,7 +262,7 @@ fun optionErrorView(modifier: Modifier = Modifier,
     else if (isEmpty) {
         Log.d("optionErrorView", "IsEmpty: true. isSearchActive: $isSearchActive")
         ErrorMessageView(
-            if (isSearchActive) stringResource(R.string.no_cards_found_search) 
+            if (isSearchActive) stringResource(R.string.no_cards_found_search)
             else stringResource(R.string.no_cards_in_default_list) // Specific message for empty default list
         )
     }
@@ -311,6 +316,36 @@ fun TextFieldView(
     var searchAdvanced by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
+    // Definizioni delle opzioni per i dropdown menu
+    val cardTypes = mapOf(
+        stringResource(R.string.search_any_type) to null,
+        "Carte Magia (Spell Card)" to "Spell Card",
+        "Carte Trappola (Trap Card)" to "Trap Card",
+        "Mostri Normali (Normal Monster)" to "Normal Monster",
+        "Mostri Effetto (Effect Monster)" to "Effect Monster",
+        "Mostri Effetto Scoperta (Flip Effect Monster)" to "Flip Effect Monster",
+        "Mostri Fusione (Fusion Monster)" to "Fusion Monster",
+        "Mostri Rituale (Ritual Monster)" to "Ritual Monster",
+        "Mostri Synchro (Synchro Monster)" to "Synchro Monster",
+        "Mostri XYZ (XYZ Monster)" to "XYZ Monster",
+        "Mostri Pendulum Effetto (Pendulum Effect Monster)" to "Pendulum Effect Monster",
+        "Mostri Link (Link Monster)" to "Link Monster",
+        "Token" to "Token"
+    )
+    val cardAttributes = mapOf(
+        stringResource(R.string.search_any_attribute) to null,
+        "OSCURITÀ (DARK)" to "DARK",
+        "LUCE (LIGHT)" to "LIGHT",
+        "TERRA (EARTH)" to "EARTH",
+        "ACQUA (WATER)" to "WATER",
+        "FUOCO (FIRE)" to "FIRE",
+        "VENTO (WIND)" to "WIND",
+        "DIVINO (DIVINE)" to "DIVINE"
+    )
+
+    var typeDropdownExpanded by remember { mutableStateOf(false) }
+    var attributeDropdownExpanded by remember { mutableStateOf(false) }
+
     Column(modifier = modifier) { // Il modifier principale è applicato alla Column radice
         OutlinedTextField(
             value = value,
@@ -320,9 +355,11 @@ fun TextFieldView(
             singleLine = singleLine,
             keyboardActions = keyboardActions,
             trailingIcon = {
+                val icon = if (searchAdvanced) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
+                val contentDesc = if (searchAdvanced) stringResource(R.string.search_options_collapse) else stringResource(R.string.search_options_expand)
                 Icon(
-                    imageVector = Icons.Filled.Search, // Icona per "filtri" o "impostazioni avanzate".
-                    contentDescription = "",
+                    imageVector = icon,
+                    contentDescription = contentDesc, // Descrizione per l'accessibilità
                     modifier = Modifier.clickable { searchAdvanced = !searchAdvanced }
                 )
             }
@@ -330,32 +367,71 @@ fun TextFieldView(
 
         if (searchAdvanced) {
             Column(modifier = Modifier.padding(top = 16.dp).verticalScroll(rememberScrollState())) {
-                OutlinedTextField(
-                    value = searchCriteria.type ?: "",
-                    onValueChange = { newValue ->
-                        onSearchCriteriaChange(searchCriteria.copy(type = newValue.ifBlank { null }))
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.search_bar_label_type_hint)) },
-                    singleLine = true,
-                    keyboardActions = KeyboardActions(onDone = {
-                        focusManager.clearFocus()
-                    })
-                )
+                // Dropdown per TYPE
+                ExposedDropdownMenuBox(
+                    expanded = typeDropdownExpanded,
+                    onExpandedChange = { typeDropdownExpanded = !typeDropdownExpanded },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = cardTypes.entries.find { it.value == searchCriteria.type }?.key ?: stringResource(R.string.search_any_type),
+                        onValueChange = {}, // Non modificabile direttamente
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.search_bar_label_type_hint)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeDropdownExpanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth() // Importante per l'ancoraggio del menu
+                    )
+                    ExposedDropdownMenu(
+                        expanded = typeDropdownExpanded,
+                        onDismissRequest = { typeDropdownExpanded = false }
+                    ) {
+                        cardTypes.forEach { (displayType, actualType) ->
+                            DropdownMenuItem(
+                                text = { Text(displayType) },
+                                onClick = {
+                                    onSearchCriteriaChange(searchCriteria.copy(type = actualType))
+                                    typeDropdownExpanded = false
+                                    focusManager.clearFocus()
+                                }
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = searchCriteria.attribute ?: "",
-                    onValueChange = { newValue ->
-                        onSearchCriteriaChange(searchCriteria.copy(attribute = newValue.ifBlank { null }))
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.search_bar_label_attribute_hint)) },
-                    singleLine = true,
-                    keyboardActions = KeyboardActions(onDone = {
-                        focusManager.clearFocus()
-                    })
-                )
+
+                // Dropdown per ATTRIBUTE
+                ExposedDropdownMenuBox(
+                    expanded = attributeDropdownExpanded,
+                    onExpandedChange = { attributeDropdownExpanded = !attributeDropdownExpanded },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = cardAttributes.entries.find { it.value == searchCriteria.attribute }?.key ?: stringResource(R.string.search_any_attribute),
+                        onValueChange = {}, // Non modificabile direttamente
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.search_bar_label_attribute_hint)) },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = attributeDropdownExpanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = attributeDropdownExpanded,
+                        onDismissRequest = { attributeDropdownExpanded = false }
+                    ) {
+                        cardAttributes.forEach { (displayAttribute, actualAttribute) ->
+                            DropdownMenuItem(
+                                text = { Text(displayAttribute) },
+                                onClick = {
+                                    onSearchCriteriaChange(searchCriteria.copy(attribute = actualAttribute))
+                                    attributeDropdownExpanded = false
+                                    focusManager.clearFocus()
+                                }
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // OutlinedTextField per LEVEL (rimane invariato)
                 OutlinedTextField(
                     value = searchCriteria.level?.toString() ?: "",
                     onValueChange = { newValue ->
@@ -441,98 +517,7 @@ fun InitCardsScreenView(
     val advancedSearchResults by cardListViewModel.advancedSearchResults.collectAsStateWithLifecycle()
     val isSearchingAdvanced by cardListViewModel.isSearchingAdvanced.collectAsStateWithLifecycle()
     val advancedSearchError by cardListViewModel.advancedSearchError.collectAsStateWithLifecycle()
-    // Applica i criteri di ricerca iniziali quando la Composable viene caricata o il parametro cambia
-/*
-    LaunchedEffect(initialSearchCriteria) {
-        if (initialSearchCriteria != null) {
-            var vmCriteriaToUpdate = searchCriteria // Inizia con lo stato attuale del VM
-            var needsVmUpdate = false
 
-            // Name (String?)
-            if (initialSearchCriteria.name != null) {
-                if (vmCriteriaToUpdate.name != initialSearchCriteria.name) {
-                    vmCriteriaToUpdate = vmCriteriaToUpdate.copy(name = initialSearchCriteria.name)
-                    needsVmUpdate = true
-                }
-                // Resetta il campo 'name' in initialSearchCriteria a stringa vuota, come da tua richiesta specifica
-                initialSearchCriteria.name = ""
-            }
-
-            // Type (String?)
-            if (initialSearchCriteria.type != null) {
-                if (vmCriteriaToUpdate.type != initialSearchCriteria.type) {
-                    vmCriteriaToUpdate = vmCriteriaToUpdate.copy(type = initialSearchCriteria.type)
-                    needsVmUpdate = true
-                }
-                initialSearchCriteria.type = null // Resetta a null
-            }
-
-            // Attribute (String?)
-            if (initialSearchCriteria.attribute != null) {
-                if (vmCriteriaToUpdate.attribute != initialSearchCriteria.attribute) {
-                    vmCriteriaToUpdate =
-                        vmCriteriaToUpdate.copy(attribute = initialSearchCriteria.attribute)
-                    needsVmUpdate = true
-                }
-                initialSearchCriteria.attribute = null // Resetta a null
-            }
-
-            // Level (Int?)
-            if (initialSearchCriteria.level != null) {
-                if (vmCriteriaToUpdate.level != initialSearchCriteria.level) {
-                    vmCriteriaToUpdate =
-                        vmCriteriaToUpdate.copy(level = initialSearchCriteria.level)
-                    needsVmUpdate = true
-                }
-                initialSearchCriteria.level = null
-            }
-
-            // atkMin (Int?)
-            if (initialSearchCriteria.atkMin != null) {
-                if (vmCriteriaToUpdate.atkMin != initialSearchCriteria.atkMin) {
-                    vmCriteriaToUpdate =
-                        vmCriteriaToUpdate.copy(atkMin = initialSearchCriteria.atkMin)
-                    needsVmUpdate = true
-                }
-                initialSearchCriteria.atkMin = null
-            }
-
-            // atkMax (Int?)
-            if (initialSearchCriteria.atkMax != null) {
-                if (vmCriteriaToUpdate.atkMax != initialSearchCriteria.atkMax) {
-                    vmCriteriaToUpdate =
-                        vmCriteriaToUpdate.copy(atkMax = initialSearchCriteria.atkMax)
-                    needsVmUpdate = true
-                }
-                initialSearchCriteria.atkMax = null
-            }
-
-            // defMin (Int?)
-            if (initialSearchCriteria.defMin != null) {
-                if (vmCriteriaToUpdate.defMin != initialSearchCriteria.defMin) {
-                    vmCriteriaToUpdate =
-                        vmCriteriaToUpdate.copy(defMin = initialSearchCriteria.defMin)
-                    needsVmUpdate = true
-                }
-                initialSearchCriteria.defMin = null
-            }
-
-            // defMax (Int?)
-            if (initialSearchCriteria.defMax != null) {
-                if (vmCriteriaToUpdate.defMax != initialSearchCriteria.defMax) {
-                    vmCriteriaToUpdate =
-                        vmCriteriaToUpdate.copy(defMax = initialSearchCriteria.defMax)
-                    needsVmUpdate = true
-                }
-                initialSearchCriteria.defMax = null
-            }
-
-            if (needsVmUpdate) {
-                cardListViewModel.updateAdvancedSearchCriteria(vmCriteriaToUpdate)
-            }
-        }
-    }
-*/
     LaunchedEffect(initialSearchCriteria) {
         if (initialSearchCriteria != null) {
             cardListViewModel.updateAdvancedSearchCriteria(initialSearchCriteria)
@@ -550,22 +535,19 @@ fun InitCardsScreenView(
     val isLoadingDisplay: Boolean
     val errorDisplay: String?
 
-    // Determina quale lista mostrare e gli stati di caricamento/errore associati
-    // Se i criteri di ricerca non sono quelli di default (vuoti), allora una ricerca è attiva o è stata tentata.
-    if (searchCriteria != AdvancedSearchCriteria()) { 
+    if (searchCriteria != AdvancedSearchCriteria()) {
         cardsToDisplay = advancedSearchResults
         isLoadingDisplay = isSearchingAdvanced
         errorDisplay = advancedSearchError
     } else {
-        // Nessuna ricerca attiva, mostra la lista di default (LOB)
         cardsToDisplay = defaultCards
         isLoadingDisplay = isLoadingInitial
         errorDisplay = initialError
     }
 
-    Log.d("InitCardsScreenView", 
+    Log.d("InitCardsScreenView",
         "SearchCriteria: $searchCriteria, Displaying ${cardsToDisplay.size} cards. " +
-        "Loading: $isLoadingDisplay, Error: $errorDisplay. "
+                "Loading: $isLoadingDisplay, Error: $errorDisplay. "
     )
 
     CardsScreenView(
@@ -573,7 +555,7 @@ fun InitCardsScreenView(
         cards = cardsToDisplay,
         isLoading = isLoadingDisplay,
         errorMessage = errorDisplay,
-        searchCriteria = searchCriteria, 
+        searchCriteria = searchCriteria,
         onSearchCriteriaChange = { newCriteria ->
             cardListViewModel.updateAdvancedSearchCriteria(newCriteria)
         },
@@ -587,8 +569,8 @@ fun CardsScreenView(
     cards: List<SmallPlayingCard>,
     isLoading: Boolean,
     errorMessage: String?,
-    searchCriteria: AdvancedSearchCriteria, 
-    onSearchCriteriaChange: (AdvancedSearchCriteria) -> Unit, 
+    searchCriteria: AdvancedSearchCriteria,
+    onSearchCriteriaChange: (AdvancedSearchCriteria) -> Unit,
     navController: NavHostController? = null
 ){
     Log.d("CardsScreenView", "Render. Cards: ${cards.size}, Loading: $isLoading, Error: $errorMessage, SearchCriteria: $searchCriteria")
@@ -611,17 +593,17 @@ fun CardsScreenView(
 
         val isSearchActive = searchCriteria != AdvancedSearchCriteria()
         if(optionErrorView(
-                modifier = modifier.weight(1f), // Aggiungi weight per riempire lo spazio rimanente
+                modifier = modifier.weight(1f),
                 isLoading = isLoading,
                 errorMessage = errorMessage,
                 isEmpty = cards.isEmpty(),
-                isSearchActive = isSearchActive 
+                isSearchActive = isSearchActive
             )
         ) {
             SmallCardsListView(
-                cards = cards, 
+                cards = cards,
                 navController = navController,
-                modifier = Modifier.weight(1f) // Aggiungi weight per riempire lo spazio rimanente
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -637,7 +619,7 @@ fun SmallCardsListView(
     Log.d("SmallCardsListView", "Displaying LazyVerticalGrid with ${cards.size} cards.")
     LazyVerticalGrid(
         columns = GridCells.Adaptive(180.dp),
-        modifier = modifier.fillMaxSize(), // Rimosso fillMaxSize() da qui se il Column padre ha già weight
+        modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -663,7 +645,7 @@ fun SmallCardItemView(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .size(0.dp, 280.dp) 
+                .size(0.dp, 280.dp)
         ) {
             CardUrltoView(
                 url = card.imageUrlSmall,
@@ -671,11 +653,11 @@ fun SmallCardItemView(
             )
             Card(modifier = Modifier.align(Alignment.BottomStart)
             ){Text(
-                text = card.id.toString(), 
+                text = card.id.toString(),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 4.dp), 
+                modifier = Modifier.padding(horizontal = 4.dp),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )}
@@ -709,7 +691,6 @@ private fun ClickableSearchText(
         }
     }
 }
-
 @Composable
 fun LargeCardItemView(
     modifier: Modifier = Modifier,
@@ -735,32 +716,39 @@ fun LargeCardItemView(
                     imageUrl.let { url ->
                         val encodedUrl =
                             URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
-                        navController?.navigate("cardZoom/$encodedUrl")
+                        navController?.navigate(Screen.ZoomCardScreen.createRoute(encodedUrl))
                     }
                 }
         )
         Spacer(modifier = Modifier.height(16.dp))
 
         // Type and Race
-        Row {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             ClickableSearchText(
-                label = "Type",
+                label = stringResource(R.string.card_label_type),
                 value = currentCard.type,
                 navController = navController,
                 searchCriteriaAction = {
-                    Screen.DataBaseAdvancedSearch.createRoutetype(type = currentCard.type)
+                    Screen.DataBaseAdvancedSearchType.createRoute(type = currentCard.type)
                 }
             )
             currentCard.race.let {
                 Text(" / ", style = MaterialTheme.typography.titleMedium)
-                ClickableSearchText(
-                    label = "Race", // Although displayed next to type, Race is a distinct search criterion
-                    value = it, // it is currentCard.race
-                    navController = navController,
-                    searchCriteriaAction = {
-                        Screen.DataBaseAdvancedSearch.createRoutetype(type = it) // Assuming race is a type of search
-                    }
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+                /* ClickableSearchText(
+                   label = "", // La label "Race" è implicita dalla posizione
+                   value = it,
+                   navController = navController,
+                   searchCriteriaAction = {
+                       Screen.DataBaseAdvancedSearchType.createRoute(type = it) // Ricerca per razza come tipo
+                   }
+               )*/
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -768,11 +756,11 @@ fun LargeCardItemView(
         // Attribute
         currentCard.attribute?.let {
             ClickableSearchText(
-                label = "Attribute",
+                label = stringResource(R.string.card_label_attribute),
                 value = it,
                 navController = navController,
                 searchCriteriaAction = {
-                    Screen.DataBaseAdvancedSearchAttribute.createRouteAttribute(attribute = it)
+                    Screen.DataBaseAdvancedSearchAttribute.createRoute(attribute = it)
                 }
             )
         }
@@ -781,11 +769,11 @@ fun LargeCardItemView(
         // Level/Rank
         currentCard.level?.let {
             ClickableSearchText(
-                label = "Level",
+                label = stringResource(R.string.card_label_level),
                 value = it.toString(),
                 navController = navController,
                 searchCriteriaAction = {
-                    Screen.DataBaseAdvancedSearchLivello.createRouteAttribute(Livello = it)
+                    Screen.DataBaseAdvancedSearchLivello.createRoute(Livello = it)
                 }
             )
         }
@@ -811,7 +799,7 @@ fun LargeCardItemView(
 fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
-            .data(url) 
+            .data(url)
             .crossfade(true)
             .build(),
         placeholder = painterResource(R.drawable.ic_launcher_foreground),
@@ -827,7 +815,7 @@ fun ImageRotation(imageV: Int, imageO: Int, modifier: Modifier = Modifier ){
     val imageResource = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
         imageO
     } else {
-       imageV
+        imageV
     }
     Image(
         painter =painterResource(id = imageResource),
@@ -867,11 +855,11 @@ fun CardItemPreview() {
 }
 
 
-@Preview(showBackground = true, name = "WaitIndicatorView") 
+@Preview(showBackground = true, name = "WaitIndicatorView")
 @Composable
-fun WaitIndicatorViewPreview() { 
+fun WaitIndicatorViewPreview() {
     YuGiDBTheme {
-        Box(modifier = Modifier.size(100.dp), contentAlignment = Alignment.Center){ 
+        Box(modifier = Modifier.size(100.dp), contentAlignment = Alignment.Center){
             WaitIndicatorView()
         }
     }
@@ -890,7 +878,7 @@ fun CardsScreenPopulatedDefaultPreview() {
             ),
             isLoading = false,
             errorMessage = null,
-            searchCriteria = AdvancedSearchCriteria(name = ""), 
+            searchCriteria = AdvancedSearchCriteria(name = ""),
             onSearchCriteriaChange = {},
             navController = null
         )
@@ -903,7 +891,7 @@ fun CardsScreenLoadingInitialPreview() {
     YuGiDBTheme {
         CardsScreenView(
             cards = emptyList(),
-            isLoading = true, 
+            isLoading = true,
             errorMessage = null,
             searchCriteria = AdvancedSearchCriteria(),
             onSearchCriteriaChange = {},
@@ -932,10 +920,10 @@ fun CardsScreenErrorInitialPreview() {
 fun CardsScreenSearchingByNamePreview() {
     YuGiDBTheme {
         CardsScreenView(
-            cards = emptyList(), 
-            isLoading = true,    
+            cards = emptyList(),
+            isLoading = true,
             errorMessage = null,
-            searchCriteria = AdvancedSearchCriteria(name = "Blue-Eyes"), 
+            searchCriteria = AdvancedSearchCriteria(name = "Blue-Eyes"),
             onSearchCriteriaChange = {},
             navController = null
         )
@@ -949,8 +937,8 @@ fun CardsScreenNoResultsNameSearchPreview() {
         CardsScreenView(
             cards = emptyList(),
             isLoading = false,
-            errorMessage = null, 
-            searchCriteria = AdvancedSearchCriteria(name = "NonExistentCardNameXYZ"), 
+            errorMessage = null,
+            searchCriteria = AdvancedSearchCriteria(name = "NonExistentCardNameXYZ"),
             onSearchCriteriaChange = {},
             navController = null
         )

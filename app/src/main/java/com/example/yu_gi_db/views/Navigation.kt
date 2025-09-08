@@ -15,9 +15,9 @@ sealed class Screen(val route: String) {
     object InitMainScreen : Screen("InitMainScreen")
     object SplashScreen : Screen("SplashScreen")
     object DataBaseScreen1 : Screen("DataBaseScreen1")
-    object DataBaseAdvancedSearch : Screen("DataBaseAdvancedSearch/{type}"){
+    object DataBaseAdvancedSearchType: Screen("DataBaseAdvancedSearchType/{type}"){
         const val ARG_TYPE = "type"
-        fun createRoutetype(type: String): String {
+        fun createRoute(type: String): String {
             return this.route.replace("{$ARG_TYPE}", type)
         }
         /*fun createRouteAttribute( attribute: String): String {
@@ -29,13 +29,13 @@ sealed class Screen(val route: String) {
     }
     object DataBaseAdvancedSearchAttribute : Screen("DataBaseAdvancedSearchAttribute/{attribute}") {
         const val ARG_ATTRIBUTE = "attribute"
-        fun createRouteAttribute(attribute: String): String {
+        fun createRoute(attribute: String): String {
             return this.route.replace("{$ARG_ATTRIBUTE}", attribute)
         }
     }
     object DataBaseAdvancedSearchLivello : Screen("DataBaseAdvancedSearchLivello/{Livello}"){
             const val ARG_LIVERELO = "Livello"
-            fun createRouteAttribute( Livello: Int): String {
+            fun createRoute( Livello: Int): String {
                 return this.route.replace("{$ARG_LIVERELO}", Livello.toString())
             }
 
@@ -86,11 +86,11 @@ fun Navigation() {
                 DataBaseScreen1(navController = navController)
             }
             composable(
-                route = Screen.DataBaseAdvancedSearch.route,
-                arguments = listOf(navArgument(Screen.DataBaseAdvancedSearch.ARG_TYPE) { type = NavType.StringType })
+                route = Screen.DataBaseAdvancedSearchType.route,
+                arguments = listOf(navArgument(Screen.DataBaseAdvancedSearchType.ARG_TYPE) { type = NavType.StringType })
             ) { backStackEntry ->
                 DataBaseScreen1(navController = navController,
-                    initialSearchCriteria = AdvancedSearchCriteria(type=  backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearch.ARG_TYPE))
+                    initialSearchCriteria = AdvancedSearchCriteria(type=  backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearchType.ARG_TYPE))
                 )
 
             }
