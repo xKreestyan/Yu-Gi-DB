@@ -6,21 +6,49 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
+import com.example.yu_gi_db.views.Screen.ZoomCardScreen.ARG_IMAGE_URL
 
 // This string will now be the full route pattern, e.g., "CardScreen/{cardId}"
 sealed class Screen(val route: String) {
     object InitMainScreen : Screen("InitMainScreen")
     object SplashScreen : Screen("SplashScreen")
     object DataBaseScreen1 : Screen("DataBaseScreen1")
+    object DataBaseAdvancedSearch : Screen("DataBaseAdvancedSearch/{type}"){
+        const val ARG_TYPE = "type"
+        fun createRoutetype(type: String): String {
+            return this.route.replace("{$ARG_TYPE}", type)
+        }
+        /*fun createRouteAttribute( attribute: String): String {
+            return this.route.replace("{$ARG_ATTRIBUTE}", attribute)
+        }
+        fun createRouteLivello(livello : Int): String {
+            return this.route.replace("{$ARG_LIVERELO}", livello.toString())
+        }*/
+    }
+    object DataBaseAdvancedSearchAttribute : Screen("DataBaseAdvancedSearchAttribute/{attribute}") {
+        const val ARG_ATTRIBUTE = "attribute"
+        fun createRouteAttribute(attribute: String): String {
+            return this.route.replace("{$ARG_ATTRIBUTE}", attribute)
+        }
+    }
+    object DataBaseAdvancedSearchLivello : Screen("DataBaseAdvancedSearchLivello/{Livello}"){
+            const val ARG_LIVERELO = "Livello"
+            fun createRouteAttribute( Livello: Int): String {
+                return this.route.replace("{$ARG_LIVERELO}", Livello.toString())
+            }
+
+
+    }
+
     object MenuScreen1 : Screen("MenuScreen1")
     object InfoScreen : Screen("InfoScreen")
     object SavedCardsScreen : Screen("SavedCardsScreen")
     object CardScreen : Screen("CardScreen/{cardId}") { // route property is "CardScreen/{cardId}"
-        const val ARG_CARD_ID = "cardId" // Define argument key as a constant
-        fun createRoute(cardId: String): String {
-            // Replaces the placeholder {cardId} with the actual cardId value
-            return this.route.replace("{$ARG_CARD_ID}", cardId)
+        const val ARG_CARD_ID = "cardId"
+        fun createRoute(cardId: Int): String {
+            return "CardScreen/$cardId"
         }
     }
     object ZoomCardScreen : Screen("cardZoom/{imageUrl}") { // Nuova route con placeholder
@@ -40,7 +68,7 @@ sealed class Screen(val route: String) {
         }
 
   // Example navigation to CardScreen:
-  // navController?.navigate(Screen.CardScreen.createRoute("someActualCardId"))
+  // navController?.navigate(Screen.CardScreen.createRoute(123)) // Example with Int
 */
 @Composable
 fun Navigation() {
@@ -57,10 +85,40 @@ fun Navigation() {
             composable(Screen.DataBaseScreen1.route) { // Uses Screen.DataBaseScreen1.route ("DataBaseScreen1")
                 DataBaseScreen1(navController = navController)
             }
+            composable(
+                route = Screen.DataBaseAdvancedSearch.route,
+                arguments = listOf(navArgument(Screen.DataBaseAdvancedSearch.ARG_TYPE) { type = NavType.StringType })
+            ) { backStackEntry ->
+                DataBaseScreen1(navController = navController,
+                    initialSearchCriteria = AdvancedSearchCriteria(type=  backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearch.ARG_TYPE))
+                )
+
+            }
+           composable(
+                route = Screen.DataBaseAdvancedSearchAttribute.route,
+                arguments = listOf(navArgument(Screen.DataBaseAdvancedSearchAttribute.ARG_ATTRIBUTE) { type = NavType.StringType })
+            ) { backStackEntry ->
+                DataBaseScreen1(navController = navController,
+                    initialSearchCriteria = AdvancedSearchCriteria(attribute=  backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearchAttribute.ARG_ATTRIBUTE))
+                )
+
+            }
+            composable(
+                route = Screen.DataBaseAdvancedSearchLivello.route,
+                arguments = listOf(navArgument(Screen.DataBaseAdvancedSearchLivello.ARG_LIVERELO) { type = NavType.StringType })
+            ) { backStackEntry ->
+                DataBaseScreen1(navController = navController,
+                    initialSearchCriteria = AdvancedSearchCriteria(level= ( (backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearchLivello.ARG_LIVERELO)) ?:"").toInt()  )
+                )
+
+            }
+
+
+
+
             composable(Screen.MenuScreen1.route) { // Uses Screen.DataBaseScreen1.route ("DataBaseScreen1")
                 MenuScreen1(navController = navController)
             }
-
             composable(Screen.InfoScreen.route) {
                 InformationScreen(navController = navController)
             }
@@ -70,19 +128,13 @@ fun Navigation() {
             composable(
                 route = Screen.CardScreen.route, // Uses Screen.CardScreen.route ("CardScreen/{cardId}")
                 arguments = listOf(navArgument(Screen.CardScreen.ARG_CARD_ID) { // Use the const for arg name
-                    type = NavType.StringType
-                    // nullable = false by default. Specify if it can be null or needs a default value.
+                    type = NavType.IntType // nullable = false by default. Specify if it can be null or needs a default value.
                 })
             )
             { backStackEntry ->
-                val cardIdString =
-                    backStackEntry.arguments?.getString(Screen.CardScreen.ARG_CARD_ID)
-                val cardIdInt =
-                    cardIdString?.toIntOrNull() ?: -1 // Default a -1 se null o non valido
-
                 InitLargePlayingCardScreen( // Assumendo che questo sia il Composable corretto
                     navController = navController,
-                    cardId = cardIdInt
+                    cardId =backStackEntry.arguments?.getInt(Screen.CardScreen.ARG_CARD_ID) ?:-1
                 )
 
             }

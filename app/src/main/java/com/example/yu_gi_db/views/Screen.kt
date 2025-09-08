@@ -41,6 +41,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
+import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.ui.theme.MenuScreen
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
@@ -91,7 +92,7 @@ fun MenuScreen1(modifier: Modifier = Modifier,navController: NavHostController? 
 
 
 @Composable
-fun DataBaseScreen1(modifier: Modifier = Modifier, navController: NavHostController? = null) {
+fun DataBaseScreen1(modifier: Modifier = Modifier,initialSearchCriteria: AdvancedSearchCriteria? =  AdvancedSearchCriteria(name = "Drago"), navController: NavHostController? = null) {
     AppScreen(
         modifier = modifier,
         appBarTitle = stringResource(id = R.string.app_name),
@@ -99,7 +100,8 @@ fun DataBaseScreen1(modifier: Modifier = Modifier, navController: NavHostControl
     ) { innerPadding ->
         InitCardsScreenView( // Assicurati che sia definita e importata
             modifier = Modifier.padding(innerPadding),
-            navController = navController
+            navController = navController,
+            initialSearchCriteria =initialSearchCriteria
         )
     }
 }

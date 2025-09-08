@@ -1,12 +1,12 @@
 package com.example.yu_gi_db.model
 
 data class AdvancedSearchCriteria(
-    val name: String? = null,           // Corrisponde a CardEntity.name
-    val type: String? = null,           // Corrisponde a CardEntity.type (es. "Effect Monster", "Spell Card")
-    val attribute: String? = null,      // Corrisponde a CardEntity.attribute (es. "LIGHT", "DARK")
-    val level: Int? = null,             // Corrisponde a CardEntity.level (o rank)
-    val atkMin: Int? = null,            // Per la ricerca ATK in un range (>= atkMin)
-    val atkMax: Int? = null,            // Per la ricerca ATK in un range (<= atkMax)
-    val defMin: Int? = null,            // Per la ricerca DEF in un range (>= defMin)
-    val defMax: Int? = null             // Per la ricerca DEF in un range (<= defMax)
+    var name: String? = null,           // Corrisponde a CardEntity.name
+    var type: String? = null,           // Corrisponde a CardEntity.type (es. "Effect Monster", "Spell Card")
+    var attribute: String? = null,      // Corrisponde a CardEntity.attribute (es. "LIGHT", "DARK")
+    var level: Int? = null,             // Corrisponde a CardEntity.level (o rank)
+    var atkMin: Int? = null,            // Per la ricerca ATK in un range (>= atkMin)
+    var atkMax: Int? = null,            // Per la ricerca ATK in un range (<= atkMax)
+    var defMin: Int? = null,            // Per la ricerca DEF in un range (>= defMin)
+    var defMax: Int? = null             // Per la ricerca DEF in un range (<= defMax)
 )

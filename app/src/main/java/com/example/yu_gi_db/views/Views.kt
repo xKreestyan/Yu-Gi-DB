@@ -5,6 +5,7 @@ package com.example.yu_gi_db.views
 import android.content.res.Configuration
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.core.copy
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -46,12 +47,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -326,7 +329,7 @@ fun TextFieldView(
         )
 
         if (searchAdvanced) {
-            Column(modifier = Modifier.padding(top = 16.dp)) {
+            Column(modifier = Modifier.padding(top = 16.dp).verticalScroll(rememberScrollState())) {
                 OutlinedTextField(
                     value = searchCriteria.type ?: "",
                     onValueChange = { newValue ->
@@ -424,8 +427,9 @@ fun TextFieldView(
 @Composable
 fun InitCardsScreenView(
     modifier: Modifier = Modifier,
+    initialSearchCriteria: AdvancedSearchCriteria? = null,
     cardListViewModel: CardListViewModel = hiltViewModel(),
-    navController: NavHostController? = null
+    navController: NavHostController? = null ,
 ) {
     // Stati per la lista di default (LOB)
     val defaultCards by cardListViewModel.smallCards.collectAsStateWithLifecycle()
@@ -437,7 +441,103 @@ fun InitCardsScreenView(
     val advancedSearchResults by cardListViewModel.advancedSearchResults.collectAsStateWithLifecycle()
     val isSearchingAdvanced by cardListViewModel.isSearchingAdvanced.collectAsStateWithLifecycle()
     val advancedSearchError by cardListViewModel.advancedSearchError.collectAsStateWithLifecycle()
+    // Applica i criteri di ricerca iniziali quando la Composable viene caricata o il parametro cambia
+/*
+    LaunchedEffect(initialSearchCriteria) {
+        if (initialSearchCriteria != null) {
+            var vmCriteriaToUpdate = searchCriteria // Inizia con lo stato attuale del VM
+            var needsVmUpdate = false
 
+            // Name (String?)
+            if (initialSearchCriteria.name != null) {
+                if (vmCriteriaToUpdate.name != initialSearchCriteria.name) {
+                    vmCriteriaToUpdate = vmCriteriaToUpdate.copy(name = initialSearchCriteria.name)
+                    needsVmUpdate = true
+                }
+                // Resetta il campo 'name' in initialSearchCriteria a stringa vuota, come da tua richiesta specifica
+                initialSearchCriteria.name = ""
+            }
+
+            // Type (String?)
+            if (initialSearchCriteria.type != null) {
+                if (vmCriteriaToUpdate.type != initialSearchCriteria.type) {
+                    vmCriteriaToUpdate = vmCriteriaToUpdate.copy(type = initialSearchCriteria.type)
+                    needsVmUpdate = true
+                }
+                initialSearchCriteria.type = null // Resetta a null
+            }
+
+            // Attribute (String?)
+            if (initialSearchCriteria.attribute != null) {
+                if (vmCriteriaToUpdate.attribute != initialSearchCriteria.attribute) {
+                    vmCriteriaToUpdate =
+                        vmCriteriaToUpdate.copy(attribute = initialSearchCriteria.attribute)
+                    needsVmUpdate = true
+                }
+                initialSearchCriteria.attribute = null // Resetta a null
+            }
+
+            // Level (Int?)
+            if (initialSearchCriteria.level != null) {
+                if (vmCriteriaToUpdate.level != initialSearchCriteria.level) {
+                    vmCriteriaToUpdate =
+                        vmCriteriaToUpdate.copy(level = initialSearchCriteria.level)
+                    needsVmUpdate = true
+                }
+                initialSearchCriteria.level = null
+            }
+
+            // atkMin (Int?)
+            if (initialSearchCriteria.atkMin != null) {
+                if (vmCriteriaToUpdate.atkMin != initialSearchCriteria.atkMin) {
+                    vmCriteriaToUpdate =
+                        vmCriteriaToUpdate.copy(atkMin = initialSearchCriteria.atkMin)
+                    needsVmUpdate = true
+                }
+                initialSearchCriteria.atkMin = null
+            }
+
+            // atkMax (Int?)
+            if (initialSearchCriteria.atkMax != null) {
+                if (vmCriteriaToUpdate.atkMax != initialSearchCriteria.atkMax) {
+                    vmCriteriaToUpdate =
+                        vmCriteriaToUpdate.copy(atkMax = initialSearchCriteria.atkMax)
+                    needsVmUpdate = true
+                }
+                initialSearchCriteria.atkMax = null
+            }
+
+            // defMin (Int?)
+            if (initialSearchCriteria.defMin != null) {
+                if (vmCriteriaToUpdate.defMin != initialSearchCriteria.defMin) {
+                    vmCriteriaToUpdate =
+                        vmCriteriaToUpdate.copy(defMin = initialSearchCriteria.defMin)
+                    needsVmUpdate = true
+                }
+                initialSearchCriteria.defMin = null
+            }
+
+            // defMax (Int?)
+            if (initialSearchCriteria.defMax != null) {
+                if (vmCriteriaToUpdate.defMax != initialSearchCriteria.defMax) {
+                    vmCriteriaToUpdate =
+                        vmCriteriaToUpdate.copy(defMax = initialSearchCriteria.defMax)
+                    needsVmUpdate = true
+                }
+                initialSearchCriteria.defMax = null
+            }
+
+            if (needsVmUpdate) {
+                cardListViewModel.updateAdvancedSearchCriteria(vmCriteriaToUpdate)
+            }
+        }
+    }
+*/
+    LaunchedEffect(initialSearchCriteria) {
+        if (initialSearchCriteria != null) {
+            cardListViewModel.updateAdvancedSearchCriteria(initialSearchCriteria)
+        }
+    }
     // Log per debug chiavi duplicate
     if (defaultCards.isNotEmpty()) { // Log solo se la lista non è vuota per evitare spam
         Log.d("DEBUG_KEYS_DEFAULT", "Default cards IDs: ${defaultCards.map { it.id }.joinToString()}")
@@ -557,7 +657,7 @@ fun SmallCardItemView(
     Card(
         modifier = modifier,
         onClick = {
-            navController?.navigate(Screen.CardScreen.createRoute(card.id.toString()))
+            navController?.navigate(Screen.CardScreen.createRoute(card.id))
         }
     ) {
         Box(
@@ -583,11 +683,37 @@ fun SmallCardItemView(
     }
 }
 
+@Composable
+private fun ClickableSearchText(
+    label: String,
+    value: String?,
+    navController: NavHostController?,
+    searchCriteriaAction: () -> String // Lambda to create the specific search route
+) {
+    value?.let {
+        Row {
+            Text("$label: ", style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.primary),
+                modifier = Modifier.clickable {
+                    navController?.navigate(searchCriteriaAction()) {
+                        popUpTo(Screen.MenuScreen1.route) {
+                            inclusive = false
+                        }
+                        // Assicura che la nuova rotta sia l'unica istanza in cima
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+    }
+}
 
 @Composable
 fun LargeCardItemView(
     modifier: Modifier = Modifier,
-    card: LargePlayingCard ?=null,
+    card: LargePlayingCard? = null,
     navController: NavHostController? = null
 ) {
     Column(
@@ -597,12 +723,12 @@ fun LargeCardItemView(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val card = card ?: return@Column
-        val firstCardImage: CardImage? = card.cardImages.firstOrNull()
-        val imageUrl: String = firstCardImage?.imageUrlSmall ?: "" 
+        val currentCard = card ?: return@Column // Renamed for clarity
+        val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
+        val imageUrl: String = firstCardImage?.imageUrlSmall ?: ""
 
         CardUrltoView(
-            imageUrl, 
+            imageUrl,
             modifier = Modifier
                 .size(260.dp, 350.dp)
                 .clickable(enabled = navController != null && imageUrl.isNotEmpty()) {
@@ -614,29 +740,60 @@ fun LargeCardItemView(
                 }
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Type: ${card.type} / ${card.race}",
-            style = MaterialTheme.typography.titleMedium
-        )
+
+        // Type and Race
+        Row {
+            ClickableSearchText(
+                label = "Type",
+                value = currentCard.type,
+                navController = navController,
+                searchCriteriaAction = {
+                    Screen.DataBaseAdvancedSearch.createRoutetype(type = currentCard.type)
+                }
+            )
+            currentCard.race.let {
+                Text(" / ", style = MaterialTheme.typography.titleMedium)
+                ClickableSearchText(
+                    label = "Race", // Although displayed next to type, Race is a distinct search criterion
+                    value = it, // it is currentCard.race
+                    navController = navController,
+                    searchCriteriaAction = {
+                        Screen.DataBaseAdvancedSearch.createRoutetype(type = it) // Assuming race is a type of search
+                    }
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(8.dp))
 
-        card.attribute?.let {
-            Text(
-                text = "Attribute: $it",
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-        card.level?.let {
-            Text(
-                text = "Level/Rank: $it",
-                style = MaterialTheme.typography.bodyLarge
+        // Attribute
+        currentCard.attribute?.let {
+            ClickableSearchText(
+                label = "Attribute",
+                value = it,
+                navController = navController,
+                searchCriteriaAction = {
+                    Screen.DataBaseAdvancedSearchAttribute.createRouteAttribute(attribute = it)
+                }
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (card.atk != null || card.def != null) {
-            val atkText = card.atk?.toString() ?: "N/A"
-            val defText = card.def?.toString() ?: "N/A"
+        // Level/Rank
+        currentCard.level?.let {
+            ClickableSearchText(
+                label = "Level",
+                value = it.toString(),
+                navController = navController,
+                searchCriteriaAction = {
+                    Screen.DataBaseAdvancedSearchLivello.createRouteAttribute(Livello = it)
+                }
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (currentCard.atk != null || currentCard.def != null) {
+            val atkText = currentCard.atk?.toString() ?: "N/A"
+            val defText = currentCard.def?.toString() ?: "N/A"
             Text(
                 text = "ATK: $atkText / DEF: $defText",
                 style = MaterialTheme.typography.bodyLarge
@@ -644,14 +801,12 @@ fun LargeCardItemView(
             Spacer(modifier = Modifier.height(16.dp))
         }
         Text(
-            text = card.desc,
+            text = currentCard.desc,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Justify
         )
     }
 }
-
-
 @Composable
 fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
     AsyncImage(
