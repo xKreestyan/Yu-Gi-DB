@@ -603,7 +603,7 @@ fun CardsScreenView(
             SmallCardsListView(
                 cards = cards,
                 navController = navController,
-                modifier = Modifier.weight(1f) // Questo modifier è per la LazyVerticalGrid
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -613,21 +613,19 @@ fun CardsScreenView(
 @Composable
 fun SmallCardsListView(
     cards: List<SmallPlayingCard>,
-    modifier: Modifier = Modifier, // Questo modifier è per la LazyVerticalGrid stessa
+    modifier: Modifier = Modifier,
     navController: NavHostController? = null
 ) {
     Log.d("SmallCardsListView", "Displaying LazyVerticalGrid with ${cards.size} cards.")
     LazyVerticalGrid(
         columns = GridCells.Adaptive(180.dp),
-        modifier = modifier.fillMaxSize(), // Applica il modifier ricevuto alla LazyVerticalGrid
+        modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(cards, key = { card -> card.id }) { card ->
-            // Non passiamo più il 'modifier' di SmallCardsListView a SmallCardItemView.
-            // SmallCardItemView gestirà i propri modifier interni.
-            SmallCardItemView(card = card, navController = navController)
+            SmallCardItemView(modifier = modifier,card = card, navController = navController)
         }
     }
 }
@@ -635,38 +633,34 @@ fun SmallCardsListView(
 @Composable
 fun SmallCardItemView(
     card: SmallPlayingCard,
+    modifier: Modifier = Modifier,
     navController: NavHostController? = null
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(), // Facciamo in modo che la Card occupi la larghezza della cella
+        modifier = modifier,
         onClick = {
             navController?.navigate(Screen.CardScreen.createRoute(card.id))
         }
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth() // Riempie la larghezza della Card genitore
-                .height(280.dp) // Altezza fissa per il contenuto dell'immagine
+                .fillMaxWidth()
+                .size(0.dp, 280.dp)
         ) {
             CardUrltoView(
                 url = card.imageUrlSmall,
-                modifier = Modifier.fillMaxSize() // Riempie il Box genitore
+                modifier = modifier.fillMaxSize()
             )
-            Card(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(horizontal = 4.dp, vertical = 2.dp) // Aggiunto padding per estetica
-            ){
-                Text(
-                    text = card.id.toString(),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp), // Aggiunto padding al testo
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+            Card(modifier = Modifier.align(Alignment.BottomStart)
+            ){Text(
+                text = card.id.toString(),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 4.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )}
         }
     }
 }
@@ -806,7 +800,7 @@ fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(url)
-            .crossfade(true) // Considera di testare con 'false' se il lag è grave
+            .crossfade(true)
             .build(),
         placeholder = painterResource(R.drawable.ic_launcher_foreground),
         error = painterResource(R.drawable.ic_launcher_background),
