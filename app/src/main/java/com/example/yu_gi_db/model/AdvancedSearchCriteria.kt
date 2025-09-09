@@ -9,5 +9,6 @@ data class AdvancedSearchCriteria(
     var atkMax: Int? = null,            // Per la ricerca ATK in un range (<= atkMax)
     var defMin: Int? = null,            // Per la ricerca DEF in un range (>= defMin)
     var defMax: Int? = null,            // Per la ricerca DEF in un range (<= defMax)
-    var idQuery: String? = null         // NUOVO CAMPO per la ricerca tramite ID (come stringa)
+    var idQuery: String? = null,        // NUOVO CAMPO per la ricerca tramite ID (come stringa)
+    var isFavorite: Boolean? = null     // NUOVO CAMPO per filtrare per preferiti
 )

@@ -238,7 +238,6 @@ fun InformationScreen(
 fun SavedCardsScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController? = null,
-    cardListViewModel: CardListViewModel = hiltViewModel()
 ) {
     AppScreen(
         modifier = modifier,
@@ -248,7 +247,7 @@ fun SavedCardsScreen(
         InitCardsScreenView( // Assicurati che sia definita e importata
             modifier = Modifier.padding(innerPadding),
             navController = navController,
-            initialSearchCriteria = AdvancedSearchCriteria()
+            initialSearchCriteria = AdvancedSearchCriteria(isFavorite = true)
         )
     }
 }

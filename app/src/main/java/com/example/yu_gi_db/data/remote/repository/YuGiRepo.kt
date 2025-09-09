@@ -314,15 +314,21 @@ class YuGiRepo @Inject constructor(
             queryBuilder.append(" AND c.def <= ?")
             args.add(it)
         }
+        // NUOVA LOGICA PER ISFAVORITE
+        criteria.isFavorite?.let {
+            queryBuilder.append(" AND c.isFavorite = ?")
+            args.add(if (it) 1 else 0) // Converte Boolean a Int (1 per true, 0 per false) per SQLite
+        }
 
-        // Modifica dell'ordinamento: se idQuery è l'unico criterio non nullo, ordina per ID, altrimenti per nome.
+        // Modifica dell'ordinamento: se idQuery è l'unico criterio non nullo (inclusa la verifica di isFavorite), ordina per ID, altrimenti per nome.
         if (criteria.idQuery?.isNotBlank() == true &&
             criteria.name.isNullOrBlank() &&
             criteria.type.isNullOrBlank() &&
             criteria.attribute.isNullOrBlank() &&
             criteria.level == null &&
             criteria.atkMin == null && criteria.atkMax == null &&
-            criteria.defMin == null && criteria.defMax == null) {
+            criteria.defMin == null && criteria.defMax == null &&
+            criteria.isFavorite == null) { // <-- AGGIUNTO CONTROLLO PER isFavorite
             queryBuilder.append(" ORDER BY c.id ASC")
         } else {
             queryBuilder.append(" ORDER BY c.name ASC")
