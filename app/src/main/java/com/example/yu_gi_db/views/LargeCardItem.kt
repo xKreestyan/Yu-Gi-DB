@@ -79,7 +79,7 @@ fun LargeCradUI(
                 }
             )
 
-            // Nuova Card per la cornice
+            // Nuova Card per la cornicee
             Card(
                 modifier = Modifier.constrainAs(frameRef) {
                     top.linkTo(cardNameBoxRef.bottom, margin = 8.dp)
