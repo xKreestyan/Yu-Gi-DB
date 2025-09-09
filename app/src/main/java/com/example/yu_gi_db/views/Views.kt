@@ -176,7 +176,7 @@ fun StandardTopAppBar(
                     })
                     {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.List,
+                            imageVector = Icons.Filled.FavoriteBorder,
                             contentDescription = stringResource(R.string.card_detail_title_default)
                         )
                     }
@@ -806,7 +806,7 @@ fun LargeCardItemView(
                     contentDescription = contentDesc, // Descrizione per l'accessibilità
                     modifier = Modifier
                         .clickable { cardListViewModel?.toggleFavoriteStatus(card.id)
-                        favoriteBoolean=!favoriteBoolean
+                            favoriteBoolean=!favoriteBoolean
                         }
                 )
             }
