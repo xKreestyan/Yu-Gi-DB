@@ -176,7 +176,7 @@ fun StandardTopAppBar(
                     })
                     {
                         Icon(
-                            imageVector = Icons.Filled.FavoriteBorder,
+                            imageVector = Icons.Filled.Favorite,
                             contentDescription = stringResource(R.string.card_detail_title_default)
                         )
                     }
