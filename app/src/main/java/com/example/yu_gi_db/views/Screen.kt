@@ -42,7 +42,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
-import com.example.yu_gi_db.ui.theme.MenuScreen
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 

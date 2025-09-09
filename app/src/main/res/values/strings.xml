@@ -43,4 +43,8 @@
     <string name="isfavorite">isFavorite</string>
     <string name="notfavorite">notFavorite</string>
     <string name="search_id">search_id</string>
+    <string name="background_image_description">Immagine di sfondo per i dettagli della carta</string>
+    <string name="new_database_screen_title">Database Carte</string>
+    <string name="card_name_background_description">Sfondo per il nome della carta</string>
+
 </resources>
