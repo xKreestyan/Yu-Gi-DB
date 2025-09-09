@@ -233,7 +233,7 @@ fun YugiohParallelepipedDiagonalButtonPreview() {
                         )
                     ),
                     contentColor = Color.White,
-                    depth = 3.dp,
+                    depth = 6.dp,
                     buttonShape = ParallelogramShape(shearFactor = 0f)
                 )
             }

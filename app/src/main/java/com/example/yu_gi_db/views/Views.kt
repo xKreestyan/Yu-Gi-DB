@@ -211,7 +211,7 @@ fun WaitIndicatorView(modifier: Modifier = Modifier) {
     Box(Modifier.fillMaxSize()) { // Usa Box per centrare se necessario
         AsyncImage(
             model = ImageRequest.Builder(context)
-                .data(R.drawable.infinito_elettrico)
+                .data(R.drawable.optimized_refined)
                 .decoderFactory(ImageDecoderDecoder.Factory())
                 .build(),
             contentDescription = stringResource(R.string.loading_indicator_description),

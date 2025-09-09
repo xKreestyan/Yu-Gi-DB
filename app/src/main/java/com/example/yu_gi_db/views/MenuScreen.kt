@@ -1,4 +1,4 @@
-package com.example.yu_gi_db.ui.theme
+package com.example.yu_gi_db.views
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -22,6 +22,7 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.navigation.NavController
 import com.example.yu_gi_db.R
+import com.example.yu_gi_db.ui.theme.darken
 import com.example.yu_gi_db.views.Screen
 
 @Composable
@@ -100,34 +101,35 @@ fun MenuScreen(navController: NavController? = null) {
                 Text(
                     text = "Yu-Gi-DB",
                     color = Color.Black,
-                    style = AppTypography.headlineMedium.copy(
+                    style = _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.headlineMedium.copy(
                         drawStyle = Stroke(width = 9f)
                     )
                 )
                 Text(
                     text = "Yu-Gi-DB",
-                    color = LightSilver,
-                    style = AppTypography.headlineMedium
+                    color = _root_ide_package_.com.example.yu_gi_db.ui.theme.LightSilver,
+                    style = _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.headlineMedium
                 )
             }
 
-            val buttonFaceColor = DarkSlateBlue
+            val buttonFaceColor = _root_ide_package_.com.example.yu_gi_db.ui.theme.DarkSlateBlue
             val buttonFaceBrush = Brush.verticalGradient(
                 colors = listOf(
-                    RoyalBlueDark.darken(0.6f),
-                    MidnightBlue,
-                    SapphireBlue,
-                    ElectricCyan,
-                    SapphireBlue,
-                    MidnightBlue,
-                    RoyalBlueDark.darken(0.6f)
+                    _root_ide_package_.com.example.yu_gi_db.ui.theme.RoyalBlueDark.darken(0.6f),
+                    _root_ide_package_.com.example.yu_gi_db.ui.theme.MidnightBlue,
+                    _root_ide_package_.com.example.yu_gi_db.ui.theme.SapphireBlue,
+                    _root_ide_package_.com.example.yu_gi_db.ui.theme.ElectricCyan,
+                    _root_ide_package_.com.example.yu_gi_db.ui.theme.SapphireBlue,
+                    _root_ide_package_.com.example.yu_gi_db.ui.theme.MidnightBlue,
+                    _root_ide_package_.com.example.yu_gi_db.ui.theme.RoyalBlueDark.darken(0.6f)
                 )
             )
-            val buttonContentColor = RoyalBlueDark.darken(factor = 0.6f)
+            val buttonContentColor = _root_ide_package_.com.example.yu_gi_db.ui.theme.RoyalBlueDark.darken(factor = 0.6f)
             val buttonDepth = 8.dp
-            val buttonShapeStyle = ParallelogramShape(shearFactor = 0.15f)
+            val buttonShapeStyle =
+                _root_ide_package_.com.example.yu_gi_db.ui.theme.ParallelogramShape(shearFactor = 0.15f)
 
-            YugiohParallelepipedButton(
+            _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
                 text = "DATABASE",
                 onClick = { navController?.navigate(Screen.DataBaseScreen1.route) },
                 modifier = Modifier.layoutId("button1"),
@@ -136,10 +138,10 @@ fun MenuScreen(navController: NavController? = null) {
                 contentColor = buttonContentColor,
                 depth = buttonDepth,
                 buttonShape = buttonShapeStyle,
-                textStyle = AppTypography.labelLarge
+                textStyle = _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.labelLarge
             )
 
-            YugiohParallelepipedButton(
+            _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
                 text = "PREFERITI",
                 onClick = { navController?.navigate(Screen.SavedCardsScreen.route) },
                 modifier = Modifier.layoutId("button2"),
@@ -148,10 +150,10 @@ fun MenuScreen(navController: NavController? = null) {
                 contentColor = buttonContentColor,
                 depth = buttonDepth,
                 buttonShape = buttonShapeStyle,
-                textStyle = AppTypography.labelLarge
+                textStyle = _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.labelLarge
             )
 
-            YugiohParallelepipedButton(
+            _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
                 text = "REGOLAMENTO",
                 onClick = { /* Azione per REGOLAMENTO */ },
                 modifier = Modifier.layoutId("button3"),
@@ -160,19 +162,19 @@ fun MenuScreen(navController: NavController? = null) {
                 contentColor = buttonContentColor,
                 depth = buttonDepth,
                 buttonShape = buttonShapeStyle,
-                textStyle = AppTypography.labelLarge
+                textStyle = _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.labelLarge
             )
 
-            YugiohParallelepipedButton(
+            _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
                 text = "OPZIONI",
-                onClick = {  navController?.navigate(Screen.InfoScreen.route)},
+                onClick = { navController?.navigate(Screen.InfoScreen.route) },
                 modifier = Modifier.layoutId("button4"),
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,
                 contentColor = buttonContentColor,
                 depth = buttonDepth,
                 buttonShape = buttonShapeStyle,
-                textStyle = AppTypography.labelLarge
+                textStyle = _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.labelLarge
             )
         }
     }
@@ -181,7 +183,7 @@ fun MenuScreen(navController: NavController? = null) {
 @Preview(showBackground = true, name = "Menu Screen Portrait")
 @Composable
 fun MenuScreenPreviewPortrait() {
-    YuGiDBTheme {
+    _root_ide_package_.com.example.yu_gi_db.ui.theme.YuGiDBTheme {
         MenuScreen()
     }
 }
@@ -189,7 +191,7 @@ fun MenuScreenPreviewPortrait() {
 @Preview(showBackground = true, name = "Menu Screen Landscape", widthDp = 640, heightDp = 360)
 @Composable
 fun MenuScreenPreviewLandscape() {
-    YuGiDBTheme {
+    _root_ide_package_.com.example.yu_gi_db.ui.theme.YuGiDBTheme {
         MenuScreen()
     }
 }

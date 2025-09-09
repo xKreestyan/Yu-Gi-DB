@@ -1,5 +1,6 @@
 package com.example.yu_gi_db.views
 
+import android.content.res.Configuration // IMPORT AGGIUNTO
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration // IMPORT AGGIUNTO
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,7 +44,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
-import com.example.yu_gi_db.ui.theme.MenuScreen
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 
@@ -64,21 +65,40 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
 }
 
 @Composable
-fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
-    Box{
+fun SplashScreen(modifier: Modifier = Modifier, navController: NavHostController? = null) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    Box(modifier = modifier.fillMaxSize()) { 
         BoxWithConstraints(
-            modifier = modifier
-                .fillMaxHeight()
+            modifier = Modifier.fillMaxSize() 
         ) {
-            ImageRotation(R.drawable.yu_gi_oh_schermata_principale_v ,R.drawable.yu_gi_oh_schermata_principale_o,modifier.fillMaxSize())
+            ImageRotation(
+                R.drawable.yu_gi_oh_schermata_principale_v,
+                R.drawable.yu_gi_oh_schermata_principale_o,
+                Modifier.fillMaxSize()
+            )
+
+            val gifSize = if (isLandscape) {
+                this@BoxWithConstraints.maxWidth / 7
+            } else {
+                this@BoxWithConstraints.maxWidth / 5
+            }
+
+            val bottomPaddingValue = if (isLandscape) {
+                this@BoxWithConstraints.maxHeight / 120
+            } else {
+                this@BoxWithConstraints.maxHeight / 100
+            }
+
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = this.maxHeight / 8),
-                contentAlignment = Alignment.BottomCenter
+                    .fillMaxSize() 
+                    .padding(bottom = bottomPaddingValue), 
+                contentAlignment = Alignment.BottomCenter 
             ) {
-                WaitIndicatorView( // Assicurati che sia definita e importata
-                    Modifier.size(this@BoxWithConstraints.maxWidth / 5) // <<< DIMENSIONE MODIFICATA
+                WaitIndicatorView(
+                    Modifier.size(gifSize)
                 )
             }
         }
@@ -89,17 +109,23 @@ fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController?
 fun MenuScreen1(modifier: Modifier = Modifier,navController: NavHostController? = null) {
     MenuScreen(navController)
 }
+
+
 @Composable
-fun DataBaseScreen1(modifier: Modifier = Modifier,initialSearchCriteria: AdvancedSearchCriteria? = null, navController: NavHostController? = null) {
+fun DataBaseScreen1(
+    modifier: Modifier = Modifier, 
+    navController: NavHostController? = null,
+    initialSearchCriteria: AdvancedSearchCriteria? = null
+) {
     AppScreen(
         modifier = modifier,
         appBarTitle = stringResource(id = R.string.app_name),
         navController = navController
     ) { innerPadding ->
-        InitCardsScreenView( // Assicurati che sia definita e importata
+        InitCardsScreenView( 
             modifier = Modifier.padding(innerPadding),
             navController = navController,
-            initialSearchCriteria =initialSearchCriteria
+            initialSearchCriteria = initialSearchCriteria 
         )
     }
 }
@@ -131,14 +157,14 @@ fun InitLargePlayingCardScreen(
         appBarTitle = largeCard?.name ?: stringResource(id = R.string.card_detail_title_default),
         navController = navController
     ) { innerPadding ->
-        if(optionErrorView( // Assicurati che sia definita e importata
+        if(optionErrorView( 
                 modifier = modifier.padding(innerPadding),
                 isLoading = isLoading,
                 errorMessage = error,
                 isEmpty = (largeCard == null)
             ))
         {
-            LargeCardItemView(modifier.padding(innerPadding),card = largeCard, navController = navController) // Assicurati che sia definita e importata
+            LargeCardItemView(modifier.padding(innerPadding),card = largeCard, navController = navController) 
         }
     }
 }
@@ -168,7 +194,7 @@ fun CardZoomScreen(
                 placeholder = painterResource(R.drawable.ic_launcher_foreground),
                 error = painterResource(R.drawable.ic_launcher_background),
                 contentDescription = stringResource(R.string.card_image_description),
-                contentScale = ContentScale.Fit,
+                contentScale = ContentScale.Fit, 
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -193,7 +219,7 @@ fun InformationScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            InfoSectionView( // Assicurati che sia definita e importata
+            InfoSectionView( 
                 title = stringResource(R.string.info_section_about_title)
             ) {
                 Text(
@@ -240,13 +266,6 @@ fun SavedCardsScreen(
     navController: NavHostController? = null,
     cardListViewModel: CardListViewModel = hiltViewModel()
 ) {
-    /*
-    val savedCards by viewModel.savedCardsList.collectAsStateWithLifecycle() // Assicurati che savedCardsList esista nel ViewModel
-    val isLoading by viewModel.isLoadingSavedCards.collectAsStateWithLifecycle() // Assicurati che isLoadingSavedCards esista
-
-    LaunchedEffect(Unit) {
-        viewModel.fetchSavedCards() // Assicurati che fetchSavedCards esista
-    }*/
     val cards by cardListViewModel.smallCards.collectAsStateWithLifecycle()
     val isLoading by cardListViewModel.isLoadingInitialData.collectAsStateWithLifecycle()
     val error by cardListViewModel.initialDataError.collectAsStateWithLifecycle()
@@ -264,29 +283,26 @@ fun SavedCardsScreen(
 
     AppScreen(
         modifier = modifier,
-        appBarTitle = stringResource(id = R.string.saved_cards_title), // Aggiungi questa stringa a strings.xml
+        appBarTitle = stringResource(id = R.string.saved_cards_title), 
         navController = navController
     ) { innerPadding ->
         if (optionErrorView(
-                modifier = Modifier.padding(innerPadding), // optionErrorView si posizionerà all'interno di questo Box
+                modifier = Modifier.padding(innerPadding), 
                 isLoading = isLoading,
                 isEmpty = cards.isEmpty(),
                 errorMessage = error,
-                //isNotBlank = false // Per usare R.string.no_cards_saved quando isEmpty
             )
         ) {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier
                     .padding(innerPadding)
-                    .fillMaxSize(), // La griglia riempie il Box con padding
+                    .fillMaxSize(), 
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(cards, key = { card -> card.id }) { card ->
-                    // Assumendo che SmallPlayingCardView esista e accetti questi parametri
-                    // e che SmallPlayingCard abbia un campo 'name' e 'card_images'
                     SmallCardItemView(
                         card = card,
                         navController = navController
@@ -320,7 +336,7 @@ fun DataBaseScreen1Preview() {
 @Composable
 fun CardZoomScreenPreview() {
     YuGiDBTheme {
-        CardZoomScreen(url = "")
+        CardZoomScreen(url = "") 
     }
 }
 
@@ -336,9 +352,7 @@ fun InfoScreenViewPreview() {
 @Composable
 fun SavedCardsScreenEmptyPreview() {
     YuGiDBTheme {
-        // Per una preview "vera", potresti voler usare un ViewModel fake
-        // che espone una lista vuota e isLoading = false
-        SavedCardsScreen(navController = null /* o un NavController fake */)
+        SavedCardsScreen(navController = null)
     }
 }
 
@@ -346,22 +360,8 @@ fun SavedCardsScreenEmptyPreview() {
 @Composable
 fun SavedCardsScreenWithDataPreview() {
     YuGiDBTheme {
-        // Per una preview "vera", potresti voler usare un ViewModel fake
-        // che espone dati di esempio e isLoading = false
-        // Ad esempio, creando un CardListViewModelFake
-        SavedCardsScreen(navController = null /* o un NavController fake */)
+        SavedCardsScreen(navController = null)
     }
 }
 
-// Assicurati che le seguenti Composable siano definite e accessibili:
-// - StandardTopAppBar (in Views.kt o altrove)
-// - WaitIndicatorView
-// - InitCardsScreenView
-// - optionErrorView
-// - LargeCardItemView
-// - InfoSection
-// - SmallPlayingCardView
-// E che le classi modello come SmallPlayingCard e CardImage siano corrette.
-// Ricorda di aggiungere le stringhe mancanti a strings.xml:
-// R.string.saved_cards_title (es. "Carte Salvate")
-// R.string.no_saved_cards (es. "Nessuna carta salvata.")
+
