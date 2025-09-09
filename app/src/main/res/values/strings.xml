@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Yu-Gi-DB</string> <!-- Generalmente non si traduce il nome dell'app, ma se dovesse essere generico, "Yu-Gi-Oh! DB" -->
     <string name="splash_content_description">Yu-Gi-Oh! Database Splash Screen</string>
-    <string name="card_image_description">Image of card %1$s</string>
+    <string name="card_image_description">Card image %1$s</string>
     <string name="search_bar_label">Search by ID</string>
     <string name="error_message_generic">Error: %1$s</string>
     <string name="no_cards_saved">No cards saved</string>
@@ -43,4 +43,27 @@
     <string name="isfavorite">Favorite</string> <!-- Usato come etichetta o stato -->
     <string name="notfavorite">Not Favorite</string> <!-- Usato come etichetta o stato -->
     <string name="search_id">Search ID</string>
+    <!-- Language Settings Strings -->
+    <string name="language_setting_title">Language</string>
+    <string name="language_english">English</string>
+    <string name="language_italian">Italian</string>
+    <string name="language_system_default">System Default</string>
+
+    <!-- <string name="info_section_about_content">Yu-Gi-DB is an application for browsing a Yu-Gi-Oh!
+        card database, allowing users to search, view details, and manage their collections (future
+        functionality). This app is created for demonstrational and educational purposes.
+    </string> -->
+
+    <!-- <string name="info_section_credits_content">Card data is kindly provided by the YGOPRODeck API
+        (ygoprodeck.com). Special thanks to the Android developer community.
+    </string> -->
+
+    <!-- <string name="info_section_about_content">Yu-Gi-DB is an application for browsing a Yu-Gi-Oh!
+        card database, allowing users to search, view details, and manage their collections (future
+        functionality). This app is created for demonstrational and educational purposes.
+    </string> -->
+
+    <!-- <string name="info_section_credits_content">Card data is kindly provided by the YGOPRODeck API
+        (ygoprodeck.com). Special thanks to the Android developer community.
+    </string> -->
 </resources>

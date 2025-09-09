@@ -43,4 +43,9 @@
     <string name="isfavorite">Preferita</string> <!-- Usato come etichetta o stato -->
     <string name="notfavorite">Non Preferita</string> <!-- Usato come etichetta o stato -->
     <string name="search_id">Cerca ID</string>
+    <!-- Altre stringhe esistenti qui... -->
+    <string name="language_setting_title">Lingua</string>
+    <string name="language_english">Inglese</string>
+    <string name="language_italian">Italiano</string>
+    <string name="language_system_default">Predefinito di Sistema</string>
 </resources>
