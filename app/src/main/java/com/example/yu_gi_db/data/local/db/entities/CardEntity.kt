@@ -21,5 +21,6 @@ data class CardEntity(
     val level: Int?,
     val attribute: String?,
     val localImagePath: String?, // RINOMINATO da localImageSmallPath
-    val cardPrices: List<CardPrice>
+    val cardPrices: List<CardPrice>,
+    val isFavorite: Boolean = false
 )

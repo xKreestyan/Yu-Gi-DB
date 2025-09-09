@@ -4,7 +4,8 @@ import com.google.gson.annotations.SerializedName // Importa questo se usi Gson 
 //Anteprima (small) della carta
 data class SmallPlayingCard(
         val id: Int,
-        val imageUrlSmall: String
+        val imageUrlSmall: String,
+        val isFavorite: Boolean = false // isFavorite mantenuto
 )
 //Lista formata dalla singola carta
 data class SmallPlayingCardResponse(
@@ -34,7 +35,8 @@ data class LargePlayingCard(
         val cardSets: List<CardSet>,
 
         @SerializedName("card_prices")
-        val cardPrices: List<CardPrice>
+        val cardPrices: List<CardPrice>,
+        val isFavorite: Boolean = false // MANTENUTO da modifica precedente
 )
 
 //Immagini della carta

@@ -8,67 +8,73 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
-import com.example.yu_gi_db.views.Screen.ZoomCardScreen.ARG_IMAGE_URL
 
 // This string will now be the full route pattern, e.g., "CardScreen/{cardId}"
 sealed class Screen(val route: String) {
     object InitMainScreen : Screen("InitMainScreen")
     object SplashScreen : Screen("SplashScreen")
     object DataBaseScreen1 : Screen("DataBaseScreen1")
-    object DataBaseAdvancedSearchType: Screen("DataBaseAdvancedSearchType/{type}"){
-        const val ARG_TYPE = "type"
-        fun createRoute(type: String): String {
-            return this.route.replace("{$ARG_TYPE}", type)
-        }
-        /*fun createRouteAttribute( attribute: String): String {
-            return this.route.replace("{$ARG_ATTRIBUTE}", attribute)
-        }
-        fun createRouteLivello(livello : Int): String {
-            return this.route.replace("{$ARG_LIVERELO}", livello.toString())
-        }*/
-    }
-    object DataBaseAdvancedSearchAttribute : Screen("DataBaseAdvancedSearchAttribute/{attribute}") {
-        const val ARG_ATTRIBUTE = "attribute"
-        fun createRoute(attribute: String): String {
-            return this.route.replace("{$ARG_ATTRIBUTE}", attribute)
-        }
-    }
-    object DataBaseAdvancedSearchLivello : Screen("DataBaseAdvancedSearchLivello/{Livello}"){
-            const val ARG_LIVERELO = "Livello"
-            fun createRoute( Livello: Int): String {
-                return this.route.replace("{$ARG_LIVERELO}", Livello.toString())
-            }
 
+    // New consolidated advanced search screen object
+    object DataBaseAdvancedSearch : Screen("DataBaseAdvancedSearch/{searchType}/{searchValue}") {
+        const val ARG_SEARCH_TYPE = "searchType"
+        const val ARG_SEARCH_VALUE = "searchValue"
 
+        // Main function to create the route
+        fun createRoute(searchType: String, searchValue: String): String {
+            return route.replace("{$ARG_SEARCH_TYPE}", searchType)
+                        .replace("{$ARG_SEARCH_VALUE}", searchValue)
+        }
+        // All'interno di sealed class Screen -> object DataBaseAdvancedSearch
+
+        fun createRoutePlus(searchType: List<String>, searchValue: List<String>): String {
+            val joinedSearchTypes = searchType.joinToString(separator = ",") // Unisce la lista in una stringa separata da virgole
+            val joinedSearchValues = searchValue.joinToString(separator = ",") // Unisce la lista in una stringa separata da virgole
+            // Ora usiamo le stringhe unite nella funzione replace
+            return route.replace("{$ARG_SEARCH_TYPE}", joinedSearchTypes)
+                .replace("{$ARG_SEARCH_VALUE}", joinedSearchValues)
+        }
+
+        // Helper functions for specific search types (temporary)
+        fun createRouteForType(type: String): String {
+            return createRoute("type", type)
+        }
+        fun createRouteForAttribute(attribute: String): String {
+            return createRoute("attribute", attribute)
+        }
+        fun createRouteForLevel(level: Int): String {
+            return createRoute("level", level.toString())
+        }
     }
 
     object MenuScreen1 : Screen("MenuScreen1")
     object InfoScreen : Screen("InfoScreen")
     object SavedCardsScreen : Screen("SavedCardsScreen")
-    object CardScreen : Screen("CardScreen/{cardId}") { // route property is "CardScreen/{cardId}"
+    object CardScreen : Screen("CardScreen/{cardId}") {
         const val ARG_CARD_ID = "cardId"
         fun createRoute(cardId: Int): String {
             return "CardScreen/$cardId"
         }
     }
-    object ZoomCardScreen : Screen("cardZoom/{imageUrl}") { // Nuova route con placeholder
-        const val ARG_IMAGE_URL = "imageUrl" // Chiave per l'argomento
+    object ZoomCardScreen : Screen("cardZoom/{imageUrl}") {
+        const val ARG_IMAGE_URL = "imageUrl"
         fun createRoute(imageUrl: String): String {
             return this.route.replace("{$ARG_IMAGE_URL}", imageUrl)
         }
     }
-
-
-
 }
+
 /*
   navController?.navigate(Screen.DataBaseScreen1.route) {
-            // Opzione per pulire lo stack in modo che l'utente non torni alla SplashScreen premendo "indietro"
             popUpTo(Screen.SplashScreen.route) { inclusive = true }
         }
 
   // Example navigation to CardScreen:
-  // navController?.navigate(Screen.CardScreen.createRoute(123)) // Example with Int
+  // navController?.navigate(Screen.CardScreen.createRoute(123))
+  // Example navigation to DataBaseAdvancedSearch:
+  // navController?.navigate(Screen.DataBaseAdvancedSearch.createRoute("type", "Spell Card"))
+  // navController?.navigate(Screen.DataBaseAdvancedSearch.createRoute("attribute", "DARK"))
+  // navController?.navigate(Screen.DataBaseAdvancedSearch.createRoute("level", "4"))
 */
 @Composable
 fun Navigation() {
@@ -76,47 +82,45 @@ fun Navigation() {
     YuGiDBTheme {
         NavHost(navController = navController, startDestination = Screen.MenuScreen1.route) {
 
-            composable(Screen.InitMainScreen.route) { // Uses Screen.DataBaseScreen1.route ("DataBaseScreen1")
+            composable(Screen.InitMainScreen.route) {
                 InitMainScreen(navController = navController)
             }
-            composable(Screen.SplashScreen.route) { // Uses Screen.SplashScreen.route ("SplashScreen")
+            composable(Screen.SplashScreen.route) {
                 SplashScreen(navController = navController)
             }
-            composable(Screen.DataBaseScreen1.route) { // Uses Screen.DataBaseScreen1.route ("DataBaseScreen1")
+            composable(Screen.DataBaseScreen1.route) {
+                // This is for direct navigation to DataBaseScreen1 without pre-filled search
                 DataBaseScreen1(navController = navController)
             }
+
+            // New composable for consolidated advanced search
             composable(
-                route = Screen.DataBaseAdvancedSearchType.route,
-                arguments = listOf(navArgument(Screen.DataBaseAdvancedSearchType.ARG_TYPE) { type = NavType.StringType })
-            ) { backStackEntry ->
-                DataBaseScreen1(navController = navController,
-                    initialSearchCriteria = AdvancedSearchCriteria(type=  backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearchType.ARG_TYPE))
+                route = Screen.DataBaseAdvancedSearch.route,
+                arguments = listOf(
+                    navArgument(Screen.DataBaseAdvancedSearch.ARG_SEARCH_TYPE) { type = NavType.StringType },
+                    navArgument(Screen.DataBaseAdvancedSearch.ARG_SEARCH_VALUE) { type = NavType.StringType }
                 )
-
-            }
-           composable(
-                route = Screen.DataBaseAdvancedSearchAttribute.route,
-                arguments = listOf(navArgument(Screen.DataBaseAdvancedSearchAttribute.ARG_ATTRIBUTE) { type = NavType.StringType })
             ) { backStackEntry ->
-                DataBaseScreen1(navController = navController,
-                    initialSearchCriteria = AdvancedSearchCriteria(attribute=  backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearchAttribute.ARG_ATTRIBUTE))
-                )
+                val searchType = backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearch.ARG_SEARCH_TYPE)
+                val searchValue = backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearch.ARG_SEARCH_VALUE)
+                var criteria = AdvancedSearchCriteria() // Default empty criteria
 
-            }
-            composable(
-                route = Screen.DataBaseAdvancedSearchLivello.route,
-                arguments = listOf(navArgument(Screen.DataBaseAdvancedSearchLivello.ARG_LIVERELO) { type = NavType.StringType })
-            ) { backStackEntry ->
-                DataBaseScreen1(navController = navController,
-                    initialSearchCriteria = AdvancedSearchCriteria(level= ( (backStackEntry.arguments?.getString(Screen.DataBaseAdvancedSearchLivello.ARG_LIVERELO)) ?:"").toInt()  )
+                if (searchType != null && searchValue != null) {
+                    criteria = when (searchType) {
+                        "type" -> AdvancedSearchCriteria(type = searchValue)
+                        "attribute" -> AdvancedSearchCriteria(attribute = searchValue)
+                        "level" -> AdvancedSearchCriteria(level = searchValue.toIntOrNull())
+                        // Add more cases if other search types are needed in the future
+                        else -> AdvancedSearchCriteria() // Or handle as an error/default
+                    }
+                }
+                DataBaseScreen1(
+                    navController = navController,
+                    initialSearchCriteria = criteria
                 )
-
             }
 
-
-
-
-            composable(Screen.MenuScreen1.route) { // Uses Screen.DataBaseScreen1.route ("DataBaseScreen1")
+            composable(Screen.MenuScreen1.route) {
                 MenuScreen1(navController = navController)
             }
             composable(Screen.InfoScreen.route) {
@@ -126,30 +130,26 @@ fun Navigation() {
                 SavedCardsScreen(navController = navController)
             }
             composable(
-                route = Screen.CardScreen.route, // Uses Screen.CardScreen.route ("CardScreen/{cardId}")
-                arguments = listOf(navArgument(Screen.CardScreen.ARG_CARD_ID) { // Use the const for arg name
-                    type = NavType.IntType // nullable = false by default. Specify if it can be null or needs a default value.
+                route = Screen.CardScreen.route,
+                arguments = listOf(navArgument(Screen.CardScreen.ARG_CARD_ID) {
+                    type = NavType.IntType
                 })
-            )
-            { backStackEntry ->
-                InitLargePlayingCardScreen( // Assumendo che questo sia il Composable corretto
+            ) { backStackEntry ->
+                InitLargePlayingCardScreen(
                     navController = navController,
-                    cardId =backStackEntry.arguments?.getInt(Screen.CardScreen.ARG_CARD_ID) ?:-1
+                    cardId = backStackEntry.arguments?.getInt(Screen.CardScreen.ARG_CARD_ID) ?: -1
                 )
-
             }
 
             composable(
-                route = Screen.ZoomCardScreen.route, // Usa la nuova route "cardZoom/{imageUrl}"
+                route = Screen.ZoomCardScreen.route,
                 arguments = listOf(navArgument(Screen.ZoomCardScreen.ARG_IMAGE_URL) {
                     type = NavType.StringType
                 })
-            )
-            { backStackEntry ->
+            ) { backStackEntry ->
                 val imageUrl = backStackEntry.arguments?.getString(Screen.ZoomCardScreen.ARG_IMAGE_URL)
-                    CardZoomScreen(url = imageUrl ?: "", navController = navController)
+                CardZoomScreen(url = imageUrl ?: "", navController = navController)
             }
-            // Add other composables here
         }
     }
 }

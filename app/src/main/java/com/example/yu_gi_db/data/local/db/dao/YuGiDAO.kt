@@ -4,20 +4,20 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RawQuery // AGGIUNTO
-import androidx.sqlite.db.SupportSQLiteQuery // AGGIUNTO
+import androidx.room.RawQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import com.example.yu_gi_db.data.local.db.entities.CardEntity
 import com.example.yu_gi_db.data.local.db.entities.CardSetAppearanceEntity
 import com.example.yu_gi_db.data.local.db.entities.SetEntity
 import com.example.yu_gi_db.data.local.db.entities.TypeLineEntity
 import com.example.yu_gi_db.data.local.db.entities.CardTypeLineCrossRef
-import com.example.yu_gi_db.model.SmallPlayingCard // Assicurati che sia importato
+import com.example.yu_gi_db.model.SmallPlayingCard
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface YuGiDAO {
 
-    // --- Insert Operations --- (INVARIATE)
+    // --- Insert Operations ---
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCard(card: CardEntity)
@@ -37,20 +37,19 @@ interface YuGiDAO {
     // --- Query Operations ---
 
     @Query("SELECT * FROM cards WHERE id = :cardId")
-    suspend fun getCardById(cardId: Int): CardEntity? // INVARIATA (per i dettagli)
+    suspend fun getCardById(cardId: Int): CardEntity? 
 
     @Query("SELECT * FROM sets WHERE name = :setName")
-    suspend fun getSetByName(setName: String): SetEntity? // INVARIATA
+    suspend fun getSetByName(setName: String): SetEntity?
 
     @Query("SELECT * FROM sets WHERE id = :setId")
-    suspend fun getSetById(setId: Long): SetEntity? // INVARIATA
+    suspend fun getSetById(setId: Long): SetEntity?
 
     @Query("SELECT * FROM type_lines WHERE name = :typeLineName")
-    suspend fun getTypeLineByName(typeLineName: String): TypeLineEntity? // INVARIATA
+    suspend fun getTypeLineByName(typeLineName: String): TypeLineEntity?
 
-    // MODIFICATA/RINOMINATA: Per caricare SmallPlayingCard del set di default (es. LOB)
     @Query("""
-        SELECT DISTINCT c.id, c.localImagePath AS imageUrlSmall
+        SELECT DISTINCT c.id, c.localImagePath AS imageUrlSmall, c.isFavorite
         FROM cards AS c
         INNER JOIN card_set_appearances AS csa ON c.id = csa.cardId
         INNER JOIN sets AS s ON csa.setId = s.id
@@ -64,21 +63,29 @@ interface YuGiDAO {
         INNER JOIN type_lines AS tl ON ctlcr.typeLineId = tl.id
         WHERE ctlcr.cardId = :cardId
     """)
-    suspend fun getTypeLineNamesForCard(cardId: Int): List<String> // INVARIATA (per dettagli)
+    suspend fun getTypeLineNamesForCard(cardId: Int): List<String>
 
     @Query("SELECT * FROM card_set_appearances WHERE cardId = :cardId")
-    suspend fun getAppearancesForCard(cardId: Int): List<CardSetAppearanceEntity> // INVARIATA (per dettagli)
+    suspend fun getAppearancesForCard(cardId: Int): List<CardSetAppearanceEntity>
 
     @Query("SELECT * FROM cards ORDER BY name ASC")
-    fun getAllCards(): Flow<List<CardEntity>> // Mantenuta per ora, potrebbe non essere usata attivamente nel nuovo flusso
+    fun getAllCards(): Flow<List<CardEntity>>
 
     @Query("SELECT * FROM sets ORDER BY name ASC")
-    fun getAllSets(): Flow<List<SetEntity>> // INVARIATA
+    fun getAllSets(): Flow<List<SetEntity>>
 
     @Query("SELECT * FROM type_lines ORDER BY name ASC")
-    fun getAllTypeLines(): Flow<List<TypeLineEntity>> // INVARIATA
+    fun getAllTypeLines(): Flow<List<TypeLineEntity>>
 
-    // --- NUOVA FUNZIONE DI RICERCA FLESSIBILE ---
-    @RawQuery(observedEntities = [CardEntity::class]) // Anche se selezioniamo pochi campi, osservare CardEntity per reattività
+    @RawQuery(observedEntities = [CardEntity::class])
     fun searchSmallCards(query: SupportSQLiteQuery): Flow<List<SmallPlayingCard>>
+
+    // --- Favorite Card Operations ---
+
+    @Query("UPDATE cards SET isFavorite = :isFavorite WHERE id = :cardId")
+    suspend fun setFavoriteStatus(cardId: Int, isFavorite: Boolean)
+
+    // Query per le carte preferite - SENZA name e SENZA ordinamento per nome
+    @Query("SELECT id, localImagePath AS imageUrlSmall, isFavorite FROM cards WHERE isFavorite = 1")
+    fun getFavoriteSmallCards(): Flow<List<SmallPlayingCard>>
 }

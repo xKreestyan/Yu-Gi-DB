@@ -35,4 +35,18 @@ interface YuGiRepoInterface {
     fun searchSmallCards(criteria: AdvancedSearchCriteria): Flow<List<SmallPlayingCard>> // NUOVA FUNZIONE DI RICERCA FLESSIBILE
 
     // Le vecchie funzioni di ricerca specifiche come getCardsByName, getCardsByAttribute, etc., sono state rimosse.
+
+    // --- Favorite Card Operations ---
+
+    /**
+     * Cambia lo stato di preferito per una data carta.
+     * @param cardId L'ID della carta da modificare.
+     */
+    suspend fun toggleFavoriteStatus(cardId: Int)
+
+    /**
+     * Recupera un Flow di tutte le carte segnate come preferite.
+     * Restituisce un Flow per osservare i cambiamenti.
+     */
+    fun getFavoriteSmallCardsStream(): Flow<List<SmallPlayingCard>>
 }
