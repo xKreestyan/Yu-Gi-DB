@@ -862,8 +862,8 @@ fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
             .data(url)
             .crossfade(true)
             .build(),
-        placeholder = painterResource(R.drawable.ic_launcher_foreground),
-        error = painterResource(R.drawable.ic_launcher_background),
+        placeholder = painterResource(R.drawable.cardback),
+        error = painterResource(R.drawable.cardback),
         contentDescription = stringResource(R.string.card_image_description),
         contentScale = ContentScale.Fit,
         modifier = modifier
