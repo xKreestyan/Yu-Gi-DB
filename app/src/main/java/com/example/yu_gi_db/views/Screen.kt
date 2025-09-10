@@ -3,6 +3,9 @@ package com.example.yu_gi_db.views
 import android.content.Intent // Per Intent
 import android.util.Log
 import androidx.activity.ComponentActivity // Per ComponentActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -23,6 +26,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable // Per selectable
 import androidx.compose.foundation.selection.selectableGroup // Per selectableGroup
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton // Per RadioButton
 import androidx.compose.material3.Text
@@ -30,11 +38,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration // Per LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -153,34 +168,101 @@ fun InitLargePlayingCardScreen(
     }
 }
 
+
+
+
 @Composable
 fun CardZoomScreen(
     url: String,
     modifier: Modifier = Modifier,
     navController: NavHostController? = null
 ) {
+    val ZOOM_STEP = 0.5f
+    val MIN_ZOOM = 1.0f
+    val MAX_ZOOM = 5.0f
     AppScreen(
         modifier = modifier,
         appBarTitle = stringResource(id = R.string.zoomed_card_title),
         navController = navController
     ) { innerPadding ->
+        var scale by remember { mutableFloatStateOf(1f) }
+        var offset by remember { mutableStateOf(Offset.Zero) }
+        fun updateZoom(newScale: Float) {
+            val coercedScale = newScale.coerceIn(MIN_ZOOM, MAX_ZOOM)
+            if (scale != coercedScale) {
+                if (coercedScale == MIN_ZOOM) {
+                    offset = Offset.Zero
+                }
+                scale = coercedScale
+            }
+        }
+
         Box(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onDoubleTap = {
+                            val newScaleTarget = if (scale > MIN_ZOOM) MIN_ZOOM else 2f
+                            updateZoom(newScaleTarget)
+                        }
+                    )
+                }
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, pan, _, _ ->
+                        if (scale > MIN_ZOOM) {
+                            val newPotentialOffset = offset.plus(pan)
+                            val maxAllowedTranslateX = (this.size.width * (scale ) / 2f).coerceAtLeast(0f)
+                            val maxAllowedTranslateY = (this.size.height * (scale - 1) / 2f).coerceAtLeast(0f)
+                            offset = Offset(
+                                x = newPotentialOffset.x.coerceIn(-maxAllowedTranslateX, maxAllowedTranslateX),
+                                y = newPotentialOffset.y.coerceIn(-maxAllowedTranslateY, maxAllowedTranslateY)
+                            )
+                        }
+                    }
+                }
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(url)
-                    .crossfade(true)
-                    .build(),
-                placeholder = painterResource(R.drawable.ic_launcher_foreground),
-                error = painterResource(R.drawable.ic_launcher_background),
-                contentDescription = stringResource(R.string.card_image_description),
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize()
-            )
+            // Box contenente l'immagine, che permette di applicare lo zoom e il pan
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        translationX = offset.x,
+                        translationY = offset.y
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                CardUrltoView(
+                    url = url,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            // Pulsanti di Zoom sovrapposti
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd) // Posiziona i pulsanti in basso a destra
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                IconButton(
+                    onClick = { updateZoom(scale + ZOOM_STEP) },
+                    modifier = Modifier.graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), MaterialTheme.shapes.small)
+
+                ) {
+                    Text("+", Modifier.scale(5f))
+                }
+                IconButton(
+                    onClick = { updateZoom(scale - ZOOM_STEP) },
+                    modifier = Modifier.graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), MaterialTheme.shapes.small)
+                ) {
+                    Text("-", Modifier.scale(5f))
+                }
+            }
         }
     }
 }
