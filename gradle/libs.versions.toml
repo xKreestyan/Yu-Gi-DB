@@ -1,6 +1,5 @@
 [versions]
 agp = "8.13.0"
-datastorePreferences = "1.1.7"
 hiltNavigationCompose = "1.2.0"
 kotlin = "2.2.10"
 coreKtx = "1.17.0"
@@ -23,7 +22,6 @@ appcompat = "1.7.1" # Aggiunto
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }

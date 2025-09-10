@@ -66,12 +66,9 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.yu_gi_db.MainActivity // Per riavviare MainActivity
 import com.example.yu_gi_db.R
-import com.example.yu_gi_db.data.preferences.UserPreferencesRepository // Per le costanti LANGUAGE_*
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
-import com.example.yu_gi_db.utils.LanguageHelper // Per LanguageHelper
 import com.example.yu_gi_db.viewmodels.CardListViewModel
-import com.example.yu_gi_db.viewmodels.LanguageSettingsViewModel // Per LanguageSettingsViewModel
 
 private const val TAG_INFO_SCREEN = "InformationScreen"
 
@@ -273,19 +270,11 @@ fun CardZoomScreen(
 @Composable
 fun InformationScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController? = null,
-    languageSettingsViewModel: LanguageSettingsViewModel = hiltViewModel()
+    navController: NavHostController? = null
 ) {
-    val currentLanguage by languageSettingsViewModel.currentLanguage.collectAsStateWithLifecycle()
-    val context = LocalContext.current
-    val configuration = LocalConfiguration.current
-    val testTitleFromStringResource = stringResource(id = R.string.info_screen_title)
-
-    Log.d(TAG_INFO_SCREEN, "InformationScreen recomposed. ViewModelLang: $currentLanguage. ConfigLocale: ${configuration.locales[0]}. TitleFromStringRes: '$testTitleFromStringResource'")
-
     AppScreen(
         modifier = modifier,
-        appBarTitle = testTitleFromStringResource,
+        appBarTitle = stringResource(id = R.string.info_screen_title),
         navController = navController,
     ) { innerPadding ->
         Column(
@@ -296,7 +285,7 @@ fun InformationScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            InfoSectionView(
+            InfoSectionView( // Assicurati che sia definita e importata
                 title = stringResource(R.string.info_section_about_title)
             ) {
                 Text(
@@ -306,78 +295,32 @@ fun InformationScreen(
                 )
             }
             Spacer(modifier = Modifier.height(24.dp))
-
-            InfoSectionView(
-                title = stringResource(R.string.language_setting_title)
-            ) {
-                val languageOptions = listOf(
-                    stringResource(R.string.language_italian) to UserPreferencesRepository.LANGUAGE_ITALIAN,
-                    stringResource(R.string.language_english) to UserPreferencesRepository.LANGUAGE_ENGLISH,
-                    stringResource(R.string.language_system_default) to UserPreferencesRepository.LANGUAGE_SYSTEM
-                )
-
-                Column(Modifier.selectableGroup()) {
-                    languageOptions.forEach { (displayText, languageCode) ->
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .selectable(
-                                    selected = (languageCode == currentLanguage),
-                                    onClick = {
-                                        if (languageCode != currentLanguage) {
-                                            Log.d(TAG_INFO_SCREEN, "Updating to $languageCode. Current: $currentLanguage")
-                                            languageSettingsViewModel.updateLanguage(languageCode)
-                                            Log.d(TAG_INFO_SCREEN, "Applying $languageCode with Helper")
-                                            LanguageHelper.applyAppLanguage(languageCode)
-
-                                            val activity = context as? ComponentActivity
-                                            if (activity != null) {
-                                                Log.d(TAG_INFO_SCREEN, "Restarting activity for language change...")
-                                                val intent = Intent(activity, MainActivity::class.java)
-                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                                activity.startActivity(intent)
-                                                activity.finishAffinity()
-                                            } else {
-                                                Log.e(TAG_INFO_SCREEN, "Context is not a ComponentActivity, cannot restart.")
-                                            }
-                                        }
-                                    },
-                                    role = Role.RadioButton
-                                )
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = (languageCode == currentLanguage),
-                                onClick = null
-                            )
-                            Text(
-                                text = displayText,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.padding(start = 16.dp)
-                            )
-                        }
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-
             InfoSectionView(
                 title = stringResource(R.string.info_section_version_title)
             ) {
-                Text(text = stringResource(R.string.version), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = stringResource(R.string.version),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
             Spacer(modifier = Modifier.height(24.dp))
             InfoSectionView(
                 title = stringResource(R.string.info_section_developer_title)
             ) {
-                Text(text = stringResource(R.string.name_and_company), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = stringResource(R.string.name_and_company),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
             Spacer(modifier = Modifier.height(24.dp))
             InfoSectionView(
                 title = stringResource(R.string.info_section_credits_title)
             ) {
-                Text(text = stringResource(R.string.info_section_credits_content), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                Text(
+                    text = stringResource(R.string.info_section_credits_content),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
