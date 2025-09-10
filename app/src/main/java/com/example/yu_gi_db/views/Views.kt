@@ -909,7 +909,7 @@ fun InfoSectionView(
 fun CardItemPreview() {
     YuGiDBTheme {
         SmallCardItemView(
-            card = SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
+            card = SmallPlayingCard(id = 1, name = "A Cell Breeding Device", imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
             cardListViewModel=null
         )
     }
@@ -934,8 +934,8 @@ fun CardsScreenPopulatedDefaultPreview() {
     YuGiDBTheme {
         CardsScreenView(
             cards = listOf(
-                SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
-                SmallPlayingCard(id = 2, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/6983839.jpg")
+                SmallPlayingCard(id = 1, name = "A Cell Breeding Device", imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
+                SmallPlayingCard(id = 2, name = "Tornado Dragon", imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/6983839.jpg")
             ),
             isLoading = false,
             errorMessage = null,
