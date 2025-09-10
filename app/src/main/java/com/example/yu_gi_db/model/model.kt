@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName // Importa questo se usi Gson 
 //Anteprima (small) della carta
 data class SmallPlayingCard(
         val id: Int,
+        val name: String, // << CAMPO AGGIUNTO
         val imageUrlSmall: String,
         val isFavorite: Boolean = false // isFavorite mantenuto
 )

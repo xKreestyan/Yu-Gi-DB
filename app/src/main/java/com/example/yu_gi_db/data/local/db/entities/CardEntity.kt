@@ -10,17 +10,17 @@ import com.example.yu_gi_db.model.CardPrice
 @TypeConverters(CardConverters::class)
 data class CardEntity(
     @PrimaryKey val id: Int,
-    val name: String,
-    val type: String,
-    val humanReadableCardType: String,
+    // val name: String, // Rimosso
+    val type: String, // Mantenuto - sembra essere un dato tecnico
+    // val humanReadableCardType: String, // Rimosso
     val frameType: String,
-    val desc: String,
+    // val desc: String, // Rimosso
     val race: String,
     val atk: Int?,
     val def: Int?,
     val level: Int?,
     val attribute: String?,
-    val localImagePath: String?, // RINOMINATO da localImageSmallPath
+    val localImagePath: String?,
     val cardPrices: List<CardPrice>,
     val isFavorite: Boolean = false
 )

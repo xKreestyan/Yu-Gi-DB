@@ -43,9 +43,9 @@ fun DatabaseScreen(
     val exampleCards by rememberSaveable {
         mutableStateOf(
             listOf(
-                SmallPlayingCard(id = 1, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
-                SmallPlayingCard(id = 2, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/46986414.jpg"),
-                SmallPlayingCard(id = 3, imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/33396948.jpg")
+                SmallPlayingCard(id = 1, name = "A Cell Breeding Device", imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
+                SmallPlayingCard(id = 2, name = "Dark Magician", imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/46986414.jpg"),
+                SmallPlayingCard(id = 3, name = "Exodia the Forbidden One", imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/33396948.jpg")
             )
         )
     }
