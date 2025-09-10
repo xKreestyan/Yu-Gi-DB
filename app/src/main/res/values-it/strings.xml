@@ -55,4 +55,6 @@
     <string name="favorites">PREFERITI</string>
     <string name="attribute_icon_description">Icona attributo</string>
     <string name="frame_background_image_description">Immagine di sfondo per la cornice della carta</string>
+    <string name="level_icon_content_description">Icona livello</string>
+    <string name="attribute_icon_content_description">Icona attributo</string>
 </resources>

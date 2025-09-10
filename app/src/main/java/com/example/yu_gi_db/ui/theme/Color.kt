@@ -34,3 +34,7 @@ val RoyalBlueDark = Color(0xFF002366)
 
 val SapphireBlue = Color(0xFF0F52BA)
 
+val LightGray = Color(0xFFD3D3D3)
+
+val Silver = Color(0xFFC0C0C0)
+

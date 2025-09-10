@@ -1,7 +1,7 @@
 package com.example.yu_gi_db.ui.theme
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,18 +10,20 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row 
-import androidx.compose.foundation.layout.fillMaxHeight 
-import androidx.compose.foundation.layout.fillMaxSize 
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer // Aggiunto Spacer se non già presente
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height // Aggiunto height se non già presente
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size 
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 // androidx.compose.foundation.layout.wrapContentWidth // Non strettamente necessario qui, il comportamento di default di Card in un Box è wrap
-import androidx.compose.material3.Card 
-import androidx.compose.material3.CardDefaults 
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,20 +38,20 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.RectangleShape 
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.ContentScale 
-import androidx.compose.ui.res.painterResource 
-import androidx.compose.ui.res.stringResource 
-import androidx.compose.ui.text.style.TextAlign 
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.example.yu_gi_db.R 
+import com.example.yu_gi_db.R
 
 
 class ParallelogramShape(private val shearFactor: Float = 0.2f) : Shape {
@@ -171,25 +173,22 @@ fun YugiohParallelepipedButton(
 @Composable
 fun YugiohCardNameDisplay(
     cardName: String,
-    modifier: Modifier = Modifier, // Modifier per il Box esterno, controlla allineamento e spazio max
+    modifier: Modifier = Modifier, 
     textStyle: androidx.compose.ui.text.TextStyle = AppTypography.headlineSmall,
     textAlign: TextAlign = TextAlign.Center,
     textColor: Color = Color.White
 ) {
     Box(
-        modifier = modifier, // Il modifier del chiamante viene applicato qui
-        contentAlignment = Alignment.Center // Centra la Card interna se il Box è più largo
+        modifier = modifier, 
+        contentAlignment = Alignment.Center 
     ) {
         Card(
-            // Nessun modifier specifico per la larghezza qui, così si adatta al contenuto.
-            // Il modifier .align(Alignment.Center) non è necessario qui perché
-            // il Box esterno ha contentAlignment = Alignment.Center.
-            shape = RectangleShape, 
+            shape = RectangleShape,
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             colors = CardDefaults.cardColors(containerColor = Color.Transparent),
             border = BorderStroke(3.dp, LightSilver)
         ) {
-            Box(contentAlignment = Alignment.Center) { // Box interno per sfondo e testo
+            Box(contentAlignment = Alignment.Center) { 
                 Image(
                     painter = painterResource(id = R.drawable.sfondo_descrizioni),
                     contentDescription = stringResource(R.string.card_name_background_description),
@@ -199,8 +198,8 @@ fun YugiohCardNameDisplay(
                 Text(
                     text = cardName,
                     style = textStyle,
-                    color = LightSilver,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), // Il padding contribuisce alla dimensione della Card
+                    color = LightSilver, 
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), 
                     textAlign = textAlign
                 )
             }
@@ -213,12 +212,10 @@ fun AttributeFrame(
     modifier: Modifier = Modifier,
     attributeName: String,
     attributeImageResId: Int,
-    imageWeight: Float = 0.4f,
-    textWeight: Float = 0.6f,
+    attributeImageSize: Dp = 32.dp, // NUOVO parametro
     borderColor: Color = LightSilver,
     borderWidth: Dp = 2.dp,
     textStyle: androidx.compose.ui.text.TextStyle = AppTypography.bodyLarge,
-    textColor: Color = MaterialTheme.colorScheme.onSurface,
     imageContentDescription: String? = stringResource(R.string.attribute_icon_description)
 ) {
     Card(
@@ -229,26 +226,42 @@ fun AttributeFrame(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp, vertical = 4.dp), // Padding interno
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = attributeImageResId),
-                contentDescription = imageContentDescription,
-                modifier = Modifier
-                    .weight(imageWeight)
-                    .fillMaxHeight(),
-                contentScale = ContentScale.FillBounds
-            )
+            // Testo "ATTRIBUTO" a sinistra
             Text(
-                text = attributeName,
-                modifier = Modifier
-                    .weight(textWeight)
-                    .padding(horizontal = 8.dp),
+                text = "ATTRIBUTO", // Stringa fissa
+                modifier = Modifier.weight(0.6f), // MODIFICATO
                 style = textStyle,
-                color = LightSilver, // Qui era textColor, ma la richiesta implicita è LightSilver per il testo di AttributeFrame
-                textAlign = TextAlign.Center
+                color = LightSilver,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                softWrap = false
             )
+
+            // Colonna a destra con Immagine e Nome Attributo
+            Column(
+                modifier = Modifier.weight(0.4f), // MODIFICATO
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(id = attributeImageResId),
+                    contentDescription = imageContentDescription,
+                    modifier = Modifier.size(attributeImageSize),
+                    contentScale = ContentScale.Fit
+                )
+                Spacer(modifier = Modifier.height(4.dp)) // Spazio tra immagine e testo
+                Text(
+                    text = attributeName, // Es. "LUCE"
+                    style = textStyle,
+                    color = LightSilver,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
@@ -301,8 +314,8 @@ fun YugiohCardNameDisplayPreview() {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)){
                 YugiohCardNameDisplay(
                     cardName = "Drago Bianco Occhi Blu",
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp), 
-                    textColor = Color.White 
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp),
+                    textColor = Color.White
 
                 )
             }
@@ -316,10 +329,11 @@ fun AttributeFramePreview() {
     YuGiDBTheme {
         Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.padding(16.dp)) {
             AttributeFrame(
-                modifier = Modifier.size(width = 150.dp, height = 50.dp), 
+                modifier = Modifier.size(width = 180.dp, height = 60.dp),
                 attributeName = "LUCE",
                 attributeImageResId = R.drawable.luce,
-                textColor = LightSilver // Esplicito per coerenza se AppTypography non lo fa già
+                attributeImageSize = 32.dp
+                // Rimosso textColor esplicito, ora gestito internamente/da textStyle
             )
         }
     }

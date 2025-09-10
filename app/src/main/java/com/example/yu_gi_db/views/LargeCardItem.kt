@@ -2,22 +2,28 @@ package com.example.yu_gi_db.views
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement // Import necessario
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer 
-import androidx.compose.foundation.layout.fillMaxHeight 
+import androidx.compose.foundation.layout.RowScope // Import necessario per RowScope
+import androidx.compose.foundation.layout.Spacer // Import per Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth 
-import androidx.compose.foundation.layout.height 
-import androidx.compose.foundation.layout.heightIn 
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,23 +34,61 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle as ComposeTextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp 
-import androidx.compose.ui.unit.dp 
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.CardImage
 import com.example.yu_gi_db.model.LargePlayingCard
+import com.example.yu_gi_db.ui.theme.AppTypography // NUOVO IMPORT
 import com.example.yu_gi_db.ui.theme.LightSilver
-import com.example.yu_gi_db.ui.theme.RoyalBlueDark 
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
-import com.example.yu_gi_db.ui.theme.YugiohCardNameDisplay 
+import com.example.yu_gi_db.ui.theme.YugiohCardNameDisplay
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import androidx.compose.ui.unit.times
+// Costanti per il layout degli attributi
+private val TEXT_START_END_PADDING = 8.dp
+private val LABEL_TEXT_WIDTH = 75.dp
+private val SPACE_AROUND_SEPARATOR = 4.dp
+private val SEPARATOR_LINE_THICKNESS = 2.dp
+private val ATTRIBUTE_SEPARATOR_LINE_OFFSET = TEXT_START_END_PADDING + LABEL_TEXT_WIDTH + SPACE_AROUND_SEPARATOR
+private val VALUE_AREA_START_PADDING = SPACE_AROUND_SEPARATOR + SEPARATOR_LINE_THICKNESS + SPACE_AROUND_SEPARATOR
+
+@Composable
+private fun ClickableValueText(
+    text: String,
+    navController: NavHostController?,
+    searchScreenRoute: String?,
+    textStyle: ComposeTextStyle = MaterialTheme.typography.bodyLarge,
+    color: Color = MaterialTheme.colorScheme.primary,
+    maxLines: Int = 1,
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+    textAlign: TextAlign? = null
+) {
+    Text(
+        text = text,
+        style = textStyle.copy(color = color),
+        maxLines = maxLines,
+        overflow = overflow,
+        textAlign = textAlign ?: TextAlign.Start,
+        modifier = if (navController != null && searchScreenRoute != null) {
+            Modifier.clickable {
+                navController.navigate(searchScreenRoute) {
+                    // Considerare popUpTo e launchSingleTop se necessario per la navigazione
+                }
+            }
+        } else {
+            Modifier
+        }
+    )
+}
 
 
 @Composable
@@ -52,44 +96,46 @@ fun LargeCradUI(
     modifier: Modifier = Modifier,
     card: LargePlayingCard? = null,
     navController: NavHostController? = null,
-    maxDescriptionHeight: Dp = 200.dp 
+    maxDescriptionHeight: Dp = 200.dp
 ) {
     val currentCard = card ?: return
 
     Box(modifier = modifier.fillMaxSize()) {
         Image(
-            painter = painterResource(id = R.drawable.largecard_portrait), 
+            painter = painterResource(id = R.drawable.largecard_portrait),
             contentDescription = stringResource(R.string.background_image_description),
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
 
-        ConstraintLayout( 
+        ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()) 
-                .padding(16.dp) 
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
         ) {
             val (cardNameBoxRef, frameRef) = createRefs()
 
             YugiohCardNameDisplay(
                 cardName = currentCard.name,
                 modifier = Modifier.constrainAs(cardNameBoxRef) {
-                    top.linkTo(parent.top) 
+                    top.linkTo(parent.top)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
-                    width = Dimension.wrapContent 
+                    width = Dimension.wrapContent
                 }
             )
 
             Card(
-                modifier = Modifier.constrainAs(frameRef) {
-                    top.linkTo(cardNameBoxRef.bottom, margin = 8.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    width = Dimension.fillToConstraints
-                    height = Dimension.preferredWrapContent
-                },
+                modifier = Modifier
+                    .constrainAs(frameRef) {
+                        top.linkTo(cardNameBoxRef.bottom, margin = 8.dp)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                        width = Dimension.preferredWrapContent
+                        height = Dimension.preferredWrapContent
+                    }
+                    .widthIn(min = 320.dp, max = 360.dp),
                 shape = RectangleShape,
                 border = BorderStroke(2.dp, LightSilver),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
@@ -99,7 +145,7 @@ fun LargeCradUI(
                         painter = painterResource(id = R.drawable.sfondo_cornice),
                         contentDescription = stringResource(R.string.frame_background_image_description),
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop // MODIFICATO QUI
+                        contentScale = ContentScale.Crop
                     )
 
                     ConstraintLayout(
@@ -108,7 +154,10 @@ fun LargeCradUI(
                         val (
                             cardImageRef,
                             attributesColumnRef,
-                            descriptionFrameRef
+                            descriptionFrameRef,
+                            lineaVerticaleRef, // A destra dell'immagine
+                            lineaOrizzontaleRef, // Principale orizzontale
+                            attributeLabelValueSeparatorRef // Nuova linea per Etichetta/Valore
                         ) = createRefs()
 
                         val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
@@ -126,82 +175,175 @@ fun LargeCradUI(
                                     }
                                 }
                                 .constrainAs(cardImageRef) {
-                                    top.linkTo(parent.top, margin = 8.dp)
+                                    top.linkTo(parent.top, margin = 8.dp) // Immagine con margine superiore
                                     start.linkTo(parent.start, margin = 8.dp)
                                 }
                         )
 
+                        Box(
+                            modifier = Modifier
+                                .constrainAs(lineaOrizzontaleRef) {
+                                    top.linkTo(cardImageRef.bottom, margin = 8.dp)
+                                    start.linkTo(parent.start)
+                                    end.linkTo(parent.end)
+                                    height = Dimension.value(SEPARATOR_LINE_THICKNESS)
+                                    width = Dimension.fillToConstraints
+                                }
+                                .background(LightSilver)
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .constrainAs(lineaVerticaleRef) {
+                                    top.linkTo(parent.top)
+                                    bottom.linkTo(lineaOrizzontaleRef.top)
+                                    start.linkTo(cardImageRef.end, margin = 8.dp)
+                                    height = Dimension.fillToConstraints
+                                    width = Dimension.value(SEPARATOR_LINE_THICKNESS)
+                                }
+                                .background(LightSilver)
+                        )
+
+                        val attributeSlotsAreaHeight = 202.dp + 8.dp + 8.dp
+                        val totalDividersHeightInColumn = 3 * SEPARATOR_LINE_THICKNESS
+                        val heightPerWeightedSlot = (attributeSlotsAreaHeight - totalDividersHeightInColumn) / 4
+
+                        Box(
+                            modifier = Modifier
+                                .constrainAs(attributeLabelValueSeparatorRef) {
+                                    top.linkTo(parent.top, margin = heightPerWeightedSlot)
+                                    bottom.linkTo(lineaOrizzontaleRef.top)
+                                    start.linkTo(lineaVerticaleRef.end, margin = ATTRIBUTE_SEPARATOR_LINE_OFFSET)
+                                    height = Dimension.fillToConstraints
+                                    width = Dimension.value(SEPARATOR_LINE_THICKNESS)
+                                }
+                                .background(LightSilver)
+                        )
+
                         Column(
                             modifier = Modifier.constrainAs(attributesColumnRef) {
-                                top.linkTo(cardImageRef.top)
-                                start.linkTo(cardImageRef.end, margin = 8.dp)
-                                end.linkTo(parent.end, margin = 8.dp)
+                                top.linkTo(parent.top)
+                                bottom.linkTo(lineaOrizzontaleRef.top)
+                                start.linkTo(lineaVerticaleRef.end)
+                                end.linkTo(parent.end)
                                 width = Dimension.fillToConstraints
+                                height = Dimension.fillToConstraints
                             }
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                ClickableSearchText(
-                                    label = stringResource(R.string.card_label_type),
-                                    value = currentCard.type,
-                                    navController = navController,
-                                    searchCriteriaAction = {
-                                        Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type)
-                                    }
-                                )
-                                if (currentCard.race.isNotEmpty()) {
-                                    Text(" / ", style = MaterialTheme.typography.titleMedium)
-                                    Text(
-                                        text = currentCard.race,
-                                        style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.primary),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                            val slotMinHeight = 24.dp
+
+                            AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = TEXT_START_END_PADDING), 
+                                    horizontalArrangement = Arrangement.Center, 
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    val combinedText = currentCard.type + if (currentCard.race.isNotEmpty()) " / ${currentCard.race}" else ""
+                                    ClickableValueText(
+                                        text = combinedText,
+                                        navController = navController,
+                                        searchScreenRoute = Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type),
+                                        color = LightSilver, 
+                                        maxLines = 3, 
+                                        overflow = TextOverflow.Ellipsis, 
+                                        textAlign = TextAlign.Center 
                                     )
                                 }
                             }
-                            Spacer(Modifier.height(4.dp))
 
-                            if (currentCard.attribute != null) {
-                                ClickableSearchText(
-                                    label = stringResource(R.string.card_label_attribute),
-                                    value = currentCard.attribute,
-                                    navController = navController,
-                                    searchCriteriaAction = {
-                                        Screen.DataBaseAdvancedSearch.createRouteForAttribute(attribute = currentCard.attribute)
+                            AttributeDivider()
+
+                            AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
+                                AttributeLabel(stringResource(R.string.card_label_attribute)) 
+
+                                Row(
+                                    modifier = Modifier
+                                        .weight(1f) 
+                                        .padding(start = VALUE_AREA_START_PADDING, end = TEXT_START_END_PADDING) 
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center, 
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    currentCard.attribute?.let { attributeValue ->
+                                        if (attributeValue.equals("OSCURITÀ", ignoreCase = true)) {
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally 
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(id = R.drawable.oscurita), 
+                                                    contentDescription = stringResource(R.string.attribute_icon_content_description, attributeValue),
+                                                    modifier = Modifier.size(24.dp) 
+                                                )
+                                                Spacer(modifier = Modifier.height(2.dp)) 
+                                                Text(
+                                                    text = attributeValue,
+                                                    style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver),
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
+                                        } else {
+                                            ClickableValueText(
+                                                text = attributeValue,
+                                                navController = navController,
+                                                searchScreenRoute = Screen.DataBaseAdvancedSearch.createRouteForAttribute(attribute = attributeValue)
+                                            )
+                                        }
                                     }
-                                )
-                                Spacer(Modifier.height(4.dp))
+                                }
                             }
 
-                            if (currentCard.level != null) {
-                                ClickableSearchText(
-                                    label = stringResource(R.string.card_label_level),
-                                    value = currentCard.level.toString(),
-                                    navController = navController,
-                                    searchCriteriaAction = {
-                                        Screen.DataBaseAdvancedSearch.createRouteForLevel(level = currentCard.level)
+                            AttributeDivider()
+
+                            AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
+                                AttributeLabel(stringResource(R.string.card_label_level)) 
+                                currentCard.level?.let { levelValue ->
+                                    Row(
+                                        modifier = Modifier
+                                            .weight(1f) 
+                                            .padding(start = VALUE_AREA_START_PADDING, end = TEXT_START_END_PADDING) 
+                                            .fillMaxWidth(), 
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center 
+                                    ) {
+                                        Text(
+                                            text = levelValue.toString(),
+                                            style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Image(
+                                            painter = painterResource(id = R.drawable.level),
+                                            contentDescription = stringResource(R.string.level_icon_content_description),
+                                            modifier = Modifier.size(18.dp)
+                                        )
                                     }
-                                )
-                                Spacer(Modifier.height(4.dp))
+                                }
                             }
 
-                            if (currentCard.atk != null || currentCard.def != null) {
-                                val atkValue = currentCard.atk?.toString() ?: "N/A"
-                                val defValue = currentCard.def?.toString() ?: "N/A"
-                                Text(
-                                    text = "ATK: $atkValue / DEF: $defValue",
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
+                            AttributeDivider()
+
+                            AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
+                                AttributeLabel(stringResource(R.string.card_label_atk_def))
+                                AttributeValues(modifier = Modifier.weight(1f)) {
+                                    if (currentCard.atk != null || currentCard.def != null) {
+                                        val atkValue = currentCard.atk?.toString() ?: "N/A"
+                                        val defValue = currentCard.def?.toString() ?: "N/A"
+                                        Text(
+                                            text = "$atkValue / $defValue",
+                                            style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
                             }
                         }
-
-                        val bottomBarrier = createBottomBarrier(cardImageRef, attributesColumnRef)
 
                         Card(
                             modifier = Modifier
                                 .constrainAs(descriptionFrameRef) {
-                                    top.linkTo(bottomBarrier, margin = 8.dp)
+                                    top.linkTo(lineaOrizzontaleRef.bottom, margin = 8.dp)
                                     start.linkTo(parent.start)
                                     end.linkTo(parent.end)
                                     width = Dimension.fillToConstraints
@@ -209,80 +351,111 @@ fun LargeCradUI(
                                 }
                                 .heightIn(max = maxDescriptionHeight),
                             shape = RectangleShape,
-                            border = BorderStroke(2.dp, LightSilver),
                             colors = CardDefaults.cardColors(containerColor = Color.Transparent)
                         ) {
-                            Box(
+                            Column(
                                 modifier = Modifier
-                                    .padding(8.dp) 
-                                    .fillMaxWidth()
-                                    .fillMaxHeight() 
-                                    .verticalScroll(rememberScrollState()) 
+                                    .padding(8.dp)
+                                    .fillMaxSize()
+                                    .verticalScroll(rememberScrollState())
                             ) {
                                 Text(
+                                    text = "Testo Carta", 
+                                    style = MaterialTheme.typography.titleSmall.copy(color = LightSilver),
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Spacer(modifier = Modifier.height(4.dp)) 
+                                Text(
                                     text = currentCard.desc,
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    style = AppTypography.bodyMedium.copy(color = LightSilver), // MODIFICATO QUI
                                     textAlign = TextAlign.Justify,
-                                    modifier = Modifier.fillMaxWidth() 
+                                    modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
-                    } 
+                    }
                 }
-            } 
-        } 
+            }
+        }
     }
 }
 
 @Composable
-private fun ClickableSearchText(
-    label: String,
-    value: String?,
-    navController: NavHostController?,
-    searchCriteriaAction: () -> String,
-    modifier: Modifier = Modifier 
+private fun AttributeSlotRow(
+    modifier: Modifier = Modifier,
+    minHeight: Dp,
+    content: @Composable RowScope.() -> Unit
 ) {
-    value?.let {
-        Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) { 
-            Text("$label: ", style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.primary),
-                modifier = Modifier.clickable {
-                    navController?.navigate(searchCriteriaAction()) {
-                        popUpTo(Screen.MenuScreen1.route) {
-                            inclusive = false
-                        }
-                        launchSingleTop = true
-                    }
-                }
-            )
-        }
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = minHeight)
+            .padding(vertical = 1.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        content()
     }
 }
+
+@Composable
+private fun AttributeLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver),
+        modifier = Modifier
+            .padding(start = TEXT_START_END_PADDING)
+            .width(LABEL_TEXT_WIDTH),
+        textAlign = TextAlign.Start,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
+}
+
+@Composable
+private fun AttributeValues(modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
+    Row(
+        modifier = modifier
+            .padding(start = VALUE_AREA_START_PADDING, end = TEXT_START_END_PADDING),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Start
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun AttributeDivider() {
+    HorizontalDivider(
+        modifier = Modifier.fillMaxWidth(),
+        thickness = SEPARATOR_LINE_THICKNESS,
+        color = LightSilver
+    )
+}
+
 
 @Preview(showBackground = true, name = "LargeCardUI Preview")
 @Composable
 fun LargeCardUIPreview() {
     val sampleCard = LargePlayingCard(
-        id = 12345,
-        name = "Drago Bianco Occhi Blu",
-        type = "Mostro Normale",
-        desc = "Questo drago leggendario è una potente macchina di distruzione. Praticamente invincibile, sono in pochi ad aver fronteggiato questa creatura ed essere sopravvissuti per raccontarlo.",
-        race = "Drago",
-        atk = 3000,
-        def = 2500,
-        level = 8,
-        attribute = "LUCE",
-        cardImages = listOf(CardImage(1, "", "https://images.ygoprodeck.com/images/cards_small/89631139.jpg", "")),
-        typeline = emptyList(), 
-        humanReadableCardType = "Dragon/Normal", 
-        frameType = "normal", 
-        cardSets = emptyList(), 
+        id = 33396948, 
+        name = "Exodia il Proibito",
+        race = "Effetto",
+        desc = "Se hai \"Gamba Dx del Proibito\", \"Gamba Sx del Proibito\", \"Braccio Dx del Proibito\" e \"Braccio Sx del Proibito\" in aggiunta a questa carta nella tua mano, vinci il Duello.",
+        type = "Incantatore",
+        atk = 1000,
+        def = 1000,
+        level = 3,
+        attribute = "OSCURITÀ",
+        cardImages = listOf(CardImage(1, "", "https://images.ygoprodeck.com/images/cards_small/33396948.jpg", "")),
+        typeline = emptyList(),
+        humanReadableCardType = "Spellcaster/Effect",
+        frameType = "effect",
+        cardSets = emptyList(),
         cardPrices = emptyList()
     )
 
-    YuGiDBTheme { 
+    YuGiDBTheme {
         LargeCradUI(
             card = sampleCard,
             navController = null
