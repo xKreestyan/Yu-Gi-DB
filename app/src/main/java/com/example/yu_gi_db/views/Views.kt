@@ -212,7 +212,7 @@ fun WaitIndicatorView(modifier: Modifier = Modifier) {
             .fillMaxSize(0.7f) // Mantieni le dimensioni originali in portrait
     }
 
-    Box(Modifier.fillMaxSize()) { // Usa Box per centrare se necessario
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { // Usa Box per centrare se necessario
         AsyncImage(
             model = ImageRequest.Builder(context)
                 .data(R.drawable.optimized_refined)
@@ -253,7 +253,7 @@ fun optionErrorView(modifier: Modifier = Modifier,
     var ret=false
 
     if (isLoading) {
-        Box(Modifier.fillMaxSize()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             WaitIndicatorView(
                 modifier
                     .align(Alignment.Center)

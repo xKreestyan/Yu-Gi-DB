@@ -44,8 +44,14 @@
     <string name="notfavorite">Non Preferita</string> <!-- Usato come etichetta o stato -->
     <string name="search_id">Cerca ID</string>
     <!-- Altre stringhe esistenti qui... -->
+    <string name="card_name_background_description">Sfondo per il nome della carta</string>
     <string name="language_setting_title">Lingua</string>
     <string name="language_english">Inglese</string>
     <string name="language_italian">Italiano</string>
     <string name="language_system_default">Predefinito di Sistema</string>
+    <string name="background_image_description">Immagine di sfondo per i dettagli della carta</string>
+    <string name="new_database_screen_title">Database Carte</string>
+    <string name="options">OPZIONI</string>
+    <string name="rulebook">REGOLAMENTO</string>
+    <string name="favorites">PREFERITI</string>
 </resources>

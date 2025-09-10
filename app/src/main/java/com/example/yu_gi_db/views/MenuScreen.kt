@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -130,7 +131,7 @@ fun MenuScreen(navController: NavController? = null) {
                 _root_ide_package_.com.example.yu_gi_db.ui.theme.ParallelogramShape(shearFactor = 0.15f)
 
             _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
-                text = "DATABASE",
+                text = stringResource(R.string.database),
                 onClick = { navController?.navigate(Screen.DataBaseScreen1.route) },
                 modifier = Modifier.layoutId("button1"),
                 faceColor = buttonFaceColor,
@@ -142,7 +143,7 @@ fun MenuScreen(navController: NavController? = null) {
             )
 
             _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
-                text = "PREFERITI",
+                text = stringResource(R.string.favorites),
                 onClick = { navController?.navigate(Screen.SavedCardsScreen.route) },
                 modifier = Modifier.layoutId("button2"),
                 faceColor = buttonFaceColor,
@@ -154,7 +155,7 @@ fun MenuScreen(navController: NavController? = null) {
             )
 
             _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
-                text = "REGOLAMENTO",
+                text = stringResource(R.string.rulebook),
                 onClick = { /* Azione per REGOLAMENTO */ },
                 modifier = Modifier.layoutId("button3"),
                 faceColor = buttonFaceColor,
@@ -166,7 +167,7 @@ fun MenuScreen(navController: NavController? = null) {
             )
 
             _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
-                text = "OPZIONI",
+                text = stringResource(R.string.options),
                 onClick = { navController?.navigate(Screen.InfoScreen.route) },
                 modifier = Modifier.layoutId("button4"),
                 faceColor = buttonFaceColor,

@@ -88,27 +88,30 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
 }
 
 @Composable
-fun SplashScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
-    Box{
+fun SplashScreen(modifier: Modifier = Modifier, navController: NavHostController? = null) {
+    Box {
         BoxWithConstraints(
             modifier = modifier
-                .fillMaxHeight()
+                .fillMaxSize()
         ) {
-            ImageRotation(R.drawable.yu_gi_oh_schermata_principale_v ,R.drawable.yu_gi_oh_schermata_principale_o,modifier.fillMaxSize())
+            ImageRotation(
+                R.drawable.yu_gi_oh_schermata_principale_v,
+                R.drawable.yu_gi_oh_schermata_principale_o,
+                Modifier.fillMaxSize()
+            )
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = this.maxHeight / 8),
-                contentAlignment = Alignment.BottomCenter
+                    .padding(top = this.maxHeight / 2 ),
+                contentAlignment = Alignment.TopCenter
             ) {
                 WaitIndicatorView(
-                    Modifier.size(this@BoxWithConstraints.maxWidth / 5)
+                    Modifier.size(this@BoxWithConstraints.maxWidth / 3)
                 )
             }
         }
     }
 }
-
 @Composable
 fun MenuScreen1(modifier: Modifier = Modifier,navController: NavHostController? = null) {
     MenuScreen(navController)
