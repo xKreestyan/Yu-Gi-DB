@@ -9,9 +9,9 @@
     <string name="no_cards_found_search">Nessuna carta trovata per la tua ricerca</string>
     <string name="loading_text">Caricamento in corso</string>
     <string name="card_detail_title_default">Dettagli Carta</string> <!-- Titolo di default se non ancora caricato -->
-    <string name="info_screen_title">Informazioni sull\'App</string>
+    <string name="info_screen_title">Informazioni sull App</string>
     <string name="info_section_about_title">Riguardo Yu-Gi-DB</string>
-    <string name="info_section_about_content">Yu-Gi-DB è un\'applicazione per consultare un database di carte di Yu-Gi-Oh!, permettendo agli utenti di cercare, visualizzare dettagli e gestire le proprie collezioni (funzionalità future). Questa app è creata per scopi dimostrativi ed educativi.</string>
+    <string name="info_section_about_content">Yu-Gi-DB è unapplicazione per consultare un database di carte di Yu-Gi-Oh!, permettendo agli utenti di cercare, visualizzare dettagli e gestire le proprie collezioni (funzionalità future). Questa app è creata per scopi dimostrativi ed educativi.</string>
     <string name="info_section_version_title">Versione</string>
     <string name="info_section_developer_title">Sviluppato da</string>
     <string name="info_section_credits_title">Fonti Dati e Ringraziamenti</string>
@@ -25,7 +25,7 @@
     <string name="name_and_company">Il Tuo Nome / Nome Azienda</string>
     <string name="loading_indicator_description">Indicatore di caricamento</string>
     <string name="no_cards_in_default_list">Nessuna carta nel set predefinito.</string>
-    <string name="search_bar_label_name_hint">Cerca per nome...</string>
+    <string name="search_bar_label_name_hint">Cerca per nome</string>
     <string name="search_bar_label_type_hint">Tipo (es. Carta Magia)</string>
     <string name="search_bar_label_attribute_hint">Attributo (es. LUCE)</string>
     <string name="search_bar_label_level_hint">Livello/Rango</string>
@@ -43,7 +43,6 @@
     <string name="isfavorite">Preferita</string> <!-- Usato come etichetta o stato -->
     <string name="notfavorite">Non Preferita</string> <!-- Usato come etichetta o stato -->
     <string name="search_id">Cerca ID</string>
-    <!-- Altre stringhe esistenti qui... -->
     <string name="card_name_background_description">Sfondo per il nome della carta</string>
     <string name="language_setting_title">Lingua</string>
     <string name="language_english">Inglese</string>
@@ -54,4 +53,6 @@
     <string name="options">OPZIONI</string>
     <string name="rulebook">REGOLAMENTO</string>
     <string name="favorites">PREFERITI</string>
+    <string name="attribute_icon_description">Icona attributo</string>
+    <string name="frame_background_image_description">Immagine di sfondo per la cornice della carta</string>
 </resources>

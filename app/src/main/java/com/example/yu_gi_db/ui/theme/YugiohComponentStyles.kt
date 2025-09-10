@@ -10,11 +10,16 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row 
+import androidx.compose.foundation.layout.fillMaxHeight 
+import androidx.compose.foundation.layout.fillMaxSize 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size 
 import androidx.compose.foundation.layout.width
+// androidx.compose.foundation.layout.wrapContentWidth // Non strettamente necessario qui, il comportamento di default di Card in un Box è wrap
 import androidx.compose.material3.Card 
 import androidx.compose.material3.CardDefaults 
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +36,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.RectangleShape // Import per RectangleShape
+import androidx.compose.ui.graphics.RectangleShape 
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
@@ -94,7 +99,7 @@ fun YugiohParallelepipedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    faceColor: Color = SapphireBlue, 
+    faceColor: Color = SapphireBlue,
     faceBrush: Brush? = null,
     sideColor: Color = faceColor.darken(),
     contentColor: Color = Color.White,
@@ -166,31 +171,83 @@ fun YugiohParallelepipedButton(
 @Composable
 fun YugiohCardNameDisplay(
     cardName: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier, // Modifier per il Box esterno, controlla allineamento e spazio max
     textStyle: androidx.compose.ui.text.TextStyle = AppTypography.headlineSmall,
     textAlign: TextAlign = TextAlign.Center,
-    textColor: Color = Color.White 
+    textColor: Color = Color.White
+) {
+    Box(
+        modifier = modifier, // Il modifier del chiamante viene applicato qui
+        contentAlignment = Alignment.Center // Centra la Card interna se il Box è più largo
+    ) {
+        Card(
+            // Nessun modifier specifico per la larghezza qui, così si adatta al contenuto.
+            // Il modifier .align(Alignment.Center) non è necessario qui perché
+            // il Box esterno ha contentAlignment = Alignment.Center.
+            shape = RectangleShape, 
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+            border = BorderStroke(3.dp, LightSilver)
+        ) {
+            Box(contentAlignment = Alignment.Center) { // Box interno per sfondo e testo
+                Image(
+                    painter = painterResource(id = R.drawable.sfondo_descrizioni),
+                    contentDescription = stringResource(R.string.card_name_background_description),
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.Crop
+                )
+                Text(
+                    text = cardName,
+                    style = textStyle,
+                    color = LightSilver,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), // Il padding contribuisce alla dimensione della Card
+                    textAlign = textAlign
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun AttributeFrame(
+    modifier: Modifier = Modifier,
+    attributeName: String,
+    attributeImageResId: Int,
+    imageWeight: Float = 0.4f,
+    textWeight: Float = 0.6f,
+    borderColor: Color = LightSilver,
+    borderWidth: Dp = 2.dp,
+    textStyle: androidx.compose.ui.text.TextStyle = AppTypography.bodyLarge,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    imageContentDescription: String? = stringResource(R.string.attribute_icon_description)
 ) {
     Card(
-        modifier = modifier, 
-        shape = RectangleShape, // Modificato per avere spigoli vivi
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp), 
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent), 
-        border = null 
+        modifier = modifier,
+        shape = RectangleShape,
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        border = BorderStroke(borderWidth, borderColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Box(contentAlignment = Alignment.Center) { 
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Image(
-                painter = painterResource(id = R.drawable.sfondo_descrizioni),
-                contentDescription = stringResource(R.string.card_name_background_description), 
-                modifier = Modifier.matchParentSize(), 
+                painter = painterResource(id = attributeImageResId),
+                contentDescription = imageContentDescription,
+                modifier = Modifier
+                    .weight(imageWeight)
+                    .fillMaxHeight(),
                 contentScale = ContentScale.FillBounds
             )
             Text(
-                text = cardName,
+                text = attributeName,
+                modifier = Modifier
+                    .weight(textWeight)
+                    .padding(horizontal = 8.dp),
                 style = textStyle,
-                color = textColor, 
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), 
-                textAlign = textAlign
+                color = LightSilver, // Qui era textColor, ma la richiesta implicita è LightSilver per il testo di AttributeFrame
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -208,19 +265,19 @@ fun YugiohParallelepipedButtonPreview() {
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(30.dp) 
+                verticalArrangement = Arrangement.spacedBy(30.dp)
             ) {
                 YugiohParallelepipedButton(
                     text = "DATABASE",
                     onClick = { },
                     modifier = Modifier.width(280.dp),
-                    faceColor = DeepSkyBlueElectric, 
+                    faceColor = DeepSkyBlueElectric,
                     faceBrush = Brush.verticalGradient(
                         colors = listOf(
-                            RoyalBlueDark.darken(0.6f), 
-                            MidnightBlue, 
-                            SapphireBlue, 
-                            ElectricCyan, 
+                            RoyalBlueDark.darken(0.6f),
+                            MidnightBlue,
+                            SapphireBlue,
+                            ElectricCyan,
                             SapphireBlue,
                             MidnightBlue,
                             RoyalBlueDark.darken(0.6f)
@@ -229,7 +286,7 @@ fun YugiohParallelepipedButtonPreview() {
                     contentColor = RoyalBlueDark.darken(factor = 0.6f),
                     depth = 8.dp,
                     buttonShape = ParallelogramShape(shearFactor = 0.15f),
-                    textStyle = AppTypography.labelLarge 
+                    textStyle = AppTypography.labelLarge
                 )
             }
         }
@@ -244,21 +301,26 @@ fun YugiohCardNameDisplayPreview() {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)){
                 YugiohCardNameDisplay(
                     cardName = "Drago Bianco Occhi Blu",
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp), 
                     textColor = Color.White 
-                )
-                YugiohCardNameDisplay(
-                    cardName = "Mago Nero",
-                    modifier = Modifier.fillMaxWidth(),
-                    textColor = Color.Black 
-                )
-                 YugiohCardNameDisplay(
-                    cardName = "Numero 39: Utopia",
-                    modifier = Modifier.width(200.dp), 
-                    textStyle = AppTypography.titleLarge, 
-                    textColor = Color.Yellow
+
                 )
             }
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Attribute Frame Preview")
+@Composable
+fun AttributeFramePreview() {
+    YuGiDBTheme {
+        Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.padding(16.dp)) {
+            AttributeFrame(
+                modifier = Modifier.size(width = 150.dp, height = 50.dp), 
+                attributeName = "LUCE",
+                attributeImageResId = R.drawable.luce,
+                textColor = LightSilver // Esplicito per coerenza se AppTypography non lo fa già
+            )
         }
     }
 }
