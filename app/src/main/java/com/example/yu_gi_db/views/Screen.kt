@@ -43,6 +43,7 @@ import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 
+//test
 @Composable
 fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
     val viewModel = hiltViewModel<CardListViewModel>()
