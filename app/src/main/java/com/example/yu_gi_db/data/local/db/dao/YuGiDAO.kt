@@ -56,8 +56,6 @@ interface YuGiDAO {
     @Query("SELECT * FROM type_lines WHERE name = :typeLineName")
     suspend fun getTypeLineByName(typeLineName: String): TypeLineEntity?
 
-    // Modificata per includere JOIN con localizzazioni e languageCode
-    // Assumendo che SmallPlayingCard abbia almeno: id, name, imageUrlSmall, isFavorite
     @Query("""
         SELECT DISTINCT c.id, cl.name, c.localImagePath AS imageUrlSmall, c.isFavorite
         FROM cards AS c
@@ -65,8 +63,8 @@ interface YuGiDAO {
         INNER JOIN sets AS s ON csa.setId = s.id
         INNER JOIN card_localizations AS cl ON c.id = cl.cardId
         WHERE s.name = :setName AND cl.languageCode = :languageCode
-    """
-    )
+        ORDER BY cl.name ASC
+    """ )
     fun getInitialSmallCardsBySetName(setName: String, languageCode: String): Flow<List<SmallPlayingCard>>
 
     @Query("""
@@ -115,6 +113,7 @@ interface YuGiDAO {
         FROM cards AS c
         INNER JOIN card_localizations AS cl ON c.id = cl.cardId
         WHERE c.isFavorite = 1 AND cl.languageCode = :languageCode
+        ORDER BY cl.name ASC
     """
     )
     fun getFavoriteSmallCards(languageCode: String): Flow<List<SmallPlayingCard>>
