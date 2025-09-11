@@ -41,7 +41,7 @@
     <string name="search_options_expand">Expand Search Options</string>
     <string name="card_label_attribute">Attribute</string>
     <string name="card_label_atk_def">ATK/DEF</string>
-    <string name="isfavorite">Favorite</string> 
+    <string name="isfavorite">Favorite</string>
     <string name="notfavorite">Not Favorite</string>
     <string name="search_id">Search ID</string>
     <string name="background_image_description">Background image for card details</string>
@@ -57,5 +57,6 @@
     <string name="attribute_icon_description">Attribute icon</string>
     <string name="frame_background_image_description">Background image for the card frame</string>
     <string name="level_icon_content_description">Level icon</string>
-    <string name="attribute_icon_content_description">Icona attributo</string>
+    <string name="attribute_icon_content_description">Attribute icon</string>
+    <string name="card_description">Card description</string>
 </resources>

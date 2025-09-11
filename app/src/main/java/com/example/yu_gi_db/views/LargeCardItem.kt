@@ -40,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
@@ -170,12 +171,22 @@ fun LargeCradUI(
                                 .clickable(enabled = navController != null && imageUrl.isNotEmpty()) {
                                     imageUrl.let { url ->
                                         val encodedUrl =
-                                            URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
-                                        navController?.navigate(Screen.ZoomCardScreen.createRoute(encodedUrl))
+                                            URLEncoder.encode(
+                                                url,
+                                                StandardCharsets.UTF_8.toString()
+                                            )
+                                        navController?.navigate(
+                                            Screen.ZoomCardScreen.createRoute(
+                                                encodedUrl
+                                            )
+                                        )
                                     }
                                 }
                                 .constrainAs(cardImageRef) {
-                                    top.linkTo(parent.top, margin = 8.dp) // Immagine con margine superiore
+                                    top.linkTo(
+                                        parent.top,
+                                        margin = 8.dp
+                                    ) // Immagine con margine superiore
                                     start.linkTo(parent.start, margin = 8.dp)
                                 }
                         )
@@ -213,7 +224,10 @@ fun LargeCradUI(
                                 .constrainAs(attributeLabelValueSeparatorRef) {
                                     top.linkTo(parent.top, margin = heightPerWeightedSlot)
                                     bottom.linkTo(lineaOrizzontaleRef.top)
-                                    start.linkTo(lineaVerticaleRef.end, margin = ATTRIBUTE_SEPARATOR_LINE_OFFSET)
+                                    start.linkTo(
+                                        lineaVerticaleRef.end,
+                                        margin = ATTRIBUTE_SEPARATOR_LINE_OFFSET
+                                    )
                                     height = Dimension.fillToConstraints
                                     width = Dimension.value(SEPARATOR_LINE_THICKNESS)
                                 }
@@ -260,8 +274,11 @@ fun LargeCradUI(
 
                                 Row(
                                     modifier = Modifier
-                                        .weight(1f) 
-                                        .padding(start = VALUE_AREA_START_PADDING, end = TEXT_START_END_PADDING) 
+                                        .weight(1f)
+                                        .padding(
+                                            start = VALUE_AREA_START_PADDING,
+                                            end = TEXT_START_END_PADDING
+                                        )
                                         .fillMaxWidth(),
                                     horizontalArrangement = Arrangement.Center, 
                                     verticalAlignment = Alignment.CenterVertically
@@ -301,8 +318,11 @@ fun LargeCradUI(
                                 currentCard.level?.let { levelValue ->
                                     Row(
                                         modifier = Modifier
-                                            .weight(1f) 
-                                            .padding(start = VALUE_AREA_START_PADDING, end = TEXT_START_END_PADDING) 
+                                            .weight(1f)
+                                            .padding(
+                                                start = VALUE_AREA_START_PADDING,
+                                                end = TEXT_START_END_PADDING
+                                            )
                                             .fillMaxWidth(), 
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.Center 
@@ -360,15 +380,21 @@ fun LargeCradUI(
                                     .verticalScroll(rememberScrollState())
                             ) {
                                 Text(
-                                    text = "Testo Carta", 
-                                    style = MaterialTheme.typography.titleSmall.copy(color = LightSilver),
+                                    text = stringResource(R.string.card_description),
+                                    style = MaterialTheme.typography.titleSmall.copy(
+                                        color = LightSilver,
+                                        fontSize = 20.sp
+                                    ),
                                     textAlign = TextAlign.Start,
                                     modifier = Modifier.fillMaxWidth()
                                 )
-                                Spacer(modifier = Modifier.height(4.dp)) 
+                                Spacer(modifier = Modifier.height(10.dp))
                                 Text(
                                     text = currentCard.desc,
-                                    style = AppTypography.bodyMedium.copy(color = LightSilver), // MODIFICATO QUI
+                                    style = AppTypography.bodyMedium.copy(
+                                        color = LightSilver,
+                                        fontSize = 20.sp
+                                    ),
                                     textAlign = TextAlign.Justify,
                                     modifier = Modifier.fillMaxWidth()
                                 )
