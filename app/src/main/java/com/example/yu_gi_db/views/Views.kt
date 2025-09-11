@@ -5,6 +5,7 @@ package com.example.yu_gi_db.views
 import android.content.res.Configuration
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.core.copy
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -30,6 +32,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
@@ -58,6 +62,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -72,6 +77,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController // Importa NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
@@ -79,10 +85,13 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
+import com.example.yu_gi_db.model.CardImage
 import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import kotlin.math.roundToInt
 
 @Composable
@@ -377,6 +386,7 @@ fun TextFieldView(
                         label = { Text(stringResource(R.string.search_bar_label_type_hint)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeDropdownExpanded) },
                         modifier = Modifier
+                            .menuAnchor()
                             .fillMaxWidth() // Importante per l'ancoraggio del menu
                     )
                     ExposedDropdownMenu(
@@ -410,6 +420,7 @@ fun TextFieldView(
                         label = { Text(stringResource(R.string.search_bar_label_attribute_hint)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = attributeDropdownExpanded) },
                         modifier = Modifier
+                            .menuAnchor()
                             .fillMaxWidth()
                     )
                     ExposedDropdownMenu(
@@ -732,20 +743,13 @@ fun LargeCardItemView(
     cardListViewModel: CardListViewModel ?= hiltViewModel()
 
 ) {
-    LargeCradUI(
-        modifier = modifier,
-        card = card,
-        navController = navController
-        //cardListViewModel = cardListViewModel
-    )
-   /* Column(
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
-    )
-    {
+    ) {
         val currentCard = card ?: return@Column // Renamed for clarity
         val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
         val imageUrl: String = firstCardImage?.imageUrlSmall ?: ""
@@ -849,7 +853,7 @@ fun LargeCardItemView(
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Justify
         )
-    }*/
+    }
 }
 @Composable
 fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
