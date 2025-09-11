@@ -743,13 +743,19 @@ fun LargeCardItemView(
     cardListViewModel: CardListViewModel ?= hiltViewModel()
 
 ) {
-    Column(
+    LargeCradUI(
+        card = card,
+        modifier = modifier,
+        navController = navController
+    )
+    /*Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    )
+    {
         val currentCard = card ?: return@Column // Renamed for clarity
         val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
         val imageUrl: String = firstCardImage?.imageUrlSmall ?: ""
@@ -853,7 +859,7 @@ fun LargeCardItemView(
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Justify
         )
-    }
+    }*/
 }
 @Composable
 fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
