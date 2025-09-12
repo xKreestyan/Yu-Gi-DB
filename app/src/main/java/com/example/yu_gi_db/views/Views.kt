@@ -743,7 +743,7 @@ fun LargeCardItemView(
     cardListViewModel: CardListViewModel ?= hiltViewModel()
 
 ) {
-    LargeCradUI(
+    LargeCardUI(
         card = card,
         modifier = modifier,
         navController = navController

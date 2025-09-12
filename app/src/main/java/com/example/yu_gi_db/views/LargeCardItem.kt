@@ -35,6 +35,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle as ComposeTextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,14 +47,17 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.CardImage
+import com.example.yu_gi_db.model.CardPrice // Assicurati che sia importato
+import com.example.yu_gi_db.model.CardSet // Assicurati che sia importato
 import com.example.yu_gi_db.model.LargePlayingCard
-import com.example.yu_gi_db.ui.theme.AppTypography // NUOVO IMPORT
+import com.example.yu_gi_db.ui.theme.AppTypography
 import com.example.yu_gi_db.ui.theme.LightSilver
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.ui.theme.YugiohCardNameDisplay
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import androidx.compose.ui.unit.times
+
 // Costanti per il layout degli attributi
 private val TEXT_START_END_PADDING = 8.dp
 private val LABEL_TEXT_WIDTH = 75.dp
@@ -91,9 +95,8 @@ private fun ClickableValueText(
     )
 }
 
-
 @Composable
-fun LargeCradUI(
+fun LargeCardUI(
     modifier: Modifier = Modifier,
     card: LargePlayingCard? = null,
     navController: NavHostController? = null,
@@ -112,10 +115,10 @@ fun LargeCradUI(
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()) // Scroll generale per tutta la pagina
                 .padding(16.dp)
         ) {
-            val (cardNameBoxRef, frameRef) = createRefs()
+            val (cardNameBoxRef, mainCardVisualFrameRef, cardSetsSectionRef, cardPricesSectionRef) = createRefs()
 
             YugiohCardNameDisplay(
                 cardName = currentCard.name,
@@ -129,7 +132,7 @@ fun LargeCradUI(
 
             Card(
                 modifier = Modifier
-                    .constrainAs(frameRef) {
+                    .constrainAs(mainCardVisualFrameRef) {
                         top.linkTo(cardNameBoxRef.bottom, margin = 8.dp)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
@@ -148,17 +151,16 @@ fun LargeCradUI(
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-
                     ConstraintLayout(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize() // Non serve .padding() qui, gestito dentro
                     ) {
                         val (
                             cardImageRef,
                             attributesColumnRef,
                             descriptionFrameRef,
-                            lineaVerticaleRef, // A destra dell'immagine
-                            lineaOrizzontaleRef, // Principale orizzontale
-                            attributeLabelValueSeparatorRef // Nuova linea per Etichetta/Valore
+                            lineaVerticaleRef,
+                            lineaOrizzontaleRef,
+                            attributeLabelValueSeparatorRef
                         ) = createRefs()
 
                         val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
@@ -183,10 +185,7 @@ fun LargeCradUI(
                                     }
                                 }
                                 .constrainAs(cardImageRef) {
-                                    top.linkTo(
-                                        parent.top,
-                                        margin = 8.dp
-                                    ) // Immagine con margine superiore
+                                    top.linkTo(parent.top, margin = 8.dp)
                                     start.linkTo(parent.start, margin = 8.dp)
                                 }
                         )
@@ -245,13 +244,12 @@ fun LargeCradUI(
                             }
                         ) {
                             val slotMinHeight = 24.dp
-
                             AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = TEXT_START_END_PADDING), 
-                                    horizontalArrangement = Arrangement.Center, 
+                                        .padding(horizontal = TEXT_START_END_PADDING),
+                                    horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     val combinedText = currentCard.type + if (currentCard.race.isNotEmpty()) " / ${currentCard.race}" else ""
@@ -259,46 +257,34 @@ fun LargeCradUI(
                                         text = combinedText,
                                         navController = navController,
                                         searchScreenRoute = Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type),
-                                        color = LightSilver, 
-                                        maxLines = 3, 
-                                        overflow = TextOverflow.Ellipsis, 
-                                        textAlign = TextAlign.Center 
+                                        color = LightSilver,
+                                        maxLines = 3,
+                                        overflow = TextOverflow.Ellipsis,
+                                        textAlign = TextAlign.Center
                                     )
                                 }
                             }
-
                             AttributeDivider()
-
                             AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
-                                AttributeLabel(stringResource(R.string.card_label_attribute)) 
-
+                                AttributeLabel(stringResource(R.string.card_label_attribute))
                                 Row(
                                     modifier = Modifier
                                         .weight(1f)
-                                        .padding(
-                                            start = VALUE_AREA_START_PADDING,
-                                            end = TEXT_START_END_PADDING
-                                        )
+                                        .padding(start = VALUE_AREA_START_PADDING, end = TEXT_START_END_PADDING)
                                         .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Center, 
+                                    horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     currentCard.attribute?.let { attributeValue ->
                                         if (attributeValue.equals("OSCURITÀ", ignoreCase = true)) {
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally 
-                                            ) {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally ) {
                                                 Image(
-                                                    painter = painterResource(id = R.drawable.oscurita), 
+                                                    painter = painterResource(id = R.drawable.oscurita),
                                                     contentDescription = stringResource(R.string.attribute_icon_content_description, attributeValue),
-                                                    modifier = Modifier.size(24.dp) 
+                                                    modifier = Modifier.size(24.dp)
                                                 )
-                                                Spacer(modifier = Modifier.height(2.dp)) 
-                                                Text(
-                                                    text = attributeValue,
-                                                    style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver),
-                                                    textAlign = TextAlign.Center
-                                                )
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text(text = attributeValue, style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver), textAlign = TextAlign.Center)
                                             }
                                         } else {
                                             ClickableValueText(
@@ -310,51 +296,32 @@ fun LargeCradUI(
                                     }
                                 }
                             }
-
                             AttributeDivider()
-
                             AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
-                                AttributeLabel(stringResource(R.string.card_label_level)) 
+                                AttributeLabel(stringResource(R.string.card_label_level))
                                 currentCard.level?.let { levelValue ->
                                     Row(
                                         modifier = Modifier
                                             .weight(1f)
-                                            .padding(
-                                                start = VALUE_AREA_START_PADDING,
-                                                end = TEXT_START_END_PADDING
-                                            )
-                                            .fillMaxWidth(), 
+                                            .padding(start = VALUE_AREA_START_PADDING, end = TEXT_START_END_PADDING)
+                                            .fillMaxWidth(),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center 
+                                        horizontalArrangement = Arrangement.Center
                                     ) {
-                                        Text(
-                                            text = levelValue.toString(),
-                                            style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver)
-                                        )
+                                        Text(text = levelValue.toString(), style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver))
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Image(
-                                            painter = painterResource(id = R.drawable.level),
-                                            contentDescription = stringResource(R.string.level_icon_content_description),
-                                            modifier = Modifier.size(18.dp)
-                                        )
+                                        Image(painter = painterResource(id = R.drawable.level), contentDescription = stringResource(R.string.level_icon_content_description), modifier = Modifier.size(18.dp))
                                     }
                                 }
                             }
-
                             AttributeDivider()
-
                             AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
                                 AttributeLabel(stringResource(R.string.card_label_atk_def))
                                 AttributeValues(modifier = Modifier.weight(1f)) {
                                     if (currentCard.atk != null || currentCard.def != null) {
                                         val atkValue = currentCard.atk?.toString() ?: "N/A"
                                         val defValue = currentCard.def?.toString() ?: "N/A"
-                                        Text(
-                                            text = "$atkValue / $defValue",
-                                            style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
+                                        Text(text = "$atkValue / $defValue", style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
                                 }
                             }
@@ -381,20 +348,14 @@ fun LargeCradUI(
                             ) {
                                 Text(
                                     text = stringResource(R.string.card_description),
-                                    style = MaterialTheme.typography.titleSmall.copy(
-                                        color = LightSilver,
-                                        fontSize = 20.sp
-                                    ),
+                                    style = MaterialTheme.typography.titleSmall.copy(color = LightSilver, fontSize = 20.sp),
                                     textAlign = TextAlign.Start,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Text(
                                     text = currentCard.desc,
-                                    style = AppTypography.bodyMedium.copy(
-                                        color = LightSilver,
-                                        fontSize = 20.sp
-                                    ),
+                                    style = AppTypography.bodyMedium.copy(color = LightSilver, fontSize = 20.sp),
                                     textAlign = TextAlign.Justify,
                                     modifier = Modifier.fillMaxWidth()
                                 )
@@ -403,9 +364,121 @@ fun LargeCradUI(
                     }
                 }
             }
+
+            if (currentCard.cardSets.isNotEmpty()) {
+                Card(
+                    modifier = Modifier
+                        .constrainAs(cardSetsSectionRef) {
+                            top.linkTo(mainCardVisualFrameRef.bottom, margin = 16.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            width = Dimension.fillToConstraints
+                        }
+                        .padding(bottom = 8.dp), // Spazio sotto la sezione dei set
+                    shape = RectangleShape,
+                    border = BorderStroke(1.dp, LightSilver.copy(alpha = 0.5f)),
+                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.3f))
+                ) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        Text(
+                            text = stringResource(R.string.card_section_title_appears_in),
+                            style = MaterialTheme.typography.titleMedium.copy(color = LightSilver, fontWeight = FontWeight.Bold),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        currentCard.cardSets.forEachIndexed { index, cardSet ->
+                            CardSetItemView(cardSet)
+                            if (index < currentCard.cardSets.size - 1) {
+                                HorizontalDivider(color = LightSilver.copy(alpha = 0.3f), thickness = 1.dp, modifier = Modifier.padding(vertical = 4.dp))
+                            }
+                        }
+                    }
+                }
+            }
+
+            // --- SEZIONE PREZZI DELLA CARTA ---
+            val firstPriceInfo = currentCard.cardPrices.firstOrNull()
+            if (firstPriceInfo != null) {
+                Card(
+                    modifier = Modifier
+                        .constrainAs(cardPricesSectionRef) {
+                            top.linkTo(cardSetsSectionRef.bottom, margin = 16.dp) // Sotto la sezione dei set (o mainCardVisualFrameRef se i set non ci sono)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                            width = Dimension.fillToConstraints
+                        }
+                        .padding(bottom = 8.dp), // Spazio sotto la sezione prezzi
+                    shape = RectangleShape,
+                    border = BorderStroke(1.dp, LightSilver.copy(alpha = 0.5f)),
+                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.3f))
+                ) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        Text(
+                            text = stringResource(R.string.card_section_title_market_prices),
+                            style = MaterialTheme.typography.titleMedium.copy(color = LightSilver, fontWeight = FontWeight.Bold),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        PriceItemView(label = stringResource(R.string.price_label_cardmarket), value = firstPriceInfo.cardmarketPrice)
+                        PriceItemView(label = stringResource(R.string.price_label_tcgplayer), value = firstPriceInfo.tcgplayerPrice)
+                        PriceItemView(label = stringResource(R.string.price_label_ebay), value = firstPriceInfo.ebayPrice)
+                        PriceItemView(label = stringResource(R.string.price_label_amazon), value = firstPriceInfo.amazonPrice)
+                        PriceItemView(label = stringResource(R.string.price_label_coolstuffinc), value = firstPriceInfo.coolstuffincPrice)
+                    }
+                }
+            }
         }
     }
 }
+
+@Composable
+private fun CardSetItemView(cardSet: CardSet) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Text(
+            text = cardSet.setName,
+            style = AppTypography.bodyLarge.copy(color = LightSilver, fontWeight = FontWeight.SemiBold),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(
+                text = "${stringResource(R.string.set_item_label_code)} ${cardSet.setCode}",
+                style = AppTypography.bodyMedium.copy(color = LightSilver.copy(alpha = 0.8f))
+            )
+            Text(
+                text = "${stringResource(R.string.set_item_label_rarity)} ${cardSet.setRarity} ${cardSet.setRarityCode ?: ""}",
+                style = AppTypography.bodyMedium.copy(color = LightSilver.copy(alpha = 0.8f)),
+                textAlign = TextAlign.End
+            )
+        }
+        Text(
+            text = "${stringResource(R.string.set_item_label_price)} ${cardSet.setPrice}",
+            style = AppTypography.bodyMedium.copy(color = LightSilver.copy(alpha = 0.8f))
+        )
+    }
+}
+
+@Composable
+private fun PriceItemView(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = AppTypography.bodyMedium.copy(color = LightSilver, fontWeight = FontWeight.SemiBold),
+            modifier = Modifier.weight(0.4f) // Assegna più spazio all'etichetta se necessario
+        )
+        Text(
+            text = value,
+            style = AppTypography.bodyMedium.copy(color = LightSilver),
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(0.6f)
+        )
+    }
+}
+
 
 @Composable
 private fun AttributeSlotRow(
@@ -459,30 +532,35 @@ private fun AttributeDivider() {
     )
 }
 
-
-@Preview(showBackground = true, name = "LargeCardUI Preview")
+@Preview(showBackground = true, name = "LargeCardUI Preview - Full")
 @Composable
 fun LargeCardUIPreview() {
     val sampleCard = LargePlayingCard(
-        id = 33396948, 
+        id = 33396948,
         name = "Exodia il Proibito",
-        race = "Effetto",
+        race = "Incantatore",
         desc = "Se hai \"Gamba Dx del Proibito\", \"Gamba Sx del Proibito\", \"Braccio Dx del Proibito\" e \"Braccio Sx del Proibito\" in aggiunta a questa carta nella tua mano, vinci il Duello.",
-        type = "Incantatore",
+        type = "Mostro Effetto",
         atk = 1000,
         def = 1000,
         level = 3,
         attribute = "OSCURITÀ",
-        cardImages = listOf(CardImage(1, "", "https://images.ygoprodeck.com/images/cards_small/33396948.jpg", "")),
-        typeline = emptyList(),
-        humanReadableCardType = "Spellcaster/Effect",
+        cardImages = listOf(CardImage(33396948, "", "https://images.ygoprodeck.com/images/cards_small/33396948.jpg", "")),
+        typeline = listOf("Incantatore", "Effetto"),
+        humanReadableCardType = "[Incantatore/Effetto]",
         frameType = "effect",
-        cardSets = emptyList(),
-        cardPrices = emptyList()
+        cardSets = listOf(
+            CardSet("Legend of Blue Eyes White Dragon", "LOB-EN124", "Ultra Rare", "(UR)", "150.00"),
+            CardSet("Dark Beginning 1", "DB1-EN140", "Rare", "(R)", "20.50"),
+            CardSet("Master Collection Volume 1", "MC1-EN001", "Secret Rare", "(ScR)", "300.75")
+        ),
+        cardPrices = listOf(
+            CardPrice("150.75", "160.00", "140.00", "180.00", "155.00")
+        )
     )
 
     YuGiDBTheme {
-        LargeCradUI(
+        LargeCardUI(
             card = sampleCard,
             navController = null
         )

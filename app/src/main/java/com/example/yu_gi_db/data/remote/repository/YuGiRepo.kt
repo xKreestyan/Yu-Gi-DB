@@ -97,24 +97,23 @@ class YuGiRepo @Inject constructor(
     override suspend fun fetchAndSaveAllCards() {
         Log.d(tag, "fetchAndSaveAllCards called - Processing multiple sets")
         try {
-            val languageParam = getCurrentLanguageParam() // Questo restituisce "it" o "en"
+            val languageParam = getCurrentLanguageParam()
             Log.d(tag, "Using language code: $languageParam for fetching cards logic")
 
-            val setNames = listOf(defaultSetName, "Metal Raiders")
+            val setNames = listOf(defaultSetName, "Metal Raiders") // Questi rimangono i set da cui scarichiamo attivamente le carte
 
             val cardResponses = coroutineScope {
                 setNames.map { setName ->
                     async(Dispatchers.IO) {
-                        // COSTRUZIONE DINAMICA DEI PARAMETRI API
                         val apiParams = mutableMapOf<String, String>()
                         apiParams["cardset"] = setName
-                        if (languageParam != "en") { // Aggiungi il parametro lingua solo se NON è inglese
+                        if (languageParam != "en") {
                             apiParams["language"] = languageParam
                             Log.d(tag, "Fetching cards for set: $setName with language: $languageParam")
                         } else {
                             Log.d(tag, "Fetching cards for set: $setName (defaulting to English, no language param)")
                         }
-                        apiClient.fetchCards(apiParams) // Passa i parametri costruiti
+                        apiClient.fetchCards(apiParams)
                     }
                 }.awaitAll()
             }
@@ -152,10 +151,9 @@ class YuGiRepo @Inject constructor(
                     localImagePathResult = downloadAndSaveImageVolley(imageUrlApi, apiCard.id, imageDir)
                 }
 
-                // Dati per CardEntity (non localizzati)
                 val cardEntity = CardEntity(
                     id = apiCard.id,
-                    type = apiCard.type, // Assumendo type sia cross-lingua o gestito diversamente
+                    type = apiCard.type,
                     frameType = apiCard.frameType,
                     race = apiCard.race,
                     atk = apiCard.atk,
@@ -168,16 +166,9 @@ class YuGiRepo @Inject constructor(
                 )
                 yuGiDAO.insertCard(cardEntity)
 
-                // Dati per CardLocalizationEntity
-                // La lingua usata per salvare la localizzazione è `languageParam`
-                // che è la lingua rilevata o il fallback a 'en' se non è 'it'.
-                // Se l'API restituisce dati inglesi quando languageParam è 'en' (senza &language=en),
-                // allora salveremo correttamente i dati inglesi con il codice 'en'.
-                // Se l'API restituisce dati italiani quando languageParam è 'it' (con &language=it),
-                // allora salveremo correttamente i dati italiani con il codice 'it'.
                 val localizationEntity = CardLocalizationEntity(
                     cardId = apiCard.id,
-                    languageCode = languageParam, // Usa languageParam per coerenza nel DB
+                    languageCode = languageParam,
                     name = apiCard.name,
                     desc = apiCard.desc,
                     humanReadableCardType = apiCard.humanReadableCardType
@@ -192,16 +183,19 @@ class YuGiRepo @Inject constructor(
                     }
                 }
 
+                // MODIFICA QUI: Rimosso if (setNames.contains(apiSet.setName))
                 apiCard.cardSets?.forEach { apiSet ->
-                    if (setNames.contains(apiSet.setName)) { // Assicurati di salvare solo i set richiesti
-                        var setEntity = yuGiDAO.getSetByName(apiSet.setName)
-                        val setId = setEntity?.id ?: yuGiDAO.insertSet(SetEntity(name = apiSet.setName))
-                        val appearance = CardSetAppearanceEntity(
-                            cardId = apiCard.id, setId = setId, setSpecificCode = apiSet.setCode,
-                            rarity = apiSet.setRarity, rarityCode = apiSet.setRarityCode ?: "", price = apiSet.setPrice
-                        )
-                        yuGiDAO.insertCardSetAppearance(appearance)
-                    }
+                    var setEntity = yuGiDAO.getSetByName(apiSet.setName)
+                    val setId = setEntity?.id ?: yuGiDAO.insertSet(SetEntity(name = apiSet.setName))
+                    val appearance = CardSetAppearanceEntity(
+                        cardId = apiCard.id,
+                        setId = setId,
+                        setSpecificCode = apiSet.setCode,
+                        rarity = apiSet.setRarity,
+                        rarityCode = apiSet.setRarityCode ?: "",
+                        price = apiSet.setPrice
+                    )
+                    yuGiDAO.insertCardSetAppearance(appearance)
                 }
             }
             Log.i(tag, "Successfully processed and saved ${cardsToProcess.size} unique cards.")
@@ -216,10 +210,9 @@ class YuGiRepo @Inject constructor(
         return yuGiDAO.getInitialSmallCardsBySetName(defaultSetName, languageParam)
     }
 
-    // mapCardEntityToLargePlayingCard rinominata e adattata
     private suspend fun mapDetailsToLargePlayingCard(
         entity: CardEntity,
-        localization: CardLocalizationEntity // Ora richiede CardLocalizationEntity
+        localization: CardLocalizationEntity
     ): LargePlayingCard = withContext(Dispatchers.IO) {
         val typelines = yuGiDAO.getTypeLineNamesForCard(entity.id)
         val cardImagesDomain = mutableListOf<com.example.yu_gi_db.model.CardImage>()
@@ -236,21 +229,23 @@ class YuGiRepo @Inject constructor(
             val setEntity = yuGiDAO.getSetById(appearance.setId)
             if (setEntity != null) {
                 cardSetsDomain.add(com.example.yu_gi_db.model.CardSet(
-                    setName = setEntity.name, setCode = appearance.setSpecificCode,
-                    setRarity = appearance.rarity, setRarityCode = appearance.rarityCode, 
-                    setPrice = appearance.price // CORREZIONE APPLICATA QUI
+                    setName = setEntity.name,
+                    setCode = appearance.setSpecificCode,
+                    setRarity = appearance.rarity,
+                    setRarityCode = appearance.rarityCode,
+                    setPrice = appearance.price
                 ))
             }
         }
 
         return@withContext LargePlayingCard(
             id = entity.id,
-            name = localization.name, // Da localization
+            name = localization.name,
             typeline = typelines,
-            type = entity.type, // Da CardEntity
-            humanReadableCardType = localization.humanReadableCardType, // Da localization
+            type = entity.type,
+            humanReadableCardType = localization.humanReadableCardType,
             frameType = entity.frameType,
-            desc = localization.desc, // Da localization
+            desc = localization.desc,
             race = entity.race,
             atk = entity.atk,
             def = entity.def,
@@ -274,14 +269,12 @@ class YuGiRepo @Inject constructor(
         var languageToFetch = getCurrentLanguageParam()
         var localization = yuGiDAO.getLocalization(cardId, languageToFetch)
 
-        // Fallback a Inglese se la localizzazione primaria non è trovata E non era già inglese
         if (localization == null && languageToFetch != "en") {
             Log.w(tag, "No localization found for card ID $cardId in '$languageToFetch'. Trying 'en'.")
             localization = yuGiDAO.getLocalization(cardId, "en")
         }
 
         if (localization == null) {
-            // Se anche il fallback fallisce, non possiamo costruire LargePlayingCard come definito (campi non nullable)
             Log.e(tag, "Critical: No localization found for card ID $cardId even after fallback to 'en'. Cannot create LargePlayingCard.")
             return@withContext null
         }
@@ -295,9 +288,9 @@ class YuGiRepo @Inject constructor(
 
         val queryBuilder = StringBuilder(
             "SELECT DISTINCT c.id, cl.name, c.localImagePath AS imageUrlSmall, c.isFavorite " +
-            "FROM cards c " +
-            "INNER JOIN card_localizations cl ON c.id = cl.cardId " +
-            "WHERE cl.languageCode = ?" // Argomento 1: languageParam
+                    "FROM cards c " +
+                    "INNER JOIN card_localizations cl ON c.id = cl.cardId " +
+                    "WHERE cl.languageCode = ?"
         )
         val args = mutableListOf<Any>()
         args.add(languageParam)
@@ -307,11 +300,11 @@ class YuGiRepo @Inject constructor(
             args.add("%$it%")
         }
         criteria.name?.takeIf { it.isNotBlank() }?.let {
-            queryBuilder.append(" AND cl.name LIKE ?") // Cerca nel nome localizzato (cl.name)
+            queryBuilder.append(" AND cl.name LIKE ?")
             args.add("%$it%")
         }
         criteria.type?.takeIf { it.isNotBlank() }?.let {
-            queryBuilder.append(" AND c.type = ?") // type da CardEntity
+            queryBuilder.append(" AND c.type = ?")
             args.add(it)
         }
         criteria.attribute?.takeIf { it.isNotBlank() }?.let {
@@ -326,7 +319,7 @@ class YuGiRepo @Inject constructor(
         criteria.atkMax?.let { queryBuilder.append(" AND c.atk <= ?"); args.add(it) }
         criteria.defMin?.let { queryBuilder.append(" AND c.def >= ?"); args.add(it) }
         criteria.defMax?.let { queryBuilder.append(" AND c.def <= ?"); args.add(it) }
-        
+
         criteria.isFavorite?.let {
             queryBuilder.append(" AND c.isFavorite = ?")
             args.add(if (it) 1 else 0)
@@ -334,17 +327,17 @@ class YuGiRepo @Inject constructor(
 
         val onlyIdQuery = criteria.idQuery?.isNotBlank() == true
         val otherCriteriaPresent = criteria.name?.isNotBlank() == true ||
-                                   criteria.type?.isNotBlank() == true ||
-                                   criteria.attribute?.isNotBlank() == true ||
-                                   criteria.level != null ||
-                                   criteria.atkMin != null || criteria.atkMax != null ||
-                                   criteria.defMin != null || criteria.defMax != null ||
-                                   criteria.isFavorite != null
+                criteria.type?.isNotBlank() == true ||
+                criteria.attribute?.isNotBlank() == true ||
+                criteria.level != null ||
+                criteria.atkMin != null || criteria.atkMax != null ||
+                criteria.defMin != null || criteria.defMax != null ||
+                criteria.isFavorite != null
 
         if (onlyIdQuery && !otherCriteriaPresent) {
             queryBuilder.append(" ORDER BY c.id ASC")
         } else {
-            queryBuilder.append(" ORDER BY cl.name ASC") // Ordina per nome localizzato
+            queryBuilder.append(" ORDER BY cl.name ASC")
         }
 
         val simpleSQLiteQuery = SimpleSQLiteQuery(queryBuilder.toString(), args.toTypedArray())
@@ -355,7 +348,7 @@ class YuGiRepo @Inject constructor(
 
     override suspend fun toggleFavoriteStatus(cardId: Int) {
         withContext(Dispatchers.IO) {
-            val card = yuGiDAO.getCardById(cardId) // getCardById restituisce CardEntity
+            val card = yuGiDAO.getCardById(cardId)
             if (card != null) {
                 yuGiDAO.setFavoriteStatus(cardId, !card.isFavorite)
                 Log.d(tag, "Toggled favorite status for card ID $cardId to ${!card.isFavorite}")

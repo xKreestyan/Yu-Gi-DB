@@ -59,4 +59,14 @@
     <string name="attribute_icon_content_description">Icona attributo</string>
     <string name="card_description">Descrizione carta</string>
     <string name="card_label_atk_def">ATK/DEF</string>
+    <string name="card_section_title_appears_in">Presente nei set</string>
+    <string name="card_section_title_market_prices">Prezzi di mercato</string>
+    <string name="set_item_label_code">Codice:</string>
+    <string name="set_item_label_rarity">Rarità:</string>
+    <string name="set_item_label_price">Prezzo:</string>
+    <string name="price_label_cardmarket">Cardmarket:</string>
+    <string name="price_label_tcgplayer">TCGPlayer:</string>
+    <string name="price_label_ebay">eBay:</string>
+    <string name="price_label_amazon">Amazon:</string>
+    <string name="price_label_coolstuffinc">CoolStuffInc:</string>
 </resources>

@@ -59,4 +59,14 @@
     <string name="level_icon_content_description">Level icon</string>
     <string name="attribute_icon_content_description">Attribute icon</string>
     <string name="card_description">Card description</string>
+    <string name="card_section_title_appears_in">Appears in sets</string>
+    <string name="card_section_title_market_prices">Market Prices</string>
+    <string name="set_item_label_code">Code:</string>
+    <string name="set_item_label_rarity">Rarity:</string>
+    <string name="set_item_label_price">Price:</string>
+    <string name="price_label_cardmarket">Cardmarket:</string>
+    <string name="price_label_tcgplayer">TCGPlayer:</string>
+    <string name="price_label_ebay">eBay:</string>
+    <string name="price_label_amazon">Amazon:</string>
+    <string name="price_label_coolstuffinc">CoolStuffInc:</string>
 </resources>
