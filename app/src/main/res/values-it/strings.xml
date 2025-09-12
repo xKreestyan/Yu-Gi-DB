@@ -69,4 +69,7 @@
     <string name="price_label_ebay">eBay:</string>
     <string name="price_label_amazon">Amazon:</string>
     <string name="price_label_coolstuffinc">CoolStuffInc:</string>
+    <string name="search_label_set_name">Nome Set</string>
+    <string name="search_label_set_code">Codice Set</string>
+    <string name="search_label_favorites_only">Solo Preferiti</string>
 </resources>

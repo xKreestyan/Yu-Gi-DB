@@ -25,17 +25,6 @@ sealed class Screen(val route: String) {
             return route.replace("{$ARG_SEARCH_TYPE}", searchType)
                         .replace("{$ARG_SEARCH_VALUE}", searchValue)
         }
-        // All'interno di sealed class Screen -> object DataBaseAdvancedSearch
-
-        fun createRoutePlus(searchType: List<String>, searchValue: List<String>): String {
-            val joinedSearchTypes = searchType.joinToString(separator = ",") // Unisce la lista in una stringa separata da virgole
-            val joinedSearchValues = searchValue.joinToString(separator = ",") // Unisce la lista in una stringa separata da virgole
-            // Ora usiamo le stringhe unite nella funzione replace
-            return route.replace("{$ARG_SEARCH_TYPE}", joinedSearchTypes)
-                .replace("{$ARG_SEARCH_VALUE}", joinedSearchValues)
-        }
-
-        // Helper functions for specific search types (temporary)
         fun createRouteForType(type: String): String {
             return createRoute("type", type)
         }
@@ -110,7 +99,15 @@ fun Navigation() {
                         "type" -> AdvancedSearchCriteria(type = searchValue)
                         "attribute" -> AdvancedSearchCriteria(attribute = searchValue)
                         "level" -> AdvancedSearchCriteria(level = searchValue.toIntOrNull())
-                        // Add more cases if other search types are needed in the future
+                        "id" -> AdvancedSearchCriteria(idQuery = searchValue)
+                        "name" -> AdvancedSearchCriteria(name = searchValue)
+                        "atkMin" -> AdvancedSearchCriteria(atkMin = searchValue.toIntOrNull())
+                        "atkMax" -> AdvancedSearchCriteria(atkMax = searchValue.toIntOrNull())
+                        "defMin" -> AdvancedSearchCriteria(defMin = searchValue.toIntOrNull())
+                        "defMax" -> AdvancedSearchCriteria(defMax = searchValue.toIntOrNull())
+                        "isFavorite" -> AdvancedSearchCriteria(isFavorite = searchValue.toBooleanStrictOrNull())
+                        "setName" -> AdvancedSearchCriteria(setNameQuery = searchValue)
+                        "setCode" -> AdvancedSearchCriteria(setCodeQuery = searchValue)
                         else -> AdvancedSearchCriteria() // Or handle as an error/default
                     }
                 }

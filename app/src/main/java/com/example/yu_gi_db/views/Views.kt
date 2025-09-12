@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -39,8 +41,11 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -304,11 +309,55 @@ fun MyRangeSlider(
         )
     }
 }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun <T> SearchCriteriaDropdown(
+    label: String,
+    selectedValueDisplay: String,
+    items: Map<String, T?>, // Mappa di visualizzazione -> valore effettivo
+    onItemSelected: (T?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current // Se serve ancora per i dropdown
 
-@OptIn(ExperimentalMaterial3Api::class) // Se MyRangeSlider o altri componenti lo richiedono
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            value = selectedValueDisplay,
+            onValueChange = {}, // Non modificabile direttamente
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor() // Importante per ExposedDropdownMenuBox
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            items.forEach { (displayValue, actualValue) ->
+                DropdownMenuItem(
+                    text = { Text(displayValue) },
+                    onClick = {
+                        onItemSelected(actualValue)
+                        expanded = false
+                        focusManager.clearFocus() // Se applicabile
+                    }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextFieldView(
-    value: String,
+    value: String, // General search term, often maps to 'name'
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     label: @Composable () -> Unit,
@@ -320,7 +369,6 @@ fun TextFieldView(
     var searchAdvanced by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
-    // Definizioni delle opzioni per i dropdown menu
     val cardTypes = mapOf(
         stringResource(R.string.search_any_type) to null,
         "Carte Magia (Spell Card)" to "Spell Card",
@@ -346,184 +394,224 @@ fun TextFieldView(
         "VENTO (WIND)" to "WIND",
         "DIVINO (DIVINE)" to "DIVINE"
     )
-
-    var typeDropdownExpanded by remember { mutableStateOf(false) }
-    var attributeDropdownExpanded by remember { mutableStateOf(false) }
-
-    Column(modifier = modifier) { // Il modifier principale è applicato alla Column radice
+    Column(modifier = modifier) {
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(), // Il campo di testo principale riempie la larghezza
+            modifier = Modifier.fillMaxWidth(),
             label = label,
             singleLine = singleLine,
             keyboardActions = keyboardActions,
             trailingIcon = {
                 val icon = if (searchAdvanced) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
                 val contentDesc = if (searchAdvanced) stringResource(R.string.search_options_collapse) else stringResource(R.string.search_options_expand)
-                Icon(
-                    imageVector = icon,
-                    contentDescription = contentDesc, // Descrizione per l'accessibilità
-                    modifier = Modifier.clickable { searchAdvanced = !searchAdvanced }
-                )
+                Row {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = contentDesc,
+                        modifier = Modifier
+                            .clickable {
+                                onSearchCriteriaChange(AdvancedSearchCriteria(isFavorite =searchCriteria.isFavorite )) // Usa la callback!
+
+                            }
+                    )
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = contentDesc,
+                        modifier = Modifier.clickable { searchAdvanced = !searchAdvanced }
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                }
             }
         )
 
         if (searchAdvanced) {
-            Column(modifier = Modifier
-                .padding(top = 16.dp)
-                .verticalScroll(rememberScrollState())) {
-                // Dropdown per TYPE
-                ExposedDropdownMenuBox(
-                    expanded = typeDropdownExpanded,
-                    onExpandedChange = { typeDropdownExpanded = !typeDropdownExpanded },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedTextField(
-                        value = cardTypes.entries.find { it.value == searchCriteria.type }?.key ?: stringResource(R.string.search_any_type),
-                        onValueChange = {}, // Non modificabile direttamente
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.search_bar_label_type_hint)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeDropdownExpanded) },
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth() // Importante per l'ancoraggio del menu
+            Column(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxHeight(0.5f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                // ... (dentro il tuo Composable TextFieldView, nella sezione if (searchAdvanced))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(), // La Row occupa l'intera larghezza
+                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Spazio tra i figli della Row
+                )
+                {
+                    // Dropdown per TYPE
+                    SearchCriteriaDropdown(
+                        label = stringResource(R.string.search_bar_label_type_hint),
+                        selectedValueDisplay = cardTypes.entries.find { it.value == searchCriteria.type }?.key
+                            ?: stringResource(R.string.search_any_type),
+                        items = cardTypes,
+                        onItemSelected = { selectedType ->
+                            onSearchCriteriaChange(searchCriteria.copy(type = selectedType))
+                        },
+                        modifier = Modifier.weight(1f) // Occupa metà dello spazio disponibile
                     )
-                    ExposedDropdownMenu(
-                        expanded = typeDropdownExpanded,
-                        onDismissRequest = { typeDropdownExpanded = false }
-                    ) {
-                        cardTypes.forEach { (displayType, actualType) ->
-                            DropdownMenuItem(
-                                text = { Text(displayType) },
-                                onClick = {
-                                    onSearchCriteriaChange(searchCriteria.copy(type = actualType))
-                                    typeDropdownExpanded = false
-                                    focusManager.clearFocus()
-                                }
-                            )
-                        }
-                    }
+
+                    // Dropdown per ATTRIBUTE
+                    SearchCriteriaDropdown(
+                        label = stringResource(R.string.search_bar_label_attribute_hint),
+                        selectedValueDisplay = cardAttributes.entries.find { it.value == searchCriteria.attribute }?.key
+                            ?: stringResource(R.string.search_any_attribute),
+                        items = cardAttributes,
+                        onItemSelected = { selectedAttribute ->
+                            onSearchCriteriaChange(searchCriteria.copy(attribute = selectedAttribute))
+                        },
+                        modifier = Modifier.weight(1f) // Occupa l'altra metà dello spazio disponibile
+                    )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // Dropdown per ATTRIBUTE
-                ExposedDropdownMenuBox(
-                    expanded = attributeDropdownExpanded,
-                    onExpandedChange = { attributeDropdownExpanded = !attributeDropdownExpanded },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Aggiunge spazio uniforme tra i campi
+                )
+                {
+                    // OutlinedTextField per LEVEL
                     OutlinedTextField(
-                        value = cardAttributes.entries.find { it.value == searchCriteria.attribute }?.key ?: stringResource(R.string.search_any_attribute),
-                        onValueChange = {}, // Non modificabile direttamente
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.search_bar_label_attribute_hint)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = attributeDropdownExpanded) },
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
+                        value = searchCriteria.level?.toString() ?: "",
+                        onValueChange = { newValue ->
+                            // Considera di limitare la lunghezza o i valori qui se necessario
+                            val newLevel = newValue.filter { it.isDigit() }.take(2) // Permette solo cifre, max 2
+                            onSearchCriteriaChange(searchCriteria.copy(level = newLevel.toIntOrNull()))
+                        },
+                        label = { Text(stringResource(R.string.search_bar_label_level_hint)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                        modifier = Modifier.weight(1f) // Occupa metà dello spazio disponibile
                     )
-                    ExposedDropdownMenu(
-                        expanded = attributeDropdownExpanded,
-                        onDismissRequest = { attributeDropdownExpanded = false }
-                    ) {
-                        cardAttributes.forEach { (displayAttribute, actualAttribute) ->
-                            DropdownMenuItem(
-                                text = { Text(displayAttribute) },
-                                onClick = {
-                                    onSearchCriteriaChange(searchCriteria.copy(attribute = actualAttribute))
-                                    attributeDropdownExpanded = false
-                                    focusManager.clearFocus()
-                                }
-                            )
-                        }
-                    }
+
+                    // OutlinedTextField per ID Carta (idQuery)
+                    OutlinedTextField(
+                        value = searchCriteria.idQuery ?: "",
+                        onValueChange = { newValue ->
+                            onSearchCriteriaChange(searchCriteria.copy(idQuery = newValue.takeIf { it.isNotBlank() }))
+                        },
+                        label = { Text(stringResource(R.string.search_id)) },
+                        singleLine = true,
+                        // keyboardOptions: considera se vuoi limitare a numeri o permettere testo per ricerche parziali di ID
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text), // O KeyboardType.NumberPassword se sono solo numeri
+                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                        modifier = Modifier.weight(1f) // Occupa l'altra metà dello spazio disponibile
+                    )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // OutlinedTextField per LEVEL (rimane invariato)
-                OutlinedTextField(
-                    value = searchCriteria.level?.toString() ?: "",
-                    onValueChange = { newValue ->
-                        onSearchCriteriaChange(searchCriteria.copy(level = newValue.toIntOrNull()))
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.search_bar_label_level_hint)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    keyboardActions = KeyboardActions(onDone = {
-                        focusManager.clearFocus()
-                    })
+                Divider(
+                    modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
+                    thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
+                    color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = searchCriteria.idQuery?: "",
-                    onValueChange = { newValue ->
-                        onSearchCriteriaChange(searchCriteria.copy(idQuery = newValue ))
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.search_id)) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    keyboardActions = KeyboardActions(onDone = {
-                        focusManager.clearFocus()
-                    })
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // ATK Range Slider
-                val atkValueRange = 0f..5000f // Intervallo possibile per ATK
+                 // ATK Range Slider
+                val atkValueRange = 0f..5000f
                 val currentAtkStart = searchCriteria.atkMin?.toFloat() ?: atkValueRange.start
                 val currentAtkEnd = searchCriteria.atkMax?.toFloat() ?: atkValueRange.endInclusive
-
                 MyRangeSlider(
-                    title =stringResource(R.string.search_bar_label_atk_min_hint)+"/"+stringResource(R.string.search_bar_label_atk_max_hint),
+                    title = stringResource(R.string.search_bar_label_atk_min_hint) + "/" + stringResource(R.string.search_bar_label_atk_max_hint),
                     currentRange = currentAtkStart..currentAtkEnd,
                     onRangeChange = { newRange ->
-                        val newAtkMin =
-                            if (newRange.start <= atkValueRange.start) null else newRange.start.roundToInt()
-                        val newAtkMax =
-                            if (newRange.endInclusive >= atkValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
-                        onSearchCriteriaChange(
-                            searchCriteria.copy(
-                                atkMin = newAtkMin,
-                                atkMax = newAtkMax
-                            )
-                        )
+                        val newAtkMin = if (newRange.start <= atkValueRange.start) null else newRange.start.roundToInt()
+                        val newAtkMax = if (newRange.endInclusive >= atkValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
+                        onSearchCriteriaChange(searchCriteria.copy(atkMin = newAtkMin, atkMax = newAtkMax))
                     },
                     valueRange = atkValueRange,
-                    steps = 49 // Slider continuo
+                    steps = (atkValueRange.endInclusive - atkValueRange.start).toInt() / 50 -1 //  steps per intervalli di 50
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-
                 // DEF Range Slider
-                val defValueRange = 0f..5000f // Intervallo possibile per DEF
+                val defValueRange = 0f..5000f
                 val currentDefStart = searchCriteria.defMin?.toFloat() ?: defValueRange.start
                 val currentDefEnd = searchCriteria.defMax?.toFloat() ?: defValueRange.endInclusive
-
                 MyRangeSlider(
-                    title =stringResource(R.string.search_bar_label_def_min_hint)+"/"+stringResource(R.string.search_bar_label_def_max_hint),
+                    title = stringResource(R.string.search_bar_label_def_min_hint) + "/" + stringResource(R.string.search_bar_label_def_max_hint),
                     currentRange = currentDefStart..currentDefEnd,
                     onRangeChange = { newRange ->
-                        val newDefMin =
-                            if (newRange.start <= defValueRange.start) null else newRange.start.roundToInt()
-                        val newDefMax =
-                            if (newRange.endInclusive >= defValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
-                        onSearchCriteriaChange(
-                            searchCriteria.copy(
-                                defMin = newDefMin,
-                                defMax = newDefMax
-                            )
-                        )
+                        val newDefMin = if (newRange.start <= defValueRange.start) null else newRange.start.roundToInt()
+                        val newDefMax = if (newRange.endInclusive >= defValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
+                        onSearchCriteriaChange(searchCriteria.copy(defMin = newDefMin, defMax = newDefMax))
                     },
                     valueRange = defValueRange,
-                    steps = 49 // Slider continuo
+                    steps = (defValueRange.endInclusive - defValueRange.start).toInt() / 50 - 1 // steps per intervalli di 50
                 )
-                //Icon(fill)
+                Divider(
+                    modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
+                    thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
+                    color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
+                )
+                // ... (dentro il tuo Composable TextFieldView, nella sezione if (searchAdvanced))
+// ... (Codice per i RangeSlider ATK/DEF e il Divider precedente)
+
+                Spacer(modifier = Modifier.height(8.dp)) // O 16.dp se vuoi più spazio prima di questa sezione
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Aggiunge spazio uniforme tra i campi
+                ) {
+                    // OutlinedTextField per Nome Set (setNameQuery)
+                    OutlinedTextField(
+                        value = searchCriteria.setNameQuery ?: "",
+                        onValueChange = { newValue ->
+                            onSearchCriteriaChange(
+                                searchCriteria.copy(
+                                    setNameQuery = newValue.takeIf { it.isNotBlank() },
+                                    atkMin = currentAtkStart.toInt()
+                                    )
+                            )
+                        },
+                        label = { Text(stringResource(R.string.search_label_set_name)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                        modifier = Modifier.weight(1f) // Occupa metà dello spazio disponibile
+                    )
+
+                    // OutlinedTextField per Codice Set (setCodeQuery)
+                    OutlinedTextField(
+                        value = searchCriteria.setCodeQuery ?: "",
+                        onValueChange = { newValue ->
+                            onSearchCriteriaChange(
+                                searchCriteria.copy(
+                                    setCodeQuery = newValue.takeIf { it.isNotBlank() },
+                                            atkMin =currentAtkStart.toInt()
+                                )
+                            )
+                        },
+                        label = { Text(stringResource(R.string.search_label_set_code)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                        modifier = Modifier.weight(1f) // Occupa l'altra metà dello spazio disponibile
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp)) // Spazio prima della sezione "Preferiti"
+
+
+
+
+                // Checkbox per Preferiti (isFavorite)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = searchCriteria.isFavorite ?: false, // Se null, mostra come non selezionato
+                        onCheckedChange = { isChecked ->
+                            onSearchCriteriaChange(searchCriteria.copy(isFavorite = if (isChecked) true else null))
+                        }
+                    )
+                    Text(
+                        text = stringResource(R.string.search_label_favorites_only), // Crea R.string.search_label_favorites_only
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
 }
+
 
 @Composable
 fun InitCardsScreenView(

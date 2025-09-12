@@ -69,4 +69,10 @@
     <string name="price_label_ebay">eBay:</string>
     <string name="price_label_amazon">Amazon:</string>
     <string name="price_label_coolstuffinc">CoolStuffInc:</string>
+    <string name="search_label_set_name">Set Name</string>
+    <string name="search_label_set_code">Set Code</string>
+    <string name="search_label_favorites_only">Favorites Only</string>
+
+
+    <!-- <string name="search_id">ID Carta</string> -->
 </resources>
