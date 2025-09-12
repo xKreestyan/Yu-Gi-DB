@@ -619,7 +619,7 @@ fun CardsScreenView(
         val isSearchActive = searchCriteria != AdvancedSearchCriteria()
         if(optionErrorView(
                 modifier = modifier.weight(1f),
-                isLoading = isLoading,
+                isLoading = false,
                 errorMessage = errorMessage,
                 isEmpty = cards.isEmpty(),
                 isSearchActive = isSearchActive
