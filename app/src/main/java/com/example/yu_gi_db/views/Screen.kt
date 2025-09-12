@@ -31,15 +31,18 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext // Import aggiunto
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel // Per hiltViewModel
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle // Per collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
+import com.example.yu_gi_db.music.MusicView
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 
@@ -69,13 +72,13 @@ fun SplashScreen(modifier: Modifier = Modifier, navController: NavHostController
                 Modifier.fillMaxSize()
             )
             Box(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxSize()
                     .padding(top = this.maxHeight / 2 ),
                 contentAlignment = Alignment.TopCenter
             ) {
                 WaitIndicatorView(
-                    Modifier.size(this@BoxWithConstraints.maxWidth / 3)
+                    modifier = Modifier .size(this@BoxWithConstraints.maxWidth / 3)
                 )
             }
         }
@@ -221,16 +224,24 @@ fun CardZoomScreen(
             ) {
                 IconButton(
                     onClick = { updateZoom(scale + ZOOM_STEP) },
-                    modifier = Modifier.graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), MaterialTheme.shapes.small)
+                    modifier = Modifier
+                        .graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
+                        .background(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                            MaterialTheme.shapes.small
+                        )
 
                 ) {
                     Text("+", Modifier.scale(5f))
                 }
                 IconButton(
                     onClick = { updateZoom(scale - ZOOM_STEP) },
-                    modifier = Modifier.graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
-                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), MaterialTheme.shapes.small)
+                    modifier = Modifier
+                        .graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
+                        .background(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                            MaterialTheme.shapes.small
+                        )
                 ) {
                     Text("-", Modifier.scale(5f))
                 }
@@ -287,13 +298,15 @@ fun InformationScreen(
             Spacer(modifier = Modifier.height(24.dp))
             InfoSectionView(
                 title = stringResource(R.string.info_section_credits_title)
-            ) {
+            )
+            {
                 Text(
                     text = stringResource(R.string.info_section_credits_content),
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
             }
+            MusicView(musicViewModel = hiltViewModel(viewModelStoreOwner = LocalContext.current as ViewModelStoreOwner) )//LocalContext.current as ComponentActivity
         }
     }
 }
@@ -347,6 +360,9 @@ fun CardZoomScreenPreview() {
 @Composable
 fun InfoScreenViewPreview() {
     YuGiDBTheme {
+        // Questa preview potrebbe aver bisogno di un FakeMusicViewModel se si aspetta
+        // un MusicViewModel fornito da Hilt e non riesce a ottenerlo nell'ambiente di preview.
+        // Per ora la lascio così, ma potrebbe dare problemi in fase di rendering della preview.
         InformationScreen()
     }
 }
