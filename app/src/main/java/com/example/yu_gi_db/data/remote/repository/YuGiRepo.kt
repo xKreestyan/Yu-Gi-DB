@@ -290,6 +290,8 @@ class YuGiRepo @Inject constructor(
             "SELECT DISTINCT c.id, cl.name, c.localImagePath AS imageUrlSmall, c.isFavorite " +
                     "FROM cards c " +
                     "INNER JOIN card_localizations cl ON c.id = cl.cardId " +
+                    "LEFT JOIN card_set_appearances csa ON c.id = csa.cardId " +
+                    "LEFT JOIN sets s ON csa.setId = s.id " +
                     "WHERE cl.languageCode = ?"
         )
         val args = mutableListOf<Any>()
@@ -324,6 +326,14 @@ class YuGiRepo @Inject constructor(
             queryBuilder.append(" AND c.isFavorite = ?")
             args.add(if (it) 1 else 0)
         }
+        criteria.setNameQuery?.takeIf { it.isNotBlank() }?.let {
+            queryBuilder.append(" AND s.name LIKE ?")
+            args.add("%$it%")
+        }
+        criteria.setCodeQuery?.takeIf { it.isNotBlank() }?.let {
+            queryBuilder.append(" AND csa.setSpecificCode LIKE ?")
+            args.add("%$it%")
+        }
 
         val onlyIdQuery = criteria.idQuery?.isNotBlank() == true
         val otherCriteriaPresent = criteria.name?.isNotBlank() == true ||
@@ -332,7 +342,9 @@ class YuGiRepo @Inject constructor(
                 criteria.level != null ||
                 criteria.atkMin != null || criteria.atkMax != null ||
                 criteria.defMin != null || criteria.defMax != null ||
-                criteria.isFavorite != null
+                criteria.isFavorite != null ||
+                criteria.setNameQuery?.isNotBlank() == true ||
+                criteria.setCodeQuery?.isNotBlank() == true
 
         if (onlyIdQuery && !otherCriteriaPresent) {
             queryBuilder.append(" ORDER BY c.id ASC")

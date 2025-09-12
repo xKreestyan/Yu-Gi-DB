@@ -1,14 +1,16 @@
 package com.example.yu_gi_db.model
 
 data class AdvancedSearchCriteria(
-    var name: String? = null,           // Corrisponde a CardEntity.name
-    var type: String? = null,           // Corrisponde a CardEntity.type (es. "Effect Monster", "Spell Card")
-    var attribute: String? = null,      // Corrisponde a CardEntity.attribute (es. "LIGHT", "DARK")
-    var level: Int? = null,             // Corrisponde a CardEntity.level (o rank)
-    var atkMin: Int? = null,            // Per la ricerca ATK in un range (>= atkMin)
-    var atkMax: Int? = null,            // Per la ricerca ATK in un range (<= atkMax)
-    var defMin: Int? = null,            // Per la ricerca DEF in un range (>= defMin)
-    var defMax: Int? = null,            // Per la ricerca DEF in un range (<= defMax)
-    var idQuery: String? = null,        // NUOVO CAMPO per la ricerca tramite ID (come stringa)
-    var isFavorite: Boolean? = null     // NUOVO CAMPO per filtrare per preferiti
+    val idQuery: String? = null,           // Per cercare ID parziali come stringa
+    val name: String? = null,
+    val type: String? = null,           // Corrisponde a CardEntity.type (es. "Effect Monster", "Spell Card")
+    val attribute: String? = null,      // Corrisponde a CardEntity.attribute (es. "LIGHT", "DARK")
+    val level: Int? = null,             // Corrisponde a CardEntity.level (o rank)
+    val atkMin: Int? = null,            // Per la ricerca ATK in un range (>= atkMin)
+    val atkMax: Int? = null,            // Per la ricerca ATK in un range (<= atkMax)
+    val defMin: Int? = null,            // Per la ricerca DEF in un range (>= defMin)
+    val defMax: Int? = null,            // Per la ricerca DEF in un range (<= defMax)
+    val isFavorite: Boolean? = null,     // Per filtrare per preferiti
+    val setNameQuery: String? = null,    // NUOVO CAMPO per nome del set
+    val setCodeQuery: String? = null     // NUOVO CAMPO per codice del set
 )
