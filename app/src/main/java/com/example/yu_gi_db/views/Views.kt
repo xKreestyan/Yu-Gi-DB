@@ -41,7 +41,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
@@ -407,7 +407,7 @@ fun TextFieldView(
                 val contentDesc = if (searchAdvanced) stringResource(R.string.search_options_collapse) else stringResource(R.string.search_options_expand)
                 Row {
                     Icon(
-                        imageVector = Icons.Filled.Refresh,
+                        imageVector = Icons.Filled.Close,
                         contentDescription = contentDesc,
                         modifier = Modifier
                             .clickable {
