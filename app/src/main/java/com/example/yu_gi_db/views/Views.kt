@@ -371,28 +371,28 @@ fun TextFieldView(
 
     val cardTypes = mapOf(
         stringResource(R.string.search_any_type) to null,
-        "Carte Magia (Spell Card)" to "Spell Card",
-        "Carte Trappola (Trap Card)" to "Trap Card",
-        "Mostri Normali (Normal Monster)" to "Normal Monster",
-        "Mostri Effetto (Effect Monster)" to "Effect Monster",
-        "Mostri Effetto Scoperta (Flip Effect Monster)" to "Flip Effect Monster",
-        "Mostri Fusione (Fusion Monster)" to "Fusion Monster",
-        "Mostri Rituale (Ritual Monster)" to "Ritual Monster",
-        "Mostri Synchro (Synchro Monster)" to "Synchro Monster",
-        "Mostri XYZ (XYZ Monster)" to "XYZ Monster",
-        "Mostri Pendulum Effetto (Pendulum Effect Monster)" to "Pendulum Effect Monster",
-        "Mostri Link (Link Monster)" to "Link Monster",
-        "Token" to "Token"
+        stringResource(R.string.card_type_api_spell) to "Spell Card",
+        stringResource(R.string.card_type_api_trap) to "Trap Card",
+        stringResource(R.string.card_type_api_normal_monster) to "Normal Monster",
+        stringResource(R.string.card_type_api_effect_monster) to "Effect Monster",
+        stringResource(R.string.card_type_api_flip_effect_monster) to "Flip Effect Monster",
+        stringResource(R.string.card_type_api_fusion_monster) to "Fusion Monster",
+        stringResource(R.string.card_type_api_ritual_monster) to "Ritual Monster",
+        stringResource(R.string.card_type_api_synchro_monster) to "Synchro Monster",
+        stringResource(R.string.card_type_api_xyz_monster) to "XYZ Monster",
+        stringResource(R.string.card_type_api_pendulum_effect_monster) to "Pendulum Effect Monster",
+        stringResource(R.string.card_type_api_link_monster) to "Link Monster",
+        stringResource(R.string.card_type_api_token) to "Token"
     )
     val cardAttributes = mapOf(
         stringResource(R.string.search_any_attribute) to null,
-        "OSCURITÀ (DARK)" to "DARK",
-        "LUCE (LIGHT)" to "LIGHT",
-        "TERRA (EARTH)" to "EARTH",
-        "ACQUA (WATER)" to "WATER",
-        "FUOCO (FIRE)" to "FIRE",
-        "VENTO (WIND)" to "WIND",
-        "DIVINO (DIVINE)" to "DIVINE"
+        stringResource(R.string.attribute_dark) to "DARK",
+        stringResource(R.string.attribute_light) to "LIGHT",
+        stringResource(R.string.attribute_earth) to "EARTH",
+        stringResource(R.string.attribute_water) to "WATER",
+        stringResource(R.string.attribute_fire) to "FIRE",
+        stringResource(R.string.attribute_wind) to "WIND",
+        stringResource(R.string.attribute_divine) to "DIVINE"
     )
     Column(modifier = modifier) {
         OutlinedTextField(

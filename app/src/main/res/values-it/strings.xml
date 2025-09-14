@@ -72,4 +72,28 @@
     <string name="search_label_set_name">Nome Set</string>
     <string name="search_label_set_code">Codice Set</string>
     <string name="search_label_favorites_only">Solo Preferiti</string>
+
+    <string name="attribute_any">Qualsiasi Attributo</string>
+    <string name="attribute_dark">OSCURITÀ</string>
+    <string name="attribute_light">LUCE</string>
+    <string name="attribute_earth">TERRA</string>
+    <string name="attribute_water">ACQUA</string>
+    <string name="attribute_fire">FUOCO</string>
+    <string name="attribute_wind">VENTO</string>
+    <string name="attribute_divine">DIVINO</string>
+
+
+    <string name="card_type_api_spell">Carte Magia</string>
+    <string name="card_type_api_trap">Carte Trappola</string>
+    <string name="card_type_api_normal_monster">Mostri Normali</string>
+    <string name="card_type_api_effect_monster">Mostri Effetto</string>
+    <string name="card_type_api_flip_effect_monster">Mostri Effetto Scoperta</string>
+    <string name="card_type_api_fusion_monster">Mostri Fusione</string>
+    <string name="card_type_api_ritual_monster">Mostri Rituale</string>
+    <string name="card_type_api_synchro_monster">Mostri Synchro</string>
+    <string name="card_type_api_xyz_monster">Mostri XYZ</string>
+    <string name="card_type_api_pendulum_effect_monster">Mostri Pendulum Effetto</string>
+    <string name="card_type_api_link_monster">Mostri Link</string>
+    <string name="card_type_api_token">Token</string> <!-- "Token" è spesso usato anche in italiano in questo contesto -->
+
 </resources>

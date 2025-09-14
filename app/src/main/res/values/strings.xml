@@ -73,6 +73,28 @@
     <string name="search_label_set_code">Set Code</string>
     <string name="search_label_favorites_only">Favorites Only</string>
 
+    <string name="attribute_any">Any Attribute</string>
+    <string name="attribute_dark">DARK</string>
+    <string name="attribute_light">LIGHT</string>
+    <string name="attribute_earth">EARTH</string>
+    <string name="attribute_water">WATER</string>
+    <string name="attribute_fire">FIRE</string>
+    <string name="attribute_wind">WIND</string>
+    <string name="attribute_divine">DIVINE</string>
+
+
+    <string name="card_type_api_spell">Spell Card</string>
+    <string name="card_type_api_trap">Trap Card</string>
+    <string name="card_type_api_normal_monster">Normal Monster</string>
+    <string name="card_type_api_effect_monster">Effect Monster</string>
+    <string name="card_type_api_flip_effect_monster">Flip Effect Monster</string>
+    <string name="card_type_api_fusion_monster">Fusion Monster</string>
+    <string name="card_type_api_ritual_monster">Ritual Monster</string>
+    <string name="card_type_api_synchro_monster">Synchro Monster</string>
+    <string name="card_type_api_xyz_monster">XYZ Monster</string>
+    <string name="card_type_api_pendulum_effect_monster">Pendulum Effect Monster</string>
+    <string name="card_type_api_link_monster">Link Monster</string>
+    <string name="card_type_api_token">Token</string>
 
     <!-- <string name="search_id">ID Carta</string> -->
 </resources>
