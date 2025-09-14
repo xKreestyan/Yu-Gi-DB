@@ -61,6 +61,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -394,6 +395,16 @@ fun TextFieldView(
         stringResource(R.string.attribute_wind) to "WIND",
         stringResource(R.string.attribute_divine) to "DIVINE"
     )
+
+    val atkValueRange = 0f..5000f
+    val currentAtkStart = searchCriteria.atkMin?.toFloat() ?: atkValueRange.start
+    val currentAtkEnd = searchCriteria.atkMax?.toFloat() ?: atkValueRange.endInclusive
+
+    val defValueRange = 0f..5000f
+    val currentDefStart = searchCriteria.defMin?.toFloat() ?: defValueRange.start
+    val currentDefEnd = searchCriteria.defMax?.toFloat() ?: defValueRange.endInclusive
+
+
     Column(modifier = modifier) {
         OutlinedTextField(
             value = value,
@@ -499,55 +510,15 @@ fun TextFieldView(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Divider(
-                    modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
-                    thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
-                    color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
-                )
-                 // ATK Range Slider
-                val atkValueRange = 0f..5000f
-                val currentAtkStart = searchCriteria.atkMin?.toFloat() ?: atkValueRange.start
-                val currentAtkEnd = searchCriteria.atkMax?.toFloat() ?: atkValueRange.endInclusive
-                MyRangeSlider(
-                    title = stringResource(R.string.search_bar_label_atk_min_hint) + "/" + stringResource(R.string.search_bar_label_atk_max_hint),
-                    currentRange = currentAtkStart..currentAtkEnd,
-                    onRangeChange = { newRange ->
-                        val newAtkMin = if (newRange.start <= atkValueRange.start) null else newRange.start.roundToInt()
-                        val newAtkMax = if (newRange.endInclusive >= atkValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
-                        onSearchCriteriaChange(searchCriteria.copy(atkMin = newAtkMin, atkMax = newAtkMax))
-                    },
-                    valueRange = atkValueRange,
-                    steps = (atkValueRange.endInclusive - atkValueRange.start).toInt() / 50 -1 //  steps per intervalli di 50
-                )
-                // DEF Range Slider
-                val defValueRange = 0f..5000f
-                val currentDefStart = searchCriteria.defMin?.toFloat() ?: defValueRange.start
-                val currentDefEnd = searchCriteria.defMax?.toFloat() ?: defValueRange.endInclusive
-                MyRangeSlider(
-                    title = stringResource(R.string.search_bar_label_def_min_hint) + "/" + stringResource(R.string.search_bar_label_def_max_hint),
-                    currentRange = currentDefStart..currentDefEnd,
-                    onRangeChange = { newRange ->
-                        val newDefMin = if (newRange.start <= defValueRange.start) null else newRange.start.roundToInt()
-                        val newDefMax = if (newRange.endInclusive >= defValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
-                        onSearchCriteriaChange(searchCriteria.copy(defMin = newDefMin, defMax = newDefMax))
-                    },
-                    valueRange = defValueRange,
-                    steps = (defValueRange.endInclusive - defValueRange.start).toInt() / 50 - 1 // steps per intervalli di 50
-                )
-                Divider(
-                    modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
-                    thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
-                    color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
-                )
-                // ... (dentro il tuo Composable TextFieldView, nella sezione if (searchAdvanced))
-// ... (Codice per i RangeSlider ATK/DEF e il Divider precedente)
+                //set
 
                 Spacer(modifier = Modifier.height(8.dp)) // O 16.dp se vuoi più spazio prima di questa sezione
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp) // Aggiunge spazio uniforme tra i campi
-                ) {
+                )
+                {
                     // OutlinedTextField per Nome Set (setNameQuery)
                     OutlinedTextField(
                         value = searchCriteria.setNameQuery ?: "",
@@ -556,7 +527,7 @@ fun TextFieldView(
                                 searchCriteria.copy(
                                     setNameQuery = newValue.takeIf { it.isNotBlank() },
                                     atkMin = currentAtkStart.toInt()
-                                    )
+                                )
                             )
                         },
                         label = { Text(stringResource(R.string.search_label_set_name)) },
@@ -573,7 +544,7 @@ fun TextFieldView(
                             onSearchCriteriaChange(
                                 searchCriteria.copy(
                                     setCodeQuery = newValue.takeIf { it.isNotBlank() },
-                                            atkMin =currentAtkStart.toInt()
+                                    atkMin =currentAtkStart.toInt()
                                 )
                             )
                         },
@@ -584,6 +555,41 @@ fun TextFieldView(
                         modifier = Modifier.weight(1f) // Occupa l'altra metà dello spazio disponibile
                     )
                 }
+
+                Divider(
+                    modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
+                    thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
+                    color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
+                )
+                 // ATK Range Slider
+                 MyRangeSlider(
+                    title = stringResource(R.string.search_bar_label_atk_min_hint) + "/" + stringResource(R.string.search_bar_label_atk_max_hint),
+                    currentRange = currentAtkStart..currentAtkEnd,
+                    onRangeChange = { newRange ->
+                        val newAtkMin = if (newRange.start <= atkValueRange.start) null else newRange.start.roundToInt()
+                        val newAtkMax = if (newRange.endInclusive >= atkValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
+                        onSearchCriteriaChange(searchCriteria.copy(atkMin = newAtkMin, atkMax = newAtkMax))
+                    },
+                    valueRange = atkValueRange,
+                    steps = (atkValueRange.endInclusive - atkValueRange.start).toInt() / 50 -1 //  steps per intervalli di 50
+                )
+                // DEF Range Slider
+                MyRangeSlider(
+                    title = stringResource(R.string.search_bar_label_def_min_hint) + "/" + stringResource(R.string.search_bar_label_def_max_hint),
+                    currentRange = currentDefStart..currentDefEnd,
+                    onRangeChange = { newRange ->
+                        val newDefMin = if (newRange.start <= defValueRange.start) null else newRange.start.roundToInt()
+                        val newDefMax = if (newRange.endInclusive >= defValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
+                        onSearchCriteriaChange(searchCriteria.copy(defMin = newDefMin, defMax = newDefMax))
+                    },
+                    valueRange = defValueRange,
+                    steps = (defValueRange.endInclusive - defValueRange.start).toInt() / 50 - 1 // steps per intervalli di 50
+                )
+                Divider(
+                    modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
+                    thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
+                    color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
+                )
 
                 Spacer(modifier = Modifier.height(16.dp)) // Spazio prima della sezione "Preferiti"
 
