@@ -96,6 +96,9 @@
     <string name="card_type_api_link_monster">Link Monster</string>
     <string name="card_type_api_token">Token</string>
     <string name="reset_search_options">Reset search options</string>
-
+    <string name="icon_arrowback">Icon ArrowBack</string>
+    <string name="icon_favorite">Icon Favorite</string>
+    <string name="icon_info">Icon info</string>
+    <string name="Background_menu">Background image for the menu</string>
     <!-- <string name="search_id">ID Carta</string> -->
 </resources>

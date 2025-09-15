@@ -95,6 +95,12 @@
     <string name="card_type_api_pendulum_effect_monster">Mostri Pendulum Effetto</string>
     <string name="card_type_api_link_monster">Mostri Link</string>
     <string name="card_type_api_token">Token</string>
-    <string name="reset_search_options">Reset Opzioni di Ricerca</string> <!-- "Token" è spesso usato anche in italiano in questo contesto -->
+    <string name="reset_search_options">Reset Opzioni di Ricerca</string>
+    <string name="icon_arrowback">Icona freccia indietro</string>
+    <string name="icon_favorite">Icona preferito</string>
+    <string name="icon_info">Icona informazioni</string>
+    <string name="Background_menu">Sfondo del menu</string>
+
+    <!-- "Token" è spesso usato anche in italiano in questo contesto -->
 
 </resources>

@@ -24,10 +24,10 @@ import androidx.constraintlayout.compose.ChainStyle
 import androidx.navigation.NavController
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.ui.theme.darken
-import com.example.yu_gi_db.views.Screen
+import com.example.yu_gi_db.views.navigation.Screen
 
 @Composable
-fun MenuScreen(navController: NavController? = null) {
+fun MenuView(navController: NavController? = null) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -89,7 +89,7 @@ fun MenuScreen(navController: NavController? = null) {
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.schermata_menu_yugioh),
-            contentDescription = "Sfondo del menu",
+            contentDescription = stringResource(R.string.Background_menu ),
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -181,11 +181,14 @@ fun MenuScreen(navController: NavController? = null) {
     }
 }
 
+
+
+
 @Preview(showBackground = true, name = "Menu Screen Portrait")
 @Composable
 fun MenuScreenPreviewPortrait() {
     _root_ide_package_.com.example.yu_gi_db.ui.theme.YuGiDBTheme {
-        MenuScreen()
+        MenuView()
     }
 }
 
@@ -193,6 +196,6 @@ fun MenuScreenPreviewPortrait() {
 @Composable
 fun MenuScreenPreviewLandscape() {
     _root_ide_package_.com.example.yu_gi_db.ui.theme.YuGiDBTheme {
-        MenuScreen()
+        MenuView()
     }
 }
