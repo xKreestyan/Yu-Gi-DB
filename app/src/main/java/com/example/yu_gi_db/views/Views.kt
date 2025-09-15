@@ -98,6 +98,9 @@ import com.example.yu_gi_db.model.SmallPlayingCard
 import com.example.yu_gi_db.music.InitMusicView
 import com.example.yu_gi_db.music.MusicView
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
+import com.example.yu_gi_db.viewmodels.AdvancedSearchViewModel
+import com.example.yu_gi_db.viewmodels.CardDetailViewModel
+import com.example.yu_gi_db.viewmodels.FavoritesViewModel
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 import kotlin.math.roundToInt
 /*
@@ -660,6 +663,8 @@ fun TextFieldView(
 fun InitCardsScreenView(
     modifier: Modifier = Modifier,
     initialSearchCriteria: AdvancedSearchCriteria? = null,
+    advancedSearchViewModel: AdvancedSearchViewModel = hiltViewModel(), // <-- NUOVA INIEZIONE
+    favoritesViewModel: FavoritesViewModel = hiltViewModel(),
     cardListViewModel: CardListViewModel = hiltViewModel(),
     navController: NavHostController? = null, // NavController rimane qui per la navigazione
 ) {
@@ -669,15 +674,15 @@ fun InitCardsScreenView(
     val initialError by cardListViewModel.initialDataError.collectAsStateWithLifecycle()
 
     // Stati per la ricerca avanzata
-    val currentSearchCriteria by cardListViewModel.searchCriteria.collectAsStateWithLifecycle() // Rinominato per chiarezza
-    val advancedSearchResults by cardListViewModel.advancedSearchResults.collectAsStateWithLifecycle()
-    val isSearchingAdvanced by cardListViewModel.isSearchingAdvanced.collectAsStateWithLifecycle()
-    val advancedSearchError by cardListViewModel.advancedSearchError.collectAsStateWithLifecycle()
+    val currentSearchCriteria by advancedSearchViewModel.searchCriteria.collectAsStateWithLifecycle() // Rinominato per chiarezza
+    val advancedSearchResults by advancedSearchViewModel.advancedSearchResults.collectAsStateWithLifecycle()
+    val isSearchingAdvanced by advancedSearchViewModel.isSearchingAdvanced.collectAsStateWithLifecycle()
+    val advancedSearchError by advancedSearchViewModel.advancedSearchError.collectAsStateWithLifecycle()
 
     // Effetto per applicare i criteri di ricerca iniziali, se presenti
     LaunchedEffect(initialSearchCriteria, currentSearchCriteria) { // Aggiunto currentSearchCriteria come key
         if (initialSearchCriteria != null && initialSearchCriteria != currentSearchCriteria) {
-            cardListViewModel.updateAdvancedSearchCriteria(initialSearchCriteria)
+            advancedSearchViewModel.updateAdvancedSearchCriteria(initialSearchCriteria)
         }
     }
 
@@ -714,13 +719,13 @@ fun InitCardsScreenView(
         errorMessage = errorDisplay,
         searchCriteria = currentSearchCriteria,
         onSearchCriteriaChange = { newCriteria ->
-            cardListViewModel.updateAdvancedSearchCriteria(newCriteria)
+            advancedSearchViewModel.updateAdvancedSearchCriteria(newCriteria)
         },
         onCardItemClick = { cardId ->
             navController?.navigate(Screen.CardScreen.createRoute(cardId))
         },
         onToggleFavorite = { cardId ->
-            cardListViewModel.toggleFavoriteStatus(cardId)
+            favoritesViewModel.toggleFavoriteStatus(cardId)
         }
     )
 }
@@ -901,7 +906,8 @@ fun InitLargePlayingCard(
     modifier: Modifier = Modifier,
     cardId: Int,
     navController: NavHostController? = null,
-    viewModel: CardListViewModel = hiltViewModel()
+    //viewModel: CardListViewModel = hiltViewModel()
+    viewModel: CardDetailViewModel = hiltViewModel()  // NUOVA INIEZIONE
 ) {
     // Osserva gli stati necessari dal ViewModel
     val largeCard by viewModel.selectedLargeCard.collectAsStateWithLifecycle()

@@ -4,16 +4,18 @@
 
 **Indice:**
 
-1.  [Introduzione e Obiettivi](#1-introduzione-e-obiettivi)
-2.  [Funzionalità Principali](#2-funzionalità-principali)
-    1.  [Consultazione e Ricerca Carte](#21-consultazione-e-ricerca-carte)
-    2.  [Visualizzazione Dettagliata della Carta](#22-visualizzazione-dettagliata-della-carta)
-    3.  [Navigazione per Caratteristiche](#23-navigazione-per-caratteristiche)
-    4.  [Gestione dei Preferiti](#24-gestione-dei-preferiti)
-    5.  [Database Locale](#25-database-locale)
-3.  [Architettura e Tecnologie Utilizzate](#3-architettura-e-tecnologie-utilizzate)
-4.  [Interfaccia Grafica (UI/UX)](#4-interfaccia-grafica-uiux)
-5.  [API di Riferimento](#5-api-di-riferimento)
+- [Yu-Gi-DB](#yu-gi-db)
+  - [Documentazione Progetto](#documentazione-progetto)
+  - [1. Introduzione e Obiettivi](#1-introduzione-e-obiettivi)
+  - [2. Funzionalità Principali](#2-funzionalità-principali)
+    - [2.1 Consultazione e Ricerca Carte](#21-consultazione-e-ricerca-carte)
+    - [2.2 Visualizzazione Dettagliata della Carta](#22-visualizzazione-dettagliata-della-carta)
+    - [2.3 Navigazione per Caratteristiche](#23-navigazione-per-caratteristiche)
+    - [2.4 Gestione dei Preferiti](#24-gestione-dei-preferiti)
+    - [2.5 Database Locale](#25-database-locale)
+  - [3. Architettura e Tecnologie Utilizzate](#3-architettura-e-tecnologie-utilizzate)
+  - [4. Interfaccia Grafica (UI/UX)](#4-interfaccia-grafica-uiux)
+  - [5. API di Riferimento](#5-api-di-riferimento)
 
 ---
 
@@ -39,10 +41,12 @@ Gli utenti possono cercare carte all'interno del database di YGOPRODeck. La funz
 *   Tipo (es. Mostro, Magia, Trappola)
 *   Attributo (es. LUCE, OSCURITÀ - per i mostri)
 *   Livello (per i mostri)
+*   Nome del set a cui appartiene la carta
+*   Codice del set a cui appartiene la carta
 *   Range di ATK (valore minimo e/o massimo)
 *   Range di DEF (valore minimo e/o massimo)
 
-L'app interroga le API o il database locale (a seconda dell'implementazione della ricerca) e restituisce un elenco di risultati pertinenti.
+L'app interroga il database locale e restituisce un elenco di risultati pertinenti.
 
 ### 2.2 Visualizzazione Dettagliata della Carta
 Selezionando una carta dall'elenco dei risultati di ricerca o da altre sezioni dell'app, l'utente accede a una schermata di dettaglio. Questa schermata presenta informazioni complete sulla carta selezionata, tra cui:
@@ -70,7 +74,7 @@ Gli utenti possono contrassegnare le carte di loro interesse come "preferite". O
 
 ### 2.5 Database Locale
 Per migliorare le prestazioni, consentire un accesso offline ai dati precedentemente caricati e gestire i preferiti, Yu-Gi-DB implementa un database locale **SQLite**.
-*   **Caching:** Le informazioni delle carte recuperate dalle API vengono memorizzate localmente. Quando l'utente richiede nuovamente una carta già consultata o effettua ricerche i cui risultati potrebbero essere già presenti, l'app può attingere dal database locale, riducendo le chiamate API e velocizzando i caricamenti.
+* **Caching e Ricerca Locale:** Le informazioni delle carte, una volta recuperate dalle API durante il popolamento iniziale, vengono memorizzate nel database locale. Tutte le successive operazioni di ricerca e consultazione delle carte avvengono interrogando esclusivamente questo database locale, garantendo risposte rapide e riducendo al minimo le chiamate API superflue.
 *   **Preferiti:** Lo stato di "preferito" di una carta è salvato nel database locale, garantendo la persistenza di questa informazione tra le sessioni di utilizzo dell'app.
 *   **Gestione:** Il database locale è gestito tramite la Room Persistence Library, che fornisce un layer di astrazione sopra SQLite, semplificando l'accesso ai dati e garantendo la robustezza delle query.
 
@@ -94,15 +98,14 @@ L'applicazione è stata sviluppata seguendo le moderne pratiche di sviluppo Andr
 
 L'interfaccia grafica di Yu-Gi-DB è stata progettata per essere intuitiva, pulita e funzionale:
 
-*   **Tema:** *(Descrivi brevemente il tema visivo, es. chiaro/scuro, colori predominanti).*
+*   **Tema:** L'app adotta automaticamente il tema chiaro o scuro in base alle impostazioni del sistema Android dell'utente.
+  
 *   **Schermate Principali:**
     *   **Home/Ricerca:** Presenta una barra di ricerca e opzioni per la ricerca avanzata. I risultati sono visualizzati tramite una **`LazyVerticalGrid`**, mostrando un'anteprima delle carte (immagine e nome) per una rapida identificazione.
     *   **Dettaglio Carta:** Organizza le informazioni della carta in modo leggibile, con l'immagine in evidenza e gli elementi interattivi per la navigazione per caratteristiche ben visibili.
-    *   **Preferiti:** Visualizza le carte salvate dall'utente in una **`LazyVerticalGrid`**, simile alla schermata di ricerca, per un accesso e una gestione agevoli.
+    *   **Preferiti:** Visualizza le carte salvate dall'utente in una **`LazyVerticalGrid`**, come nella schermata di ricerca, per un accesso e una gestione agevoli.
 *   **Navigazione:** La navigazione tra le sezioni è fluida e segue le convenzioni standard di Android, gestita tramite Navigation Component.
-*   **User Experience:** Particolare attenzione è stata posta nel rendere l'esperienza utente piacevole, ottimizzando i caricamenti e fornendo feedback visivi chiari durante le interazioni.
-
-*(Potresti includere alcuni screenshot o wireframe qui se la documentazione lo permette e lo ritieni utile).*
+* **User Experience:** Interfaccia gradevole e intuitiva. I caricamenti sono rapidi dopo il download iniziale dei dati.
 
 ---
 
