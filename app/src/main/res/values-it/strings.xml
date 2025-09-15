@@ -8,7 +8,7 @@
     <string name="no_cards_saved">Nessuna carta salvata</string>
     <string name="no_cards_found_search">Nessuna carta trovata per la tua ricerca</string>
     <string name="loading_text">Caricamento in corso</string>
-    <string name="card_detail_title_default">Dettagli Carta</string> <!-- Titolo di default se non ancora caricato -->
+    <string name="card_detail_title_default">Dettagli Carta:</string> <!-- Titolo di default se non ancora caricato -->
     <string name="info_screen_title">Informazioni sull App</string>
     <string name="info_section_about_title">Riguardo Yu-Gi-DB</string>
     <string name="info_section_about_content">Yu-Gi-DB è unapplicazione per consultare un database di carte di Yu-Gi-Oh!, permettendo agli utenti di cercare, visualizzare dettagli e gestire le proprie collezioni (funzionalità future). Questa app è creata per scopi dimostrativi ed educativi.</string>
@@ -94,6 +94,7 @@
     <string name="card_type_api_xyz_monster">Mostri XYZ</string>
     <string name="card_type_api_pendulum_effect_monster">Mostri Pendulum Effetto</string>
     <string name="card_type_api_link_monster">Mostri Link</string>
-    <string name="card_type_api_token">Token</string> <!-- "Token" è spesso usato anche in italiano in questo contesto -->
+    <string name="card_type_api_token">Token</string>
+    <string name="reset_search_options">Reset Opzioni di Ricerca</string> <!-- "Token" è spesso usato anche in italiano in questo contesto -->
 
 </resources>

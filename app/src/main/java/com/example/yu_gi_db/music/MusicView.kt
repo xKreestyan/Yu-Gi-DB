@@ -19,12 +19,24 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun MusicView(
+fun InitMusicView(
     modifier: Modifier = Modifier,
-    musicViewModel: MusicViewModel = hiltViewModel()
+    musicViewModel: MusicViewModel = hiltViewModel() // Replace ActualMusicViewModel with your concrete Hilt ViewModel class
 ) {
     val isMusicOn by musicViewModel.isMusicOn.collectAsState()
 
+    MusicView(
+        modifier = modifier,
+        isMusicOn = isMusicOn,
+        onToggleMusic = { musicViewModel.toggleMusicState() }
+    )
+}
+@Composable
+fun MusicView(
+    modifier: Modifier = Modifier,
+    isMusicOn: Boolean=false,
+    onToggleMusic: () -> Unit={} // Callback for the button click
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -37,34 +49,18 @@ fun MusicView(
             style = MaterialTheme.typography.headlineMedium
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { musicViewModel.toggleMusicState() }) {
+        Button(onClick = onToggleMusic) {
             Text(text = if (isMusicOn) "Turn Music OFF" else "Turn Music ON")
         }
     }
 }
 
-@Preview(showBackground = true)
+
+@Preview(showBackground = true, name = "InitMusicView - Music OFF")
 @Composable
-fun MusicViewPreview() {
-    // Per l'anteprima, l'interazione con un ViewModel reale non avviene,
-    // quindi questa preview mostra solo l'aspetto statico della UI.
+fun InitMusicView_Preview_MusicOff() {
     MaterialTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Music: OFF", // Stato di esempio per la preview
-                style = MaterialTheme.typography.headlineMedium
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = { /* Azione Preview non interattiva */ }) {
-                Text(text = "Turn Music ON") // Testo di esempio per la preview
-            }
-        }
+        MusicView(
+        )
     }
 }
-

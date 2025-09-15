@@ -2,12 +2,14 @@ package com.example.yu_gi_db.views
 
 
 
+
 import android.content.res.Configuration
 import android.util.Log
-import android.widget.Toast
-import androidx.compose.animation.core.copy
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,7 +26,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -34,22 +35,19 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,15 +58,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -82,8 +84,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController // Importa NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
@@ -91,15 +93,14 @@ import coil.decode.ImageDecoderDecoder
 import coil.request.ImageRequest
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
-import com.example.yu_gi_db.model.CardImage
 import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.model.SmallPlayingCard
+import com.example.yu_gi_db.music.InitMusicView
+import com.example.yu_gi_db.music.MusicView
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.viewmodels.CardListViewModel
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import kotlin.math.roundToInt
-
+/*
 @Composable
 fun MyScreenWithAToastButton() {
     val context = LocalContext.current
@@ -110,7 +111,7 @@ fun MyScreenWithAToastButton() {
         Text("Mostra Toast")
     }
 }
-
+*/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppScreen(
@@ -122,7 +123,7 @@ fun AppScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            StandardTopAppBar(
+            InitStandardTopAppBar(
                 title = appBarTitle,
                 navController = navController,
             )
@@ -131,72 +132,105 @@ fun AppScreen(
         content(innerPadding)
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StandardTopAppBar(
+fun StandardTopAppBarView(
     modifier: Modifier = Modifier,
-    navController: NavHostController? = null,
-    title: String="",
+    appName: String,
+    currentScreenTitle: String,
+    showBackButton: Boolean,
+    showFavoriteIcon: Boolean,
+    showInfoIcon: Boolean,
+    onBackClick: () -> Unit,
+    onAppNameClick: () -> Unit,
+    onFavoriteClick: () -> Unit,
+    onInfoClick: () -> Unit
 ) {
-    val navBackStackEntry by (navController ?: return).currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
     TopAppBar(
         modifier = modifier,
-        title = {Column{
-            Text(
-                stringResource(R.string.app_name ),
-                modifier = Modifier.clickable{
-                    navController.navigate(Screen.MenuScreen1.route) {
-                        popUpTo(Screen.MenuScreen1.route) {
-                            inclusive = true
-                        }
-                        launchSingleTop = true
+        title = {
+            Column {
+                Text(
+                    text = appName,
+                    modifier = Modifier.clickable(onClick = onAppNameClick)
+                )
+                if (currentScreenTitle.isNotEmpty() && currentScreenTitle != appName) {
+                    Row(Modifier.horizontalScroll(rememberScrollState())) {
+                        Text(currentScreenTitle)
                     }
                 }
-            )
-            if(title!= stringResource(R.string.app_name))
-            {Row(Modifier.horizontalScroll(rememberScrollState()) ){
-                Text(title)} }}
+            }
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         navigationIcon = {
-            if (navController.previousBackStackEntry != null) {
-                IconButton(onClick = { navController.navigateUp() }) {
+            if (showBackButton) {
+                IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.card_detail_title_default)
+                        contentDescription = "wpp Favorite" // More specific description
                     )
                 }
             }
         },
         actions = {
             Row {
-                if (currentRoute!=Screen.SavedCardsScreen.route && currentRoute!=Screen.InfoScreen.route
-                ) {
-                    IconButton(onClick = {
-                        navController.navigate(Screen.SavedCardsScreen.route)
-                    })
-                    {
+                if (showFavoriteIcon) {
+                    IconButton(onClick = onFavoriteClick) {
                         Icon(
                             imageVector = Icons.Filled.Favorite,
-                            contentDescription = stringResource(R.string.card_detail_title_default)
+                            contentDescription = "wpp Favorite" // Descriptive
                         )
                     }
-                    IconButton(onClick = {
-                        navController.navigate(Screen.InfoScreen.route)
-                    }) {
+                }
+                if (showInfoIcon) {
+                    IconButton(onClick = onInfoClick) {
                         Icon(
                             imageVector = Icons.Filled.Info,
-                            contentDescription = stringResource(R.string.card_detail_title_default)
+                            contentDescription = "wpp "// Descriptive
                         )
                     }
                 }
             }
         }
+    )
+}
+@Composable
+fun InitStandardTopAppBar(
+    modifier: Modifier = Modifier,
+    navController: NavHostController?, // Nullable if used in previews without nav
+    title: String // The dynamic title of the current screen
+) {
+    val appName = stringResource(R.string.app_name)
+    // Gracefully handle null NavController for previews or specific scenarios
+    val navBackStackEntry by navController?.currentBackStackEntryAsState() ?:  return
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val showBackButton = navController.previousBackStackEntry != null
+
+    // Determine if action icons should be shown based on the current route
+    val showActions = currentRoute != Screen.SavedCardsScreen.route &&
+            currentRoute != Screen.InfoScreen.route
+
+    StandardTopAppBarView(
+        modifier = modifier,
+        appName = appName,
+        currentScreenTitle = if (title == appName) "" else title, // Don't repeat app name
+        showBackButton = showBackButton,
+        showFavoriteIcon = showActions,
+        showInfoIcon = showActions,
+        onBackClick = { navController.navigateUp() },
+        onAppNameClick = {
+            navController.navigate(Screen.MenuScreen1.route) {
+                popUpTo(Screen.MenuScreen1.route) {
+                    inclusive = true
+                }
+                launchSingleTop = true
+            }
+        },        onFavoriteClick = { navController.navigate(Screen.SavedCardsScreen.route) },
+        onInfoClick = { navController.navigate(Screen.InfoScreen.route) }
     )
 }
 
@@ -206,7 +240,7 @@ fun WaitIndicatorView(modifier: Modifier = Modifier) {
     val configuration = LocalConfiguration.current // Ottieni la configurazione corrente
 
     // Determina se il dispositivo è in modalità landscape
-    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     // Applica modificatori diversi in base all'orientamento
     val imageModifier = if (isLandscape) {
@@ -282,6 +316,8 @@ fun optionErrorView(modifier: Modifier = Modifier,
 
     return ret
 }
+
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -419,7 +455,7 @@ fun TextFieldView(
                 Row {
                     Icon(
                         imageVector = Icons.Filled.Close,
-                        contentDescription = contentDesc,
+                        contentDescription = stringResource(R.string.reset_search_options),
                         modifier = Modifier
                             .clickable {
                                 onSearchCriteriaChange(AdvancedSearchCriteria(isFavorite =searchCriteria.isFavorite )) // Usa la callback!
@@ -440,7 +476,8 @@ fun TextFieldView(
             Column(
                 modifier = Modifier
                     .padding(top = 16.dp)
-                    .fillMaxHeight(0.5f)
+                    //.fillMaxHeight(0.5f) // Rimuovi o adatta questa riga
+                    .fillMaxHeight(if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) 0.8f else 0.5f) // Adatta l'altezza massima
                     .verticalScroll(rememberScrollState())
             ) {
                 // ... (dentro il tuo Composable TextFieldView, nella sezione if (searchAdvanced))
@@ -556,13 +593,13 @@ fun TextFieldView(
                     )
                 }
 
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
                     thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
                     color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
                 )
-                 // ATK Range Slider
-                 MyRangeSlider(
+                // ATK Range Slider
+                MyRangeSlider(
                     title = stringResource(R.string.search_bar_label_atk_min_hint) + "/" + stringResource(R.string.search_bar_label_atk_max_hint),
                     currentRange = currentAtkStart..currentAtkEnd,
                     onRangeChange = { newRange ->
@@ -585,7 +622,7 @@ fun TextFieldView(
                     valueRange = defValueRange,
                     steps = (defValueRange.endInclusive - defValueRange.start).toInt() / 50 - 1 // steps per intervalli di 50
                 )
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
                     thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
                     color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
@@ -624,7 +661,7 @@ fun InitCardsScreenView(
     modifier: Modifier = Modifier,
     initialSearchCriteria: AdvancedSearchCriteria? = null,
     cardListViewModel: CardListViewModel = hiltViewModel(),
-    navController: NavHostController? = null ,
+    navController: NavHostController? = null, // NavController rimane qui per la navigazione
 ) {
     // Stati per la lista di default (LOB)
     val defaultCards by cardListViewModel.smallCards.collectAsStateWithLifecycle()
@@ -632,55 +669,62 @@ fun InitCardsScreenView(
     val initialError by cardListViewModel.initialDataError.collectAsStateWithLifecycle()
 
     // Stati per la ricerca avanzata
-    val searchCriteria by cardListViewModel.searchCriteria.collectAsStateWithLifecycle()
+    val currentSearchCriteria by cardListViewModel.searchCriteria.collectAsStateWithLifecycle() // Rinominato per chiarezza
     val advancedSearchResults by cardListViewModel.advancedSearchResults.collectAsStateWithLifecycle()
     val isSearchingAdvanced by cardListViewModel.isSearchingAdvanced.collectAsStateWithLifecycle()
     val advancedSearchError by cardListViewModel.advancedSearchError.collectAsStateWithLifecycle()
 
-    LaunchedEffect(initialSearchCriteria) {
-        if (initialSearchCriteria != null) {
+    // Effetto per applicare i criteri di ricerca iniziali, se presenti
+    LaunchedEffect(initialSearchCriteria, currentSearchCriteria) { // Aggiunto currentSearchCriteria come key
+        if (initialSearchCriteria != null && initialSearchCriteria != currentSearchCriteria) {
             cardListViewModel.updateAdvancedSearchCriteria(initialSearchCriteria)
         }
     }
-    // Log per debug chiavi duplicate
-    if (defaultCards.isNotEmpty()) { // Log solo se la lista non è vuota per evitare spam
-        Log.d("DEBUG_KEYS_DEFAULT", "Default cards IDs: ${defaultCards.map { it.id }.joinToString()}")
+
+    // Determina quali dati visualizzare in base ai criteri di ricerca
+    val isAdvancedSearchActive = currentSearchCriteria != AdvancedSearchCriteria()
+
+    val cardsToDisplay = if (isAdvancedSearchActive) advancedSearchResults else defaultCards
+    val isLoadingDisplay = if (isAdvancedSearchActive) isSearchingAdvanced else isLoadingInitial
+    val errorDisplay = if (isAdvancedSearchActive) advancedSearchError else initialError
+
+    // Log per il debug (considera di rimuoverli o condizionarli per le build di produzione)
+    LaunchedEffect(cardsToDisplay, isLoadingDisplay, errorDisplay, currentSearchCriteria) {
+        Log.d(
+            "InitCardsScreenView",
+            "SearchCriteria: $currentSearchCriteria, Displaying ${cardsToDisplay.size} cards. " +
+                    "Loading: $isLoadingDisplay, Error: $errorDisplay."
+        )
     }
-    if (advancedSearchResults.isNotEmpty()) { // Log solo se la lista non è vuota
-        Log.d("DEBUG_KEYS_SEARCH", "Search results IDs: ${advancedSearchResults.map { it.id }.joinToString()}")
+    LaunchedEffect(defaultCards) {
+        if (defaultCards.isNotEmpty()) {
+            Log.d("DEBUG_KEYS_DEFAULT", "Default cards IDs: ${defaultCards.map { it.id }.joinToString()}")
+        }
     }
-
-    val cardsToDisplay: List<SmallPlayingCard>
-    val isLoadingDisplay: Boolean
-    val errorDisplay: String?
-
-    if (searchCriteria != AdvancedSearchCriteria()) {
-        cardsToDisplay = advancedSearchResults
-        isLoadingDisplay = isSearchingAdvanced
-        errorDisplay = advancedSearchError
-    } else {
-        cardsToDisplay = defaultCards
-        isLoadingDisplay = isLoadingInitial
-        errorDisplay = initialError
+    LaunchedEffect(advancedSearchResults) {
+        if (advancedSearchResults.isNotEmpty()) {
+            Log.d("DEBUG_KEYS_SEARCH", "Search results IDs: ${advancedSearchResults.map { it.id }.joinToString()}")
+        }
     }
-
-    Log.d("InitCardsScreenView",
-        "SearchCriteria: $searchCriteria, Displaying ${cardsToDisplay.size} cards. " +
-                "Loading: $isLoadingDisplay, Error: $errorDisplay. "
-    )
-
+    // CardsScreenView
     CardsScreenView(
         modifier = modifier,
         cards = cardsToDisplay,
-        isLoading = isLoadingDisplay,
+        isLoading = false, //isLoading //se non vuoi gestire lo stato di caricamento
         errorMessage = errorDisplay,
-        searchCriteria = searchCriteria,
+        searchCriteria = currentSearchCriteria,
         onSearchCriteriaChange = { newCriteria ->
             cardListViewModel.updateAdvancedSearchCriteria(newCriteria)
         },
-        navController = navController
+        onCardItemClick = { cardId ->
+            navController?.navigate(Screen.CardScreen.createRoute(cardId))
+        },
+        onToggleFavorite = { cardId ->
+            cardListViewModel.toggleFavoriteStatus(cardId)
+        }
     )
 }
+
 
 @Composable
 fun CardsScreenView(
@@ -690,12 +734,15 @@ fun CardsScreenView(
     errorMessage: String?,
     searchCriteria: AdvancedSearchCriteria,
     onSearchCriteriaChange: (AdvancedSearchCriteria) -> Unit,
-    navController: NavHostController? = null
+    onCardItemClick: (cardId: Int) -> Unit = {}, // Callback per il click sull'item
+    onToggleFavorite: (cardId: Int) -> Unit = {} // NUOVA callback per i preferiti
 ){
     Log.d("CardsScreenView", "Render. Cards: ${cards.size}, Loading: $isLoading, Error: $errorMessage, SearchCriteria: $searchCriteria")
     val focusManager = LocalFocusManager.current
+
     Column(modifier = modifier.fillMaxSize()) {
-        TextFieldView( value = searchCriteria.name ?: "",
+        TextFieldView(
+            value = searchCriteria.name ?: "",
             onValueChange = { newValue ->
                 onSearchCriteriaChange(searchCriteria.copy(name = newValue.ifBlank { null }))
             },
@@ -707,13 +754,14 @@ fun CardsScreenView(
             }),
             searchCriteria = searchCriteria,
             onSearchCriteriaChange = { newCriteria ->
-                onSearchCriteriaChange(newCriteria)}
+                onSearchCriteriaChange(newCriteria)
+            }
         )
 
         val isSearchActive = searchCriteria != AdvancedSearchCriteria()
-        if(optionErrorView(
-                modifier = modifier.weight(1f),
-                isLoading = false,
+        if (optionErrorView(
+                modifier = Modifier.weight(1f), // Corretto: applica weight a questo specifico Composable
+                isLoading = isLoading, // Questo isLoading è specifico per optionErrorView
                 errorMessage = errorMessage,
                 isEmpty = cards.isEmpty(),
                 isSearchActive = isSearchActive
@@ -721,8 +769,13 @@ fun CardsScreenView(
         ) {
             SmallCardsListView(
                 cards = cards,
-                navController = navController,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f), // Questo è corretto per la Column interna
+                onCardItemClick = { cardId ->
+                    onCardItemClick(cardId)
+                },
+                onCardItemToggleFavorite = { cardId ->
+                    onToggleFavorite(cardId)
+                }
             )
         }
     }
@@ -732,77 +785,90 @@ fun CardsScreenView(
 @Composable
 fun SmallCardsListView(
     cards: List<SmallPlayingCard>,
-    modifier: Modifier = Modifier,
-    navController: NavHostController? = null
+    modifier: Modifier = Modifier, // Modifier per la LazyVerticalGrid
+    onCardItemClick: (cardId: Int) -> Unit = {}, // Callback per il click sull'item
+    onCardItemToggleFavorite: (cardId: Int) -> Unit = {} // Callback per il toggle del preferito
 ) {
     Log.d("SmallCardsListView", "Displaying LazyVerticalGrid with ${cards.size} cards.")
     LazyVerticalGrid(
         columns = GridCells.Adaptive(180.dp),
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(), // Applica il modifier alla griglia
         contentPadding = PaddingValues(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(cards, key = { card -> card.id }) { card ->
-            SmallCardItemView(modifier = modifier,card = card, navController = navController)
+            SmallCardItemView(
+                card = card,
+                onCardClick = {
+                    onCardItemClick(card.id) // Chiama la callback passata
+                },
+                onToggleFavorite = {
+                    onCardItemToggleFavorite(card.id) // Chiama la callback passata
+                }
+            )
         }
     }
 }
 
 @Composable
 fun SmallCardItemView(
+    modifier: Modifier = Modifier, // Modifier per l'intera SmallCardItemView
     card: SmallPlayingCard,
-    modifier: Modifier = Modifier,
-    navController: NavHostController? = null,
-    cardListViewModel: CardListViewModel ?= hiltViewModel()
+    onCardClick: () -> Unit={},
+    onToggleFavorite: () -> Unit={},
 ) {
     Card(
-        modifier = modifier,
-        onClick = {
-            navController?.navigate(Screen.CardScreen.createRoute(card.id))
-        }
+        modifier = modifier
+            .fillMaxWidth() // Esempio: occupa tutta la larghezza disponibile
+            .height(280.dp) // Esempio: altezza fissa per la carta
+            .clickable(onClick = onCardClick) // Azione di click principale
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .size(0.dp, 280.dp)
+            modifier = Modifier.fillMaxSize() // Il Box riempie la Card
         ) {
-            CardUrltoView(
+            CardUrltoView( // Supponendo che questa sia la tua Composable per l'immagine
                 url = card.imageUrlSmall,
-                modifier = modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize() // L'immagine riempie il Box
             )
-            Card(modifier = Modifier.align(Alignment.BottomStart)
-            )
-            {Row{
-                val icon =
-                    if (card.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
-                val contentDesc =
-                    if (card.isFavorite) stringResource(R.string.isfavorite) else stringResource(R.string.notfavorite)
-                Icon(
-                    imageVector = icon,
-                    contentDescription = contentDesc, // Descrizione per l'accessibilità
-                    modifier = Modifier
-                        .size(15.dp, 15.dp)
-                        .clickable { cardListViewModel?.toggleFavoriteStatus(card.id) }
-                )
+
+            // Overlay per l'icona preferito e l'ID
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomStart) // Allinea in basso a sinistra nel Box
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)) // Sfondo semi-trasparente
+                    .padding(horizontal = 8.dp, vertical = 4.dp),verticalAlignment = Alignment.CenterVertically
+            ) {
+                val iconImage = if (card.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
+                val contentDesc = if (card.isFavorite) stringResource(R.string.isfavorite) else stringResource(R.string.notfavorite)
+
+                IconButton(
+                    onClick = onToggleFavorite, // Azione per il toggle del preferito
+                    modifier = Modifier.size(32.dp) // IconButton per un touch target adeguato
+                ) {
+                    Icon(
+                        imageVector = iconImage,
+                        contentDescription = contentDesc,
+                        modifier = Modifier.size(18.dp) // Dimensione effettiva dell'icona
+                    )
+                }
+
                 Text(
                     text = card.id.toString(),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 4.dp),
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .weight(1f), // Occupa lo spazio rimanente per evitare sovrapposizioni
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
             }
-
-            }
-
         }
     }
 }
-
+/*
 @Composable
 private fun ClickableSearchText(
     label: String,
@@ -829,132 +895,281 @@ private fun ClickableSearchText(
         }
     }
 }
+*/
 @Composable
-fun LargeCardItemView(
+fun InitLargePlayingCard(
     modifier: Modifier = Modifier,
-    card: LargePlayingCard? = null,
+    cardId: Int,
     navController: NavHostController? = null,
-    cardListViewModel: CardListViewModel ?= hiltViewModel()
-
+    viewModel: CardListViewModel = hiltViewModel()
 ) {
-    LargeCardUI(
-        card = card,
+    // Osserva gli stati necessari dal ViewModel
+    val largeCard by viewModel.selectedLargeCard.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoadingLargeCard.collectAsStateWithLifecycle()
+    val error by viewModel.largeCardError.collectAsStateWithLifecycle()
+
+    // Effetto per caricare i dati quando cardId cambia o alla prima composizione
+    LaunchedEffect(cardId) {
+        viewModel.fetchLargeCardById(cardId)
+    }
+    // Effetto per pulire i dati quando la schermata viene rimossa dalla composizione
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearSelectedLargeCard()
+        }
+    }
+    LargeCardContentView(
         modifier = modifier,
+        largeCard = largeCard, // largeCard contiene già il nome e altri dettagli
+        isLoading = isLoading,
+        error = error,
         navController = navController
     )
-    /*Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    )
-    {
-        val currentCard = card ?: return@Column // Renamed for clarity
-        val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
-        val imageUrl: String = firstCardImage?.imageUrlSmall ?: ""
+}
 
-        CardUrltoView(
-            imageUrl,
-            modifier = Modifier
-                .size(260.dp, 350.dp)
-                .clickable(enabled = navController != null && imageUrl.isNotEmpty()) {
-                    imageUrl.let { url ->
-                        val encodedUrl =
-                            URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
-                        navController?.navigate(Screen.ZoomCardScreen.createRoute(encodedUrl))
-                    }
+@Composable
+fun LargeCardContentView( // Rinominato e semplificato, riceve lo stato come parametri
+    modifier: Modifier = Modifier,
+    largeCard: LargePlayingCard?,
+    isLoading: Boolean,
+    error: String?,
+    navController: NavHostController?
+) {
+    // La logica di optionErrorView gestisce la visualizzazione di caricamento/errore/vuoto
+    if (optionErrorView(
+            modifier = modifier, // Il modifier (con padding) viene passato qui
+            isLoading = isLoading,
+            errorMessage = error,
+            isEmpty = (largeCard == null && !isLoading && error == null) // Condizione di isEmpty più precisa
+        )
+    ) {
+        largeCard?.let { cardData ->
+            LargeCardUI(
+                card = cardData,
+                modifier = modifier.fillMaxSize(), // o un modifier più specifico se necessario
+                navController = navController
+            )
+        }
+    }
+}
+
+/*Column(
+    modifier = modifier
+        .fillMaxSize()
+        .padding(16.dp)
+        .verticalScroll(rememberScrollState()),
+    horizontalAlignment = Alignment.CenterHorizontally
+)
+{
+    val currentCard = card ?: return@Column // Renamed for clarity
+    val firstCardImage: CardImage? = currentCard.cardImages.firstOrNull()
+    val imageUrl: String = firstCardImage?.imageUrlSmall ?: ""
+
+    CardUrltoView(
+        imageUrl,
+        modifier = Modifier
+            .size(260.dp, 350.dp)
+            .clickable(enabled = navController != null && imageUrl.isNotEmpty()) {
+                imageUrl.let { url ->
+                    val encodedUrl =
+                        URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
+                    navController?.navigate(Screen.ZoomCardScreen.createRoute(encodedUrl))
                 }
+            }
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+
+    // Type and Race
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        ClickableSearchText(
+            label = stringResource(R.string.card_label_type),
+            value = currentCard.type,
+            navController = navController,
+            searchCriteriaAction = {
+                Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type)
+            }
+        )
+        currentCard.race.let {
+            Text(" / ", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = it,
+                style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.primary),
+                modifier = Modifier,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            /* ClickableSearchText(
+               label = "", // La label "Race" è implicita dalla posizione
+               value = it,
+               navController = navController,
+               searchCriteriaAction = {
+                   Screen.DataBaseAdvancedSearchType.createRoute(type = it) // Ricerca per razza come tipo
+               }
+           )*/
+
+            var favoriteBoolean by remember { mutableStateOf(card.isFavorite) }
+            val icon =
+                if (favoriteBoolean) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
+            val contentDesc =
+                if (favoriteBoolean) stringResource(R.string.isfavorite) else stringResource(R.string.notfavorite)
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDesc, // Descrizione per l'accessibilità
+                modifier = Modifier
+                    .clickable { cardListViewModel?.toggleFavoriteStatus(card.id)
+                        favoriteBoolean=!favoriteBoolean
+                    }
+            )
+        }
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+
+    // Attribute
+    currentCard.attribute?.let {
+        ClickableSearchText(
+            label = stringResource(R.string.card_label_attribute),
+            value = it,
+            navController = navController,
+            searchCriteriaAction = {
+                Screen.DataBaseAdvancedSearch.createRouteForAttribute(attribute = it)
+            }
+        )
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+
+    // Level/Rank
+    currentCard.level?.let {
+        ClickableSearchText(
+            label = stringResource(R.string.card_label_level),
+            value = it.toString(),
+            navController = navController,
+            searchCriteriaAction = {
+                Screen.DataBaseAdvancedSearch.createRouteForLevel(level = it)
+            }
+        )
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+
+    if (currentCard.atk != null || currentCard.def != null) {
+        val atkText = currentCard.atk?.toString() ?: "N/A"
+        val defText = currentCard.def?.toString() ?: "N/A"
+        Text(
+            text = "ATK: $atkText / DEF: $defText",
+            style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.height(16.dp))
+    }
+    Text(
+        text = currentCard.desc,
+        style = MaterialTheme.typography.bodyMedium,
+        textAlign = TextAlign.Justify
+    )
+}*/
+@Composable
+fun CardZoomView(
+    url: String,
+    modifier: Modifier = Modifier,
+) {
+    val zoomStep = 0.5f
+    val minZoom = 1.0f
+    val maxZoom = 5.0f
 
-        // Type and Race
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            ClickableSearchText(
-                label = stringResource(R.string.card_label_type),
-                value = currentCard.type,
-                navController = navController,
-                searchCriteriaAction = {
-                    Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type)
-                }
-            )
-            currentCard.race.let {
-                Text(" / ", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                /* ClickableSearchText(
-                   label = "", // La label "Race" è implicita dalla posizione
-                   value = it,
-                   navController = navController,
-                   searchCriteriaAction = {
-                       Screen.DataBaseAdvancedSearchType.createRoute(type = it) // Ricerca per razza come tipo
-                   }
-               )*/
-
-                var favoriteBoolean by remember { mutableStateOf(card.isFavorite) }
-                val icon =
-                    if (favoriteBoolean) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder
-                val contentDesc =
-                    if (favoriteBoolean) stringResource(R.string.isfavorite) else stringResource(R.string.notfavorite)
-                Icon(
-                    imageVector = icon,
-                    contentDescription = contentDesc, // Descrizione per l'accessibilità
-                    modifier = Modifier
-                        .clickable { cardListViewModel?.toggleFavoriteStatus(card.id)
-                            favoriteBoolean=!favoriteBoolean
-                        }
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    fun updateZoom(newScale: Float) {
+        val coercedScale = newScale.coerceIn(minZoom, maxZoom)
+        if (scale != coercedScale) {
+            if (coercedScale == minZoom) {
+                offset = Offset.Zero
+            }
+            scale = coercedScale
+        }
+    }
+    Box(
+        modifier =  modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        val newScaleTarget = if (scale > minZoom) minZoom else 2f
+                        updateZoom(newScaleTarget)
+                    }
                 )
             }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Attribute
-        currentCard.attribute?.let {
-            ClickableSearchText(
-                label = stringResource(R.string.card_label_attribute),
-                value = it,
-                navController = navController,
-                searchCriteriaAction = {
-                    Screen.DataBaseAdvancedSearch.createRouteForAttribute(attribute = it)
+            .pointerInput(Unit) {
+                detectTransformGestures { _, pan, _, _ ->
+                    if (scale > minZoom) {
+                        val newPotentialOffset = offset.plus(pan)
+                        val maxAllowedTranslateX =
+                            (this.size.width * (scale) / 2f).coerceAtLeast(0f)
+                        val maxAllowedTranslateY =
+                            (this.size.height * (scale - 1) / 2f).coerceAtLeast(0f)
+                        offset = Offset(
+                            x = newPotentialOffset.x.coerceIn(
+                                -maxAllowedTranslateX,
+                                maxAllowedTranslateX
+                            ),
+                            y = newPotentialOffset.y.coerceIn(
+                                -maxAllowedTranslateY,
+                                maxAllowedTranslateY
+                            )
+                        )
+                    }
                 }
+            }
+    )
+    {
+        // Box contenente l'immagine, che permette di applicare lo zoom e il pan
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offset.x,
+                    translationY = offset.y
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            CardUrltoView(
+                url = url,
+                modifier = Modifier.fillMaxSize()
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        // Pulsanti di Zoom sovrapposti
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomEnd) // Posiziona i pulsanti in basso a destra
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            IconButton(
+                onClick = { updateZoom(scale + zoomStep) },
+                modifier = Modifier
+                    .graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                        MaterialTheme.shapes.small
+                    )
 
-        // Level/Rank
-        currentCard.level?.let {
-            ClickableSearchText(
-                label = stringResource(R.string.card_label_level),
-                value = it.toString(),
-                navController = navController,
-                searchCriteriaAction = {
-                    Screen.DataBaseAdvancedSearch.createRouteForLevel(level = it)
-                }
-            )
+            ) {
+                Text("+", Modifier.scale(5f))
+            }
+            IconButton(
+                onClick = { updateZoom(scale - zoomStep) },
+                modifier = Modifier
+                    .graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                        MaterialTheme.shapes.small
+                    )
+            ) {
+                Text("-", Modifier.scale(5f))
+            }
         }
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (currentCard.atk != null || currentCard.def != null) {
-            val atkText = currentCard.atk?.toString() ?: "N/A"
-            val defText = currentCard.def?.toString() ?: "N/A"
-            Text(
-                text = "ATK: $atkText / DEF: $defText",
-                style = MaterialTheme.typography.bodyLarge
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        Text(
-            text = currentCard.desc,
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Justify
-        )
-    }*/
+    }
 }
+
 @Composable
 fun CardUrltoView(url: String,modifier: Modifier = Modifier ){
     AsyncImage(
@@ -984,6 +1199,73 @@ fun ImageRotation(imageV: Int, imageO: Int, modifier: Modifier = Modifier ){
         modifier = modifier
     )
 }
+
+@Composable
+fun InitInformationView(
+    modifier: Modifier = Modifier,
+) {
+    InformationView(modifier = modifier,
+        musicControlSlot={
+            InitMusicView(modifier =modifier,musicViewModel = hiltViewModel(viewModelStoreOwner = LocalContext.current as ViewModelStoreOwner) )
+        }
+        )
+}
+@Composable
+fun InformationView(
+    modifier: Modifier = Modifier,
+    musicControlSlot: @Composable () -> Unit={} // New parameter for the music controls
+    ) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    )
+    {
+        InfoSectionView( // Assicurati che sia definita e importata
+            title = stringResource(R.string.info_section_about_title)
+        ) {
+            Text(
+                text = stringResource(R.string.info_section_about_content),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Justify
+            )
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        InfoSectionView(
+            title = stringResource(R.string.info_section_version_title)
+        ) {
+            Text(
+                text = stringResource(R.string.version),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        InfoSectionView(
+            title = stringResource(R.string.info_section_developer_title)
+        ) {
+            Text(
+                text = stringResource(R.string.name_and_company),
+                style = MaterialTheme.typography.bodyLarge
+            )
+        }
+        Spacer(modifier = Modifier.height(24.dp))
+        InfoSectionView(
+            title = stringResource(R.string.info_section_credits_title)
+        )
+        {
+            Text(
+                text = stringResource(R.string.info_section_credits_content),
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
+        }
+        //InitMusicView(musicViewModel = hiltViewModel(viewModelStoreOwner = LocalContext.current as ViewModelStoreOwner) )//LocalContext.current as ComponentActivity
+        musicControlSlot()
+    }
+}
+
 @Composable
 fun InfoSectionView(
     title: String,
@@ -1009,8 +1291,7 @@ fun InfoSectionView(
 fun CardItemPreview() {
     YuGiDBTheme {
         SmallCardItemView(
-            card = SmallPlayingCard(id = 1, name = "A Cell Breeding Device", imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg"),
-            cardListViewModel=null
+            card = SmallPlayingCard(id = 1, name = "A Cell Breeding Device", imageUrlSmall = "https://images.ygoprodeck.com/images/cards_small/34541863.jpg")
         )
     }
 }
@@ -1041,7 +1322,6 @@ fun CardsScreenPopulatedDefaultPreview() {
             errorMessage = null,
             searchCriteria = AdvancedSearchCriteria(name = ""),
             onSearchCriteriaChange = {},
-            navController = null
         )
     }
 }
@@ -1056,7 +1336,6 @@ fun CardsScreenLoadingInitialPreview() {
             errorMessage = null,
             searchCriteria = AdvancedSearchCriteria(),
             onSearchCriteriaChange = {},
-            navController = null
         )
     }
 }
@@ -1071,7 +1350,6 @@ fun CardsScreenErrorInitialPreview() {
             errorMessage = "Failed to load default cards.",
             searchCriteria = AdvancedSearchCriteria(),
             onSearchCriteriaChange = {},
-            navController = null
         )
     }
 }
@@ -1086,7 +1364,6 @@ fun CardsScreenSearchingByNamePreview() {
             errorMessage = null,
             searchCriteria = AdvancedSearchCriteria(name = "Blue-Eyes"),
             onSearchCriteriaChange = {},
-            navController = null
         )
     }
 }
@@ -1101,7 +1378,6 @@ fun CardsScreenNoResultsNameSearchPreview() {
             errorMessage = null,
             searchCriteria = AdvancedSearchCriteria(name = "NonExistentCardNameXYZ"),
             onSearchCriteriaChange = {},
-            navController = null
         )
     }
 }
@@ -1158,5 +1434,13 @@ fun MyRangeSliderPreview() {
             valueRange = 0f..100f,
             enabled = false
         )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InformationViewPreview() {
+    YuGiDBTheme {
+        InformationView(musicControlSlot = {MusicView() })
     }
 }

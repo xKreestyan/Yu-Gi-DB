@@ -29,7 +29,7 @@ import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.model.SmallPlayingCard
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
-
+/*
 @OptIn(ExperimentalMaterial3Api::class) // Aggiunto per Scaffold e TopAppBar
 @Composable
 fun DatabaseScreen(
@@ -130,3 +130,4 @@ fun DatabaseScreenPreview() {
         }
     }
 }
+*/

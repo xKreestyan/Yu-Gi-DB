@@ -8,7 +8,7 @@
     <string name="no_cards_saved">No cards saved</string>
     <string name="no_cards_found_search">No cards found for your search</string>
     <string name="loading_text">Loading</string>
-    <string name="card_detail_title_default">Card Details</string>
+    <string name="card_detail_title_default">Card Details:</string>
     <string name="info_screen_title">About App</string>
     <string name="info_section_about_title">About Yu-Gi-DB</string>
     <string name="info_section_about_content">Yu-Gi-DB is an application to consult a Yu-Gi-Oh! card database, allowing users to search, view details, and manage their collections (future functionality). This app is created for demonstrative and educational purposes.</string>
@@ -95,6 +95,7 @@
     <string name="card_type_api_pendulum_effect_monster">Pendulum Effect Monster</string>
     <string name="card_type_api_link_monster">Link Monster</string>
     <string name="card_type_api_token">Token</string>
+    <string name="reset_search_options">Reset search options</string>
 
     <!-- <string name="search_id">ID Carta</string> -->
 </resources>

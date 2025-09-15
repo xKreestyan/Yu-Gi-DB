@@ -171,7 +171,7 @@ fun Navigation() {
                     type = NavType.IntType
                 })
             ) { backStackEntry ->
-                InitLargePlayingCardScreen(
+                LargePlayingCardScreen(
                     navController = navController,
                     cardId = backStackEntry.arguments?.getInt(Screen.CardScreen.ARG_CARD_ID) ?: -1
                 )
