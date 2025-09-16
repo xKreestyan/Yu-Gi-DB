@@ -3,6 +3,7 @@ package com.example.yu_gi_db.views
 import android.content.res.Configuration
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,13 +80,20 @@ fun ErrorMessageView(text: String, modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier.fillMaxSize()
+
     ) {
         Text(
             text = text,
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Justify,
-            modifier = Modifier.padding(16.dp)
+
+            modifier = Modifier
+                .padding(30.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = MaterialTheme.shapes.medium
+                )
         )
     }
 }
@@ -99,7 +107,6 @@ fun optionErrorView(modifier: Modifier = Modifier,
 ): Boolean
 {
     var ret=false
-
     if (isLoading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             WaitIndicatorView(

@@ -100,6 +100,8 @@
     <string name="icon_favorite">Icona preferito</string>
     <string name="icon_info">Icona informazioni</string>
     <string name="Background_menu">Sfondo del menu</string>
+    <string name="database_image_background">Immagine di sfondo del database</string>
+    <string name="background_image_for_topbar">Immagine di sfondo per la barra superiore</string>
 
     <!-- "Token" è spesso usato anche in italiano in questo contesto -->
 

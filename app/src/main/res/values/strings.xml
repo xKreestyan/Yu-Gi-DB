@@ -100,5 +100,7 @@
     <string name="icon_favorite">Icon Favorite</string>
     <string name="icon_info">Icon info</string>
     <string name="Background_menu">Background image for the menu</string>
+    <string name="database_image_background">database image background</string>
+    <string name="background_image_for_topbar">Background Image for TopBar</string>
     <!-- <string name="search_id">ID Carta</string> -->
 </resources>
