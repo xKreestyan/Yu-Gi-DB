@@ -134,7 +134,7 @@ Di seguito vengono analizzati i flussi di dati principali attraverso i component
 
 * **Flusso 1: Scaricamento Iniziale dei Dati**
 
-    * Questo flusso si attiva tipicamente al primo avvio dell'applicazione o quando è necessario un aggiornamento completo del dataset locale.
+    * Questo flusso si attiva tipicamente al primo avvio dell'applicazione.
 
         `InitMainScreen (View)` &harr; `CardListViewModel` &harr; `YuGiRepo` &harr; `VolleyApiClientImpl (API)`
 
