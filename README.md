@@ -16,6 +16,7 @@
   - [3. Architettura e Tecnologie Utilizzate](#3-architettura-e-tecnologie-utilizzate)
   - [4. Interfaccia Grafica (UI/UX)](#4-interfaccia-grafica-uiux)
   - [5. API di Riferimento](#5-api-di-riferimento)
+  - [6. Pattern Architetturale MVVM e Flussi di Dati](#6-pattern-architetturale-mvvm-e-flussi-di-dati)
 
 ---
 
@@ -25,7 +26,7 @@
 
 **Obiettivo del Progetto:**
 
-Il progetto "Yu-Gi-DB" si pone l'obiettivo di sviluppare un'applicazione Android nativa che permetta agli utenti di consultare e navigare in maniera efficiente e intuitiva l'ampio database di carte del gioco di carte collezionabili Yu-Gi-Oh!. L'applicazione sfrutta le API pubbliche messe a disposizione dal sito YGOPRODeck, una risorsa completa e aggiornata per i giocatori di Yu-Gi-Oh!.
+Il progetto "Yu-Gi-DB" si pone l'obiettivo di sviluppare un'applicazione Android nativa che permetta agli utenti di consultare e navigare in maniera efficiente e intuitiva l'ampio database di carte del gioco di carte collezionabili Yu-Gi-Oh!. L'applicazione sfrutta le API pubbliche messe a disposizione dal sito [YGOPRODeck](https://ygoprodeck.com/api-guide/), una risorsa completa e aggiornata per i giocatori di Yu-Gi-Oh!.
 
 L'intento è quello di fornire uno strumento pratico e veloce per la ricerca di informazioni specifiche sulle carte, la scoperta di nuove carte correlate e la gestione di una collezione personale di preferiti, il tutto ottimizzato per un'esperienza mobile.
 
@@ -74,7 +75,7 @@ Gli utenti possono contrassegnare le carte di loro interesse come "preferite". O
 
 ### 2.5 Database Locale
 Per migliorare le prestazioni, consentire un accesso offline ai dati precedentemente caricati e gestire i preferiti, Yu-Gi-DB implementa un database locale **SQLite**.
-* **Caching e Ricerca Locale:** Le informazioni delle carte, una volta recuperate dalle API durante il popolamento iniziale, vengono memorizzate nel database locale. Tutte le successive operazioni di ricerca e consultazione delle carte avvengono interrogando esclusivamente questo database locale, garantendo risposte rapide e riducendo al minimo le chiamate API superflue.
+* **Caching e Ricerca Locale:** Le informazioni delle carte, una volta recuperate dalle API durante il popolamento iniziale, vengono memorizzate nel database locale. Questa strategia di archiviazione locale è stata adottata per aderire alle linee guida di YGOPRODeck, che raccomandano vivamente di scaricare i dati per ridurre al minimo le chiamate API. Tale approccio è fondamentale non solo per ottimizzare le prestazioni e ridurre il traffico di rete, ma anche per evitare potenziali restrizioni all'accesso API, come il blacklisting dell'indirizzo IP, imposte dal provider in caso di utilizzo eccessivo delle risorse remote. Di conseguenza, tutte le successive operazioni di ricerca e consultazione delle carte avvengono interrogando esclusivamente questo database locale, garantendo risposte rapide.
 *   **Preferiti:** Lo stato di "preferito" di una carta è salvato nel database locale, garantendo la persistenza di questa informazione tra le sessioni di utilizzo dell'app.
 *   **Gestione:** Il database locale è gestito tramite la Room Persistence Library, che fornisce un layer di astrazione sopra SQLite, semplificando l'accesso ai dati e garantendo la robustezza delle query.
 
@@ -85,7 +86,7 @@ Per migliorare le prestazioni, consentire un accesso offline ai dati precedentem
 L'applicazione è stata sviluppata seguendo le moderne pratiche di sviluppo Android:
 *   **Linguaggio:** Kotlin.
 *   **UI:** Interfaccia utente realizzata principalmente con **Jetpack Compose** per un approccio dichiarativo e moderno. Alcune schermate o componenti specifici potrebbero avvalersi anche di **ConstraintLayout** per la gestione di layout complessi.
-*   **Architettura:** Adottata l'architettura **MVVM (Model-View-ViewModel)** per una chiara separazione delle responsabilità tra UI, logica di presentazione e gestione dei dati, migliorando testabilità e manutenibilità.
+*   [**Architettura**](#6-pattern-architetturale-mvvm-e-flussi-di-dati): Adottata l'architettura **MVVM (Model-View-ViewModel)** per una chiara separazione delle responsabilità tra UI, logica di presentazione e gestione dei dati, migliorando testabilità e manutenibilità.
 *   **Networking:** Libreria **Volley** per la gestione delle chiamate API asincrone a YGOPRODeck.
 *   **Asincronia:** **Coroutine Kotlin** per la gestione efficiente delle operazioni in background, come le chiamate di rete e le interazioni con il database.
 *   **Dependency Injection:** **Hilt** per la gestione delle dipendenze all'interno dell'applicazione, semplificando la fornitura delle istanze necessarie ai vari componenti.
@@ -121,6 +122,37 @@ L'applicazione Yu-Gi-DB si basa sulle API fornite da **YGOPRODeck**.
         *   Per le carte in italiano del set Metal Raiders: `?cardset=Metal%20Raiders&language=it`
         *   Per le carte in inglese del set Metal Raiders: `?cardset=Metal%20Raiders`
         *   (Analogamente per il set LOB).
+
+    * **È importante notare che, analizzando le risposte JSON fornite dall'API, soltanto il nome della carta e la sua descrizione  variano in base al parametro della lingua selezionata, mentre gli altri attributi della carta (come tipo, attributo numerico, ATK/DEF, ID, ecc.) rimangono in lingua inglese.**
     *   Questa selezione iniziale di carte è sufficiente per testare e valutare tutte le funzionalità dell'applicazione, inclusa la ricerca, la visualizzazione dei dettagli, la navigazione per caratteristiche e la gestione dei preferiti con supporto bilingue (italiano e inglese) per i dati scaricati.
 
 ---
+
+## 6. Pattern Architetturale MVVM e Flussi di Dati
+Di seguito vengono analizzati i flussi di dati principali attraverso i componenti Model, View e ViewModel in scenari specifici:
+
+
+* **Flusso 1: Scaricamento Iniziale dei Dati**
+
+    * Questo flusso si attiva tipicamente al primo avvio dell'applicazione o quando è necessario un aggiornamento completo del dataset locale.
+
+        `InitMainScreen (View)` &harr; `CardListViewModel` &harr; `YuGiRepo` &harr; `VolleyApiClientImpl (API)`
+
+        inoltre
+
+        `YuGiRepo` &harr; `YuGiDAO (DB)`
+
+* **Flusso 2: Visualizzazione Dettaglio Carta al Click**
+
+    * Questo flusso si attiva quando l'utente seleziona una specifica carta da un elenco per visualizzarne i dettagli.
+
+        `LargeCardView (View)`  &harr;  `CardDetailViewModel`  &harr;  `YuGiRepo`  &harr;  `YuGiDAO (DB)`
+
+* **Flusso 3: Ricerca Carte e Gestione Preferiti**
+
+    * Questo scenario copre le interazioni relative alla ricerca di carte con criteri specifici e alla visualizzazione/gestione della lista dei preferiti.
+    
+        `UI (es. InitCardsScreenView, AdvancedSearchView, FavoritesScreen) (View)`  &harr;  `{AdvancedSearchViewModel, CardListViewModel, FavoritesViewModel}`  &harr;  `YuGiRepo`  &harr;  `YuGiDAO (DB)`
+---
+
+
