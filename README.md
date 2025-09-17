@@ -4,8 +4,6 @@
 
 **Indice:**
 
-- [Yu-Gi-DB](#yu-gi-db)
-  - [Documentazione Progetto](#documentazione-progetto)
   - [1. Introduzione e Obiettivi](#1-introduzione-e-obiettivi)
   - [2. Funzionalità Principali](#2-funzionalità-principali)
     - [2.1 Consultazione e Ricerca Carte](#21-consultazione-e-ricerca-carte)
@@ -129,7 +127,7 @@ L'applicazione Yu-Gi-DB si basa sulle API fornite da **YGOPRODeck**.
 ---
 
 ## 6. Pattern Architetturale MVVM e Flussi di Dati
-Di seguito vengono analizzati i flussi di dati principali attraverso i componenti Model, View e ViewModel in scenari specifici:
+Di seguito vengono analizzati i flussi di dati principali attraverso i componenti View e ViewModel in scenari specifici (i model utilizzati sono presenti nella cartella /java/com/example/yu_gi_db/model):
 
 
 * **Flusso 1: Scaricamento Iniziale dei Dati**
