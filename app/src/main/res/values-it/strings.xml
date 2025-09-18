@@ -102,7 +102,6 @@
     <string name="Background_menu">Sfondo del menu</string>
     <string name="database_image_background">Immagine di sfondo del database</string>
     <string name="background_image_for_topbar">Immagine di sfondo per la barra superiore</string>
-
-    <!-- "Token" è spesso usato anche in italiano in questo contesto -->
+    <string name="search_label_card_type_query">Cerca nel Tipo Carta (es. Fusione, Rituale, VENTO)</string>    <!-- "Token" è spesso usato anche in italiano in questo contesto -->
 
 </resources>

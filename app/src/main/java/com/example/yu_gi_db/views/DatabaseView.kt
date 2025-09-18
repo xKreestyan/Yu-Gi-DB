@@ -205,7 +205,7 @@ fun TextFieldView(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.80f),
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant // Or onSurface
         )
-        ) {
+    ) {
         Column(modifier = modifier) {
             OutlinedTextField(
                 value = value,
@@ -249,7 +249,27 @@ fun TextFieldView(
                         .fillMaxHeight(if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE) 0.8f else 0.5f) // Adatta l'altezza massima
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // ... (dentro il tuo Composable TextFieldView, nella sezione if (searchAdvanced))
+
+                    Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
+
+                    // OutlinedTextField for Human-Readable Card Type (humanReadableCardTypeQuery)
+                    OutlinedTextField(
+                        value = searchCriteria.humanReadableCardTypeQuery ?: "",
+                        onValueChange = { newValue ->
+                            onSearchCriteriaChange(
+                                searchCriteria.copy(
+                                    humanReadableCardTypeQuery = newValue.takeIf { it.isNotBlank() }
+                                )
+                            )
+                        },
+                        label = { Text(stringResource(R.string.search_label_card_type_query)) }, // Create this string resource
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                        modifier = Modifier.fillMaxWidth() // Or use .weight(1f) if in a Row
+                    )
+                    Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
+
 
                     Row(
                         modifier = Modifier.fillMaxWidth(), // La Row occupa l'intera larghezza
