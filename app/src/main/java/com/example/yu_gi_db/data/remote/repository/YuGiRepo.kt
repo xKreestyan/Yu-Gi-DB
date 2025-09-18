@@ -154,6 +154,7 @@ class YuGiRepo @Inject constructor(
                 val cardEntity = CardEntity(
                     id = apiCard.id,
                     type = apiCard.type,
+                    humanReadableCardType = apiCard.humanReadableCardType, // MODIFICATO: aggiunto humanReadableCardType
                     frameType = apiCard.frameType,
                     race = apiCard.race,
                     atk = apiCard.atk,
@@ -170,8 +171,8 @@ class YuGiRepo @Inject constructor(
                     cardId = apiCard.id,
                     languageCode = languageParam,
                     name = apiCard.name,
-                    desc = apiCard.desc,
-                    humanReadableCardType = apiCard.humanReadableCardType
+                    desc = apiCard.desc
+                    // MODIFICATO: rimosso humanReadableCardType
                 )
                 yuGiDAO.insertLocalization(localizationEntity)
 
@@ -243,7 +244,7 @@ class YuGiRepo @Inject constructor(
             name = localization.name,
             typeline = typelines,
             type = entity.type,
-            humanReadableCardType = localization.humanReadableCardType,
+            humanReadableCardType = entity.humanReadableCardType, // MODIFICATO: preso da entity
             frameType = entity.frameType,
             desc = localization.desc,
             race = entity.race,
@@ -309,6 +310,10 @@ class YuGiRepo @Inject constructor(
             queryBuilder.append(" AND c.type = ?")
             args.add(it)
         }
+        criteria.humanReadableCardTypeQuery?.takeIf { it.isNotBlank() }?.let {
+            queryBuilder.append(" AND c.humanReadableCardType = ?")
+            args.add(it)
+        }
         criteria.attribute?.takeIf { it.isNotBlank() }?.let {
             queryBuilder.append(" AND c.attribute = ?")
             args.add(it)
@@ -338,6 +343,7 @@ class YuGiRepo @Inject constructor(
         val onlyIdQuery = criteria.idQuery?.isNotBlank() == true
         val otherCriteriaPresent = criteria.name?.isNotBlank() == true ||
                 criteria.type?.isNotBlank() == true ||
+                criteria.humanReadableCardTypeQuery?.isNotBlank() == true ||
                 criteria.attribute?.isNotBlank() == true ||
                 criteria.level != null ||
                 criteria.atkMin != null || criteria.atkMax != null ||

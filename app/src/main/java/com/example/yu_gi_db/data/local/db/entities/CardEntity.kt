@@ -12,7 +12,7 @@ data class CardEntity(
     @PrimaryKey val id: Int,
     // val name: String, // Rimosso
     val type: String, // Mantenuto - sembra essere un dato tecnico
-    // val humanReadableCardType: String, // Rimosso
+    val humanReadableCardType: String, // Aggiunto: non localizzato
     val frameType: String,
     // val desc: String, // Rimosso
     val race: String,

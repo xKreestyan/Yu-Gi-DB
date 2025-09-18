@@ -21,7 +21,7 @@ import com.example.yu_gi_db.data.local.db.typeconverter.CardConverters
         CardTypeLineCrossRef::class,
         CardLocalizationEntity::class // NUOVA ENTITÀ PER LA LOCALIZZAZIONE
     ],
-    version = 3, // VERSIONE INCREMENTATA
+    version = 4, // VERSIONE INCREMENTATA
     exportSchema = false // Potresti volerlo impostare a true per i test di migrazione futuri
 )
 @TypeConverters(CardConverters::class)
