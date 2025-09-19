@@ -156,7 +156,7 @@ fun MenuView(navController: NavController? = null) {
 
             _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
                 text = stringResource(R.string.rulebook),
-                onClick = { /* Azione per REGOLAMENTO */ },
+                onClick = { navController?.navigate(Screen.RuleBookScreen.route) },
                 modifier = Modifier.layoutId("button3"),
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,

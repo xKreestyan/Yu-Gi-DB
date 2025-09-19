@@ -53,6 +53,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -150,6 +151,7 @@ fun <T> SearchCriteriaDropdown(
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextFieldView(
@@ -200,6 +202,7 @@ fun TextFieldView(
     val currentDefStart = searchCriteria.defMin?.toFloat() ?: defValueRange.start
     val currentDefEnd = searchCriteria.defMax?.toFloat() ?: defValueRange.endInclusive
 
+    val isMoster= !(searchCriteria.type=="Spell Card" || searchCriteria.type=="Trap Card")
     Card(modifier = modifier,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.80f),
@@ -289,16 +292,18 @@ fun TextFieldView(
                         )
 
                         // Dropdown per ATTRIBUTE
-                        SearchCriteriaDropdown(
-                            label = stringResource(R.string.search_bar_label_attribute_hint),
-                            selectedValueDisplay = cardAttributes.entries.find { it.value == searchCriteria.attribute }?.key
-                                ?: stringResource(R.string.search_any_attribute),
-                            items = cardAttributes,
-                            onItemSelected = { selectedAttribute ->
-                                onSearchCriteriaChange(searchCriteria.copy(attribute = selectedAttribute))
-                            },
-                            modifier = Modifier.weight(1f) // Occupa l'altra metà dello spazio disponibile
-                        )
+                        if(isMoster)
+                            SearchCriteriaDropdown(
+                                label = stringResource(R.string.search_bar_label_attribute_hint),
+                                selectedValueDisplay = cardAttributes.entries.find { it.value == searchCriteria.attribute }?.key
+                                    ?: stringResource(R.string.search_any_attribute),
+                                items = cardAttributes,
+                                onItemSelected = { selectedAttribute ->
+                                    onSearchCriteriaChange(searchCriteria.copy(attribute = selectedAttribute))
+                                },
+                                modifier = Modifier.weight(1f) // Occupa l'altra metà dello spazio disponibile
+                            )
+
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -307,6 +312,7 @@ fun TextFieldView(
                     )
                     {
                         // OutlinedTextField per LEVEL
+                        if(isMoster)
                         OutlinedTextField(
                             value = searchCriteria.level?.toString() ?: "",
                             onValueChange = { newValue ->
@@ -382,62 +388,63 @@ fun TextFieldView(
                             modifier = Modifier.weight(1f) // Occupa l'altra metà dello spazio disponibile
                         )
                     }
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
-                        thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
-                        color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
-                    )
-                    // ATK Range Slider
-                    MyRangeSlider(
-                        title = stringResource(R.string.search_bar_label_atk_min_hint) + "/" + stringResource(
-                            R.string.search_bar_label_atk_max_hint
-                        ),
-                        currentRange = currentAtkStart..currentAtkEnd,
-                        onRangeChange = { newRange ->
-                            val newAtkMin =
-                                if (newRange.start <= atkValueRange.start) null else newRange.start.roundToInt()
-                            val newAtkMax =
-                                if (newRange.endInclusive >= atkValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
-                            onSearchCriteriaChange(
-                                searchCriteria.copy(
-                                    atkMin = newAtkMin,
-                                    atkMax = newAtkMax
+                    if (isMoster) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
+                            thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
+                            color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
+                        )
+                        // ATK Range Slider
+                        MyRangeSlider(
+                            title = stringResource(R.string.search_bar_label_atk_min_hint) + "/" + stringResource(
+                                R.string.search_bar_label_atk_max_hint
+                            ),
+                            currentRange = currentAtkStart..currentAtkEnd,
+                            onRangeChange = { newRange ->
+                                val newAtkMin =
+                                    if (newRange.start <= atkValueRange.start) null else newRange.start.roundToInt()
+                                val newAtkMax =
+                                    if (newRange.endInclusive >= atkValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
+                                onSearchCriteriaChange(
+                                    searchCriteria.copy(
+                                        atkMin = newAtkMin,
+                                        atkMax = newAtkMax
+                                    )
                                 )
-                            )
-                        },
-                        valueRange = atkValueRange,
-                        steps = (atkValueRange.endInclusive - atkValueRange.start).toInt() / 50 - 1 //  steps per intervalli di 50
-                    )
-                    // DEF Range Slider
-                    MyRangeSlider(
-                        title = stringResource(R.string.search_bar_label_def_min_hint) + "/" + stringResource(
-                            R.string.search_bar_label_def_max_hint
-                        ),
-                        currentRange = currentDefStart..currentDefEnd,
-                        onRangeChange = { newRange ->
-                            val newDefMin =
-                                if (newRange.start <= defValueRange.start) null else newRange.start.roundToInt()
-                            val newDefMax =
-                                if (newRange.endInclusive >= defValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
-                            onSearchCriteriaChange(
-                                searchCriteria.copy(
-                                    defMin = newDefMin,
-                                    defMax = newDefMax
+                            },
+                            valueRange = atkValueRange,
+                            steps = (atkValueRange.endInclusive - atkValueRange.start).toInt() / 50 - 1 //  steps per intervalli di 50
+                        )
+                        // DEF Range Slider
+                        MyRangeSlider(
+                            title = stringResource(R.string.search_bar_label_def_min_hint) + "/" + stringResource(
+                                R.string.search_bar_label_def_max_hint
+                            ),
+                            currentRange = currentDefStart..currentDefEnd,
+                            onRangeChange = { newRange ->
+                                val newDefMin =
+                                    if (newRange.start <= defValueRange.start) null else newRange.start.roundToInt()
+                                val newDefMax =
+                                    if (newRange.endInclusive >= defValueRange.endInclusive) null else newRange.endInclusive.roundToInt()
+                                onSearchCriteriaChange(
+                                    searchCriteria.copy(
+                                        defMin = newDefMin,
+                                        defMax = newDefMax
+                                    )
                                 )
-                            )
-                        },
-                        valueRange = defValueRange,
-                        steps = (defValueRange.endInclusive - defValueRange.start).toInt() / 50 - 1 // steps per intervalli di 50
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
-                        thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
-                        color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
-                    )
+                            },
+                            valueRange = defValueRange,
+                            steps = (defValueRange.endInclusive - defValueRange.start).toInt() / 50 - 1 // steps per intervalli di 50
+                        )
 
-                    Spacer(modifier = Modifier.height(16.dp)) // Spazio prima della sezione "Preferiti"
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp), // Aggiunge spazio sopra e sotto il divisore
+                            thickness = 1.dp, // Spessore della linea (opzionale, default è sottile)
+                            color = MaterialTheme.colorScheme.outlineVariant // Colore (opzionale, default dal tema)
+                        )
 
+                        Spacer(modifier = Modifier.height(16.dp)) // Spazio prima della sezione "Preferiti"
+                    }
 
                     // Checkbox per Preferiti (isFavorite)
                     Row(

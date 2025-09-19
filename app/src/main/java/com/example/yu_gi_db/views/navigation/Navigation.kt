@@ -14,6 +14,7 @@ import com.example.yu_gi_db.views.screen.InformationScreen
 import com.example.yu_gi_db.views.screen.InitMainScreen
 import com.example.yu_gi_db.views.screen.LargeCardScreen
 import com.example.yu_gi_db.views.screen.MenuScreen
+import com.example.yu_gi_db.views.screen.RuleBookScreen
 import com.example.yu_gi_db.views.screen.SavedCardsScreen
 import com.example.yu_gi_db.views.screen.SplashScreen
 
@@ -31,7 +32,7 @@ sealed class Screen(val route: String) {
         // Main function to create the route
         fun createRoute(searchType: String, searchValue: String): String {
             return route.replace("{$ARG_SEARCH_TYPE}", searchType)
-                        .replace("{$ARG_SEARCH_VALUE}", searchValue)
+                .replace("{$ARG_SEARCH_VALUE}", searchValue)
         }
 
         fun createRouteForType(type: String): String {
@@ -84,6 +85,7 @@ sealed class Screen(val route: String) {
     }
 
     object MenuScreen1 : Screen("MenuScreen1")
+    object RuleBookScreen : Screen("RuleBookScreen")
     object InfoScreen : Screen("InfoScreen")
     object SavedCardsScreen : Screen("SavedCardsScreen")
     object CardScreen : Screen("CardScreen/{cardId}") {
@@ -172,6 +174,9 @@ fun Navigation() {
             }
             composable(Screen.SavedCardsScreen.route) {
                 SavedCardsScreen(navController = navController)
+            }
+            composable(Screen.RuleBookScreen.route) {
+                RuleBookScreen(navController = navController)
             }
             composable(
                 route = Screen.CardScreen.route,

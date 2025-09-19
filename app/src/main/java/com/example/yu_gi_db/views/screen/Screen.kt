@@ -160,6 +160,27 @@ fun SavedCardsScreen(
         )
     }
 }
+@Composable
+fun RuleBookView(
+    modifier: Modifier = Modifier,
+) {
+
+
+}
+@Composable
+fun RuleBookScreen(
+    modifier: Modifier = Modifier,
+    navController: NavHostController? = null,
+) {
+    InitScaffoldView(
+        modifier = modifier,
+        appBarTitle = "Regole del gioco",
+        navController = navController
+    ) { innerPadding ->
+        RuleBookView(modifier = Modifier.padding(innerPadding))
+    }
+
+}
 
 /*----------------------------------------------------------------------------------------------------*/
 // Preview functions
