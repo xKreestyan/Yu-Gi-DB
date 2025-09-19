@@ -11,25 +11,29 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer // Aggiunto Spacer se non già presente
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height // Aggiunto height se non già presente
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-// androidx.compose.foundation.layout.wrapContentWidth // Non strettamente necessario qui, il comportamento di default di Card in un Box è wrap
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -173,35 +177,56 @@ fun YugiohParallelepipedButton(
 @Composable
 fun YugiohCardNameDisplay(
     cardName: String,
-    modifier: Modifier = Modifier, 
+    isFavorite: Boolean,
+    onFavoriteClick: () -> Unit,
+    modifier: Modifier = Modifier,
     textStyle: androidx.compose.ui.text.TextStyle = AppTypography.headlineSmall,
-    textAlign: TextAlign = TextAlign.Center,
-    textColor: Color = Color.White
+    textColor: Color = LightSilver
 ) {
     Box(
-        modifier = modifier, 
-        contentAlignment = Alignment.Center 
+        modifier = modifier, // Modifier from the caller (e.g., fillMaxWidth in preview)
+        contentAlignment = Alignment.Center // Centers the Card within this Box if Box is larger
     ) {
         Card(
             shape = RectangleShape,
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             colors = CardDefaults.cardColors(containerColor = Color.Transparent),
             border = BorderStroke(3.dp, LightSilver)
+            // Card sizes to its content (the Box with image/Row)
         ) {
-            Box(contentAlignment = Alignment.Center) { 
+            Box( // This Box holds the background image and the content (Row) on top.
+                // It ensures the content is centered *within* the Card.
+                contentAlignment = Alignment.Center
+            ) {
                 Image(
                     painter = painterResource(id = R.drawable.sfondo_descrizioni),
                     contentDescription = stringResource(R.string.card_name_background_description),
-                    modifier = Modifier.matchParentSize(),
+                    modifier = Modifier.matchParentSize(), // Image fills the Card
                     contentScale = ContentScale.Crop
                 )
-                Text(
-                    text = cardName,
-                    style = textStyle,
-                    color = LightSilver, 
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), 
-                    textAlign = textAlign
-                )
+                Row( // This Row now holds the text and icon, arranged to the start.
+                    // It will wrap its content.
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), // Padding inside the Card
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start // Align text and icon to the start of the Row
+                ) {
+                    Text(
+                        text = cardName,
+                        style = textStyle,
+                        color = textColor,
+                        textAlign = TextAlign.Start
+                        // Modifier.weight removed
+                    )
+                    Spacer(Modifier.width(8.dp)) // Space between text and icon
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = if (isFavorite) stringResource(R.string.isfavorite) else stringResource(R.string.notfavorite),
+                        tint = textColor,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable(onClick = onFavoriteClick)
+                    )
+                }
             }
         }
     }
@@ -212,7 +237,7 @@ fun AttributeFrame(
     modifier: Modifier = Modifier,
     attributeName: String,
     attributeImageResId: Int,
-    attributeImageSize: Dp = 32.dp, // NUOVO parametro
+    attributeImageSize: Dp = 32.dp,
     borderColor: Color = LightSilver,
     borderWidth: Dp = 2.dp,
     textStyle: androidx.compose.ui.text.TextStyle = AppTypography.bodyLarge,
@@ -228,23 +253,20 @@ fun AttributeFrame(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 8.dp, vertical = 4.dp), // Padding interno
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Testo "ATTRIBUTO" a sinistra
             Text(
-                text = "ATTRIBUTO", // Stringa fissa
-                modifier = Modifier.weight(0.6f), // MODIFICATO
+                text = "ATTRIBUTO",
+                modifier = Modifier.weight(0.6f),
                 style = textStyle,
                 color = LightSilver,
                 textAlign = TextAlign.Center,
                 maxLines = 1,
                 softWrap = false
             )
-
-            // Colonna a destra con Immagine e Nome Attributo
             Column(
-                modifier = Modifier.weight(0.4f), // MODIFICATO
+                modifier = Modifier.weight(0.4f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -254,9 +276,9 @@ fun AttributeFrame(
                     modifier = Modifier.size(attributeImageSize),
                     contentScale = ContentScale.Fit
                 )
-                Spacer(modifier = Modifier.height(4.dp)) // Spazio tra immagine e testo
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = attributeName, // Es. "LUCE"
+                    text = attributeName,
                     style = textStyle,
                     color = LightSilver,
                     textAlign = TextAlign.Center
@@ -309,14 +331,27 @@ fun YugiohParallelepipedButtonPreview() {
 @Preview(showBackground = true, name = "Yugioh Card Name Display Preview")
 @Composable
 fun YugiohCardNameDisplayPreview() {
+    var isFav by remember { mutableStateOf(false) } // Stato per la preview interattiva
     YuGiDBTheme {
         Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.padding(16.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)){
                 YugiohCardNameDisplay(
                     cardName = "Drago Bianco Occhi Blu",
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp),
-                    textColor = Color.White
-
+                    isFavorite = isFav,
+                    onFavoriteClick = { isFav = !isFav }, // Toggle per la preview
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp) // fillMaxWidth qui per la preview
+                )
+                YugiohCardNameDisplay(
+                    cardName = "Mago Nero",
+                    isFavorite = true, // Esempio con preferito statico
+                    onFavoriteClick = { }, // Azione vuota per questo esempio statico
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 40.dp) // fillMaxWidth qui per la preview
+                )
+                 YugiohCardNameDisplay(
+                    cardName = "Un nome di carta molto lungo per testare il wrap o l'ellipsis",
+                    isFavorite = false,
+                    onFavoriteClick = { },
+                    modifier = Modifier.width(200.dp).heightIn(min = 40.dp) // Esempio con larghezza fissa
                 )
             }
         }
@@ -333,7 +368,6 @@ fun AttributeFramePreview() {
                 attributeName = "LUCE",
                 attributeImageResId = R.drawable.luce,
                 attributeImageSize = 32.dp
-                // Rimosso textColor esplicito, ora gestito internamente/da textStyle
             )
         }
     }

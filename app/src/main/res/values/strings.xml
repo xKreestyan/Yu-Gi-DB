@@ -95,6 +95,8 @@
     <string name="card_type_api_pendulum_effect_monster">Pendulum Effect Monster</string>
     <string name="card_type_api_link_monster">Link Monster</string>
     <string name="card_type_api_token">Token</string>
+    <string name="card_type_spell">Spell</string>
+    <string name="card_type_trap">Trap</string>
 
     <!-- <string name="search_id">ID Carta</string> -->
 </resources>

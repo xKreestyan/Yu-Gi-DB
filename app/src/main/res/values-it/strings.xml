@@ -95,5 +95,8 @@
     <string name="card_type_api_pendulum_effect_monster">Mostri Pendulum Effetto</string>
     <string name="card_type_api_link_monster">Mostri Link</string>
     <string name="card_type_api_token">Token</string> <!-- "Token" è spesso usato anche in italiano in questo contesto -->
+    <string name="card_type_spell">Magia</string>
+    <string name="card_type_trap">Trappola</string>
+
 
 </resources>
