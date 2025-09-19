@@ -4,17 +4,17 @@
 
 **Indice:**
 
-  - [1. Introduzione e Obiettivi](#1-introduzione-e-obiettivi)
-  - [2. Funzionalità Principali](#2-funzionalità-principali)
+- [1. Introduzione e Obiettivi](#1-introduzione-e-obiettivi)
+- [2. Funzionalità Principali](#2-funzionalità-principali)
     - [2.1 Consultazione e Ricerca Carte](#21-consultazione-e-ricerca-carte)
     - [2.2 Visualizzazione Dettagliata della Carta](#22-visualizzazione-dettagliata-della-carta)
     - [2.3 Navigazione per Caratteristiche](#23-navigazione-per-caratteristiche)
     - [2.4 Gestione dei Preferiti](#24-gestione-dei-preferiti)
     - [2.5 Database Locale](#25-database-locale)
-  - [3. Architettura e Tecnologie Utilizzate](#3-architettura-e-tecnologie-utilizzate)
-  - [4. Interfaccia Grafica (UI/UX)](#4-interfaccia-grafica-uiux)
-  - [5. API di Riferimento](#5-api-di-riferimento)
-  - [6. Pattern Architetturale MVVM e Flussi di Dati](#6-pattern-architetturale-mvvm-e-flussi-di-dati)
+- [3. Architettura e Tecnologie Utilizzate](#3-architettura-e-tecnologie-utilizzate)
+- [4. Interfaccia Grafica (UI/UX)](#4-interfaccia-grafica-uiux)
+- [5. API di Riferimento](#5-api-di-riferimento)
+- [6. Pattern Architetturale MVVM e Flussi di Dati](#6-pattern-architetturale-mvvm-e-flussi-di-dati)
 
 ---
 
@@ -39,11 +39,12 @@ Gli utenti possono cercare carte all'interno del database di YGOPRODeck. La funz
 *   ID carta
 *   Tipo (es. Mostro, Magia, Trappola)
 *   Attributo (es. LUCE, OSCURITÀ - per i mostri)
+*   Proprietà (per le carte Magia/Trappola)
 *   Livello (per i mostri)
 *   Nome del set a cui appartiene la carta
 *   Codice del set a cui appartiene la carta
-*   Range di ATK (valore minimo e/o massimo)
-*   Range di DEF (valore minimo e/o massimo)
+*   Range di ATK (valore minimo e/o massimo - per i mostri)
+*   Range di DEF (valore minimo e/o massimo - per i mostri)
 
 L'app interroga il database locale e restituisce un elenco di risultati pertinenti.
 
@@ -54,16 +55,16 @@ Selezionando una carta dall'elenco dei risultati di ricerca o da altre sezioni d
 *   Descrizione/effetto
 *   Tipo (es. Mostro, Magia, Trappola)
 *   Attributo (es. LUCE, OSCURITÀ, FUOCO - per i mostri)
+*   Proprietà (per le carte Magia/Trappola)
 *   Livello/Rango/Link Rating (per i mostri)
 *   ATK/DEF (per i mostri)
 *   Set di appartenenza (con rarità e codici)
-*   Prezzi indicativi (se forniti dalle API)
+*   Prezzi indicativi (nei vari mercati online)
 
 ### 2.3 Navigazione per Caratteristiche
 Dalla schermata di dettaglio di una carta, l'utente può interagire con specifici elementi informativi per avviare una nuova ricerca contestuale. Cliccando su:
-*   Attributo
+*   Attributo (per i mostri) / Proprietà (per le carte magia, trappola)
 *   Tipo
-*   Livello
 *   Set in cui la carta appare
 
 l'applicazione visualizzerà un elenco di tutte le altre carte che condividono quella medesima caratteristica, facilitando la scoperta e l'analisi di carte correlate.
@@ -98,7 +99,7 @@ L'applicazione è stata sviluppata seguendo le moderne pratiche di sviluppo Andr
 L'interfaccia grafica di Yu-Gi-DB è stata progettata per essere intuitiva, pulita e funzionale:
 
 *   **Tema:** L'app adotta automaticamente il tema chiaro o scuro in base alle impostazioni del sistema Android dell'utente.
-  
+
 *   **Schermate Principali:**
     *   **Home/Ricerca:** Presenta una barra di ricerca e opzioni per la ricerca avanzata. I risultati sono visualizzati tramite una **`LazyVerticalGrid`**, mostrando un'anteprima delle carte (immagine e nome) per una rapida identificazione.
     *   **Dettaglio Carta:** Organizza le informazioni della carta in modo leggibile, con l'immagine in evidenza e gli elementi interattivi per la navigazione per caratteristiche ben visibili.
@@ -127,30 +128,35 @@ L'applicazione Yu-Gi-DB si basa sulle API fornite da **YGOPRODeck**.
 ---
 
 ## 6. Pattern Architetturale MVVM e Flussi di Dati
-Di seguito vengono analizzati i flussi di dati principali attraverso i componenti View e ViewModel in scenari specifici (i model utilizzati sono presenti nella cartella /java/com/example/yu_gi_db/model):
+Di seguito vengono analizzati i flussi di dati principali attraverso i componenti View e ViewModel in scenari specifici (i model utilizzati sono presenti nella cartella /java/com/yu_gi_db/model):
 
 
 * **Flusso 1: Scaricamento Iniziale dei Dati**
 
     * Questo flusso si attiva tipicamente al primo avvio dell'applicazione.
 
-        `InitMainScreen (View)` &harr; `CardListViewModel` &harr; `YuGiRepo` &harr; `VolleyApiClientImpl (API)`
+      `InitMainScreen (Screen.kt)` &harr; `CardListViewModel` &harr; `YuGiRepo` &harr; `VolleyApiClientImpl (API)`
 
-        inoltre
+      inoltre
 
-        `YuGiRepo` &harr; `YuGiDAO (DB)`
+      `YuGiRepo` &harr; `YuGiDAO (DB)`
 
 * **Flusso 2: Visualizzazione Dettaglio Carta al Click**
 
     * Questo flusso si attiva quando l'utente seleziona una specifica carta da un elenco per visualizzarne i dettagli.
 
-        `LargeCardView (View)`  &harr;  `CardDetailViewModel`  &harr;  `YuGiRepo`  &harr;  `YuGiDAO (DB)`
+      `LargeCardView`  &harr;  `CardDetailViewModel`  &harr;  `YuGiRepo`  &harr;  `YuGiDAO (DB)`
 
-* **Flusso 3: Ricerca Carte e Gestione Preferiti**
+* **Flusso 3: Ricerca Carte**
 
-    * Questo scenario copre le interazioni relative alla ricerca di carte con criteri specifici e alla visualizzazione/gestione della lista dei preferiti.
-    
-        `UI (es. InitCardsScreenView, AdvancedSearchView, FavoritesScreen) (View)`  &harr;  `{AdvancedSearchViewModel, CardListViewModel, FavoritesViewModel}`  &harr;  `YuGiRepo`  &harr;  `YuGiDAO (DB)`
+    * Questo scenario copre le interazioni relative alla ricerca di carte con criteri specifici.
+
+      `DatabaseView`  &harr;  `AdvancedSearchViewModel`  &harr;  `YuGiRepo`  &harr;  `YuGiDAO (DB)`
+
+* **Flusso 4: Gestione Preferiti**
+
+    * Questo scenario rappresenta l’inserimento e/o la rimozione delle carte tra i preferiti.
+
+      `SmallCardsListView (DatabaseView.kt) / LargeCardView`  &rarr;  `FavoritesViewModel`  &rarr;  `YuGiRepo`  &rarr;  `YuGiDAO (DB)`
+
 ---
-
-

@@ -52,12 +52,15 @@ class AdvancedSearchViewModel @Inject constructor(
     private fun AdvancedSearchCriteria.isEffectivelyEmpty(): Boolean {
         return name.isNullOrBlank() &&
                 type.isNullOrBlank() &&
+                raceQuery.isNullOrBlank() &&
                 attribute.isNullOrBlank() &&
                 level == null &&
                 atkMin == null && atkMax == null &&
                 defMin == null && defMax == null &&
                 idQuery.isNullOrBlank() &&
-                isFavorite == null
+                isFavorite == null &&
+                setNameQuery.isNullOrBlank() &&
+                setCodeQuery.isNullOrBlank()
     }
 
     private fun observeAndPerformAdvancedSearch() {

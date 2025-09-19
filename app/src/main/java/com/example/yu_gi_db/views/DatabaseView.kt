@@ -252,13 +252,13 @@ fun TextFieldView(
 
                     Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
 
-                    // OutlinedTextField for Human-Readable Card Type (humanReadableCardTypeQuery)
+                    // OutlinedTextField for race (raceQuery)
                     OutlinedTextField(
-                        value = searchCriteria.humanReadableCardTypeQuery ?: "",
+                        value = searchCriteria.raceQuery ?: "",
                         onValueChange = { newValue ->
                             onSearchCriteriaChange(
                                 searchCriteria.copy(
-                                    humanReadableCardTypeQuery = newValue.takeIf { it.isNotBlank() }
+                                    raceQuery = newValue.takeIf { it.isNotBlank() }
                                 )
                             )
                         },

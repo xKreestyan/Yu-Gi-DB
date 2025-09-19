@@ -310,8 +310,8 @@ class YuGiRepo @Inject constructor(
             queryBuilder.append(" AND c.type = ?")
             args.add(it)
         }
-        criteria.humanReadableCardTypeQuery?.takeIf { it.isNotBlank() }?.let {
-            queryBuilder.append(" AND c.humanReadableCardType = ?")
+        criteria.raceQuery?.takeIf { it.isNotBlank() }?.let {
+            queryBuilder.append(" AND c.race = ?")
             args.add(it)
         }
         criteria.attribute?.takeIf { it.isNotBlank() }?.let {
@@ -343,7 +343,7 @@ class YuGiRepo @Inject constructor(
         val onlyIdQuery = criteria.idQuery?.isNotBlank() == true
         val otherCriteriaPresent = criteria.name?.isNotBlank() == true ||
                 criteria.type?.isNotBlank() == true ||
-                criteria.humanReadableCardTypeQuery?.isNotBlank() == true ||
+                criteria.raceQuery?.isNotBlank() == true ||
                 criteria.attribute?.isNotBlank() == true ||
                 criteria.level != null ||
                 criteria.atkMin != null || criteria.atkMax != null ||
