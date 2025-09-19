@@ -193,10 +193,6 @@ fun LargeCardUI(
                             newSeparatorRef
                         ) = createRefs()
 
-                        // Calcolo dinamico dell'offset per la linea guida verticale
-                        val slotMinHeightForGuideline = 24.dp // Altezza base della riga attributo
-                        val attributeRowVerticalPadding = 1.dp // Padding verticale per lato in AttributeSlotRow
-                        val firstRowTotalHeight = slotMinHeightForGuideline + attributeRowVerticalPadding * 2 // = 26.dp
 
                         val guidelineOffsetDp = if (isMonster) {
                             52.dp + SEPARATOR_LINE_THICKNESS // Mostro: sotto la prima riga e il suo divisore (26dp + 2dp = 28dp)
