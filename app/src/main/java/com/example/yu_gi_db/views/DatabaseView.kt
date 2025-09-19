@@ -473,6 +473,13 @@ fun InitCardsScreenView(
     cardListViewModel: CardListViewModel = hiltViewModel(),
     navController: NavHostController? = null, // NavController rimane qui per la navigazione
 ) {
+    // Effetto per applicare i criteri di ricerca iniziali, se presenti
+    LaunchedEffect(initialSearchCriteria, advancedSearchViewModel.searchCriteria) { // Aggiunto currentSearchCriteria come key
+        if (initialSearchCriteria != null && initialSearchCriteria != advancedSearchViewModel.searchCriteria) {
+            advancedSearchViewModel.updateAdvancedSearchCriteria(initialSearchCriteria)
+        }
+    }
+
     // Stati per la lista di default (LOB)
     val defaultCards by cardListViewModel.smallCards.collectAsStateWithLifecycle()
     val isLoadingInitial by cardListViewModel.isLoadingInitialData.collectAsStateWithLifecycle()
@@ -483,13 +490,6 @@ fun InitCardsScreenView(
     val advancedSearchResults by advancedSearchViewModel.advancedSearchResults.collectAsStateWithLifecycle()
     val isSearchingAdvanced by advancedSearchViewModel.isSearchingAdvanced.collectAsStateWithLifecycle()
     val advancedSearchError by advancedSearchViewModel.advancedSearchError.collectAsStateWithLifecycle()
-
-    // Effetto per applicare i criteri di ricerca iniziali, se presenti
-    LaunchedEffect(initialSearchCriteria, currentSearchCriteria) { // Aggiunto currentSearchCriteria come key
-        if (initialSearchCriteria != null && initialSearchCriteria != currentSearchCriteria) {
-            advancedSearchViewModel.updateAdvancedSearchCriteria(initialSearchCriteria)
-        }
-    }
 
     // Determina quali dati visualizzare in base ai criteri di ricerca
     val isAdvancedSearchActive = currentSearchCriteria != AdvancedSearchCriteria()
