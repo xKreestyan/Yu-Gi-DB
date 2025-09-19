@@ -194,13 +194,13 @@ fun TextFieldView(
         stringResource(R.string.attribute_divine) to "DIVINE"
     )
     val cardMagicTrapSubTypes = mapOf(
-        "Normal" to "Normal",
-        "Continuous" to "Continuous",
-        "Equip" to "Equip",
-        "Quick-Play" to "Quick-Play",
-        "Field" to "Field",
-        "Ritual" to "Ritual",
-        "Counter" to "Counter"
+        stringResource(R.string.normal) to "Normal",
+        stringResource(R.string.continuous) to "Continuous",
+        stringResource(R.string.equip) to "Equip",
+        stringResource(R.string.quick_play) to "Quick-Play",
+        stringResource(R.string.field) to "Field",
+        stringResource(R.string.ritual) to "Ritual",
+        stringResource(R.string.counter) to "Counter"
     )
 
     val atkValueRange = 0f..5000f
@@ -320,20 +320,20 @@ fun TextFieldView(
                     {
                         // OutlinedTextField per LEVEL
                         if(isMoster)
-                        OutlinedTextField(
-                            value = searchCriteria.level?.toString() ?: "",
-                            onValueChange = { newValue ->
-                                // Considera di limitare la lunghezza o i valori qui se necessario
-                                val newLevel = newValue.filter { it.isDigit() }
-                                    .take(2) // Permette solo cifre, max 2
-                                onSearchCriteriaChange(searchCriteria.copy(level = newLevel.toIntOrNull()))
-                            },
-                            label = { Text(stringResource(R.string.search_bar_label_level_hint)) },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                            modifier = Modifier.weight(1f) // Occupa metà dello spazio disponibile
-                        )
+                            OutlinedTextField(
+                                value = searchCriteria.level?.toString() ?: "",
+                                onValueChange = { newValue ->
+                                    // Considera di limitare la lunghezza o i valori qui se necessario
+                                    val newLevel = newValue.filter { it.isDigit() }
+                                        .take(2) // Permette solo cifre, max 2
+                                    onSearchCriteriaChange(searchCriteria.copy(level = newLevel.toIntOrNull()))
+                                },
+                                label = { Text(stringResource(R.string.search_bar_label_level_hint)) },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+                                modifier = Modifier.weight(1f) // Occupa metà dello spazio disponibile
+                            )
 
                         // OutlinedTextField per ID Carta (idQuery)
                         OutlinedTextField(

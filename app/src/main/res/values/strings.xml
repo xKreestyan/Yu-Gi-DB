@@ -106,6 +106,13 @@
 
     <string name="search_any_subtype">Any Subtype</string>
     <string name="search_bar_label_subtype_hint">Subtype (Spell/Trap)</string>
+    <string name="normal">Normal</string>
+    <string name="continuous">Continuous</string>
+    <string name="equip">Equip</string>
+    <string name="quick_play">Quick-Play</string>
+    <string name="field">Field</string>
+    <string name="ritual">Ritual</string>
+    <string name="counter">Counter</string>
 
     <!-- <string name="search_id">ID Carta</string> -->
 </resources>

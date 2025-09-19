@@ -107,4 +107,12 @@
     <string name="search_any_subtype">Qualsiasi sottotipo</string>
     <string name="search_bar_label_subtype_hint">Sottotipo (Magia/Trappola)</string>
 
+    <string name="normal">Normale</string> <!-- O "Normal" se preferisci mantenere il termine inglese -->
+    <string name="continuous">Continua</string>
+    <string name="equip">Equipaggiamento</string>
+    <string name="quick_play">Rapida</string>
+    <string name="field">Terreno</string>
+    <string name="ritual">Rituale</string>
+    <string name="counter">Contro-Trappola</string> <!-- Specifico per le trappole. Se è un concetto più generico, "Counter" o "Risposta" potrebbe andare. -->
+
 </resources>
