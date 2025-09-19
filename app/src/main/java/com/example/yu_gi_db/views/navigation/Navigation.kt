@@ -14,7 +14,6 @@ import com.example.yu_gi_db.views.screen.InformationScreen
 import com.example.yu_gi_db.views.screen.InitMainScreen
 import com.example.yu_gi_db.views.screen.LargeCardScreen
 import com.example.yu_gi_db.views.screen.MenuScreen
-import com.example.yu_gi_db.views.screen.RuleBookScreen
 import com.example.yu_gi_db.views.screen.SavedCardsScreen
 import com.example.yu_gi_db.views.screen.SplashScreen
 
@@ -85,7 +84,6 @@ sealed class Screen(val route: String) {
     }
 
     object MenuScreen1 : Screen("MenuScreen1")
-    object RuleBookScreen : Screen("RuleBookScreen")
     object InfoScreen : Screen("InfoScreen")
     object SavedCardsScreen : Screen("SavedCardsScreen")
     object CardScreen : Screen("CardScreen/{cardId}") {
@@ -121,10 +119,10 @@ fun Navigation() {
         NavHost(navController = navController, startDestination = Screen.MenuScreen1.route) {
 
             composable(Screen.InitMainScreen.route) {
-                InitMainScreen(navController = navController)
+                InitMainScreen()
             }
             composable(Screen.SplashScreen.route) {
-                SplashScreen(navController = navController)
+                SplashScreen()
             }
             composable(Screen.DataBaseScreen1.route) {
                 // This is for direct navigation to DataBaseScreen1 without pre-filled search
@@ -174,9 +172,6 @@ fun Navigation() {
             }
             composable(Screen.SavedCardsScreen.route) {
                 SavedCardsScreen(navController = navController)
-            }
-            composable(Screen.RuleBookScreen.route) {
-                RuleBookScreen(navController = navController)
             }
             composable(
                 route = Screen.CardScreen.route,

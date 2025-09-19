@@ -38,11 +38,11 @@ import com.example.yu_gi_db.views.navigation.Navigation
 
 //test
 @Composable
-fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostController? = null) {
+fun InitMainScreen(modifier: Modifier = Modifier) {
     val viewModel = hiltViewModel<CardListViewModel>()
     val isLoadingInitialData by viewModel.isLoadingInitialData.collectAsStateWithLifecycle()
     if (isLoadingInitialData) {
-        SplashScreen(modifier = modifier,navController)
+        SplashScreen(modifier = modifier)
     }
     else {
         Navigation()
@@ -50,7 +50,7 @@ fun InitMainScreen(modifier: Modifier = Modifier,navController: NavHostControlle
 }
 
 @Composable
-fun SplashScreen(modifier: Modifier = Modifier, navController: NavHostController? = null) {
+fun SplashScreen(modifier: Modifier = Modifier) {
     Box {
         BoxWithConstraints(
             modifier = modifier
@@ -75,7 +75,7 @@ fun SplashScreen(modifier: Modifier = Modifier, navController: NavHostController
     }
 }
 @Composable
-fun MenuScreen(modifier: Modifier = Modifier, navController: NavHostController? = null) {
+fun MenuScreen(navController: NavHostController? = null) {
     MenuView(navController)
 }
 
@@ -159,27 +159,6 @@ fun SavedCardsScreen(
             initialSearchCriteria = AdvancedSearchCriteria(isFavorite = true)
         )
     }
-}
-@Composable
-fun RuleBookView(
-    modifier: Modifier = Modifier,
-) {
-
-
-}
-@Composable
-fun RuleBookScreen(
-    modifier: Modifier = Modifier,
-    navController: NavHostController? = null,
-) {
-    InitScaffoldView(
-        modifier = modifier,
-        appBarTitle = "Regole del gioco",
-        navController = navController
-    ) { innerPadding ->
-        RuleBookView(modifier = Modifier.padding(innerPadding))
-    }
-
 }
 
 /*----------------------------------------------------------------------------------------------------*/

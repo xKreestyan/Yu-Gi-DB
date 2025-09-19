@@ -46,6 +46,7 @@ kotlin {
 
 dependencies {
 
+    implementation(libs.pdf.viewer)
     implementation(kotlin("reflect"))
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.room.runtime)
