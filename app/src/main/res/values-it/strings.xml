@@ -104,4 +104,7 @@
     <string name="background_image_for_topbar">Immagine di sfondo per la barra superiore</string>
     <string name="search_label_card_type_query">Cerca nel Tipo Carta (es. Fusione, Rituale, VENTO)</string>    <!-- "Token" è spesso usato anche in italiano in questo contesto -->
 
+    <string name="search_any_subtype">Qualsiasi sottotipo</string>
+    <string name="search_bar_label_subtype_hint">Sottotipo (Magia/Trappola)</string>
+
 </resources>

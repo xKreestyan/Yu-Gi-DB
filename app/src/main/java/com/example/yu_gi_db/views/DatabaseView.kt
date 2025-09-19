@@ -193,6 +193,15 @@ fun TextFieldView(
         stringResource(R.string.attribute_wind) to "WIND",
         stringResource(R.string.attribute_divine) to "DIVINE"
     )
+    val cardMagicTrapSubTypes = mapOf(
+        "Normal" to "Normal",
+        "Continuous" to "Continuous",
+        "Equip" to "Equip",
+        "Quick-Play" to "Quick-Play",
+        "Field" to "Field",
+        "Ritual" to "Ritual",
+        "Counter" to "Counter"
+    )
 
     val atkValueRange = 0f..5000f
     val currentAtkStart = searchCriteria.atkMin?.toFloat() ?: atkValueRange.start
@@ -255,23 +264,6 @@ fun TextFieldView(
 
                     Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
 
-                    // OutlinedTextField for race (raceQuery)
-                    OutlinedTextField(
-                        value = searchCriteria.raceQuery ?: "",
-                        onValueChange = { newValue ->
-                            onSearchCriteriaChange(
-                                searchCriteria.copy(
-                                    raceQuery = newValue.takeIf { it.isNotBlank() }
-                                )
-                            )
-                        },
-                        label = { Text(stringResource(R.string.search_label_card_type_query)) }, // Create this string resource
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-                        modifier = Modifier.fillMaxWidth() // Or use .weight(1f) if in a Row
-                    )
-                    Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
 
 
                     Row(
@@ -305,6 +297,21 @@ fun TextFieldView(
                             )
 
                     }
+                    // OutlinedTextField for race (raceQuery)
+                    if(!isMoster) {
+                        SearchCriteriaDropdown(
+                            label = stringResource(R.string.search_bar_label_subtype_hint), // Crea questa stringa
+                            selectedValueDisplay = cardMagicTrapSubTypes.entries.find { it.value == searchCriteria.raceQuery }?.key // o searchCriteria.spellTrapSubType
+                                ?: stringResource(R.string.search_any_subtype),
+                            items = cardMagicTrapSubTypes,
+                            onItemSelected = { selectedSubType ->
+                                onSearchCriteriaChange(searchCriteria.copy(raceQuery = selectedSubType)) // o spellTrapSubType = selectedSubType
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
+
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),

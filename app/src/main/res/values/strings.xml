@@ -103,5 +103,9 @@
     <string name="database_image_background">database image background</string>
     <string name="background_image_for_topbar">Background Image for TopBar</string>
     <string name="search_label_card_type_query">Card Type (Keywords)</string>
+
+    <string name="search_any_subtype">Any Subtype</string>
+    <string name="search_bar_label_subtype_hint">Subtype (Spell/Trap)</string>
+
     <!-- <string name="search_id">ID Carta</string> -->
 </resources>
