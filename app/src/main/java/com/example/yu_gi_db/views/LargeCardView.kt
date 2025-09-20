@@ -318,7 +318,7 @@ private fun SpellTrapRaceIconAndText(
         verticalArrangement = Arrangement.Center,
         modifier = modifier.clickable(enabled = navController != null) {
             // Assicurati che createRouteForRace esista e sia corretto
-            //navController?.navigate(Screen.DataBaseAdvancedSearch.(raceQuery = cardRace))
+            navController?.navigate(Screen.DataBaseAdvancedSearch.createRouteForRaceQuery(race = cardRace ))
         }
     ) {
         raceIconResId?.let {
