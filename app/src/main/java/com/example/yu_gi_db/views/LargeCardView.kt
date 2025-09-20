@@ -1,12 +1,12 @@
 package com.example.yu_gi_db.views
 
 import android.content.res.Configuration
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,17 +27,25 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -50,19 +58,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.times
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.CardImage
-import com.example.yu_gi_db.model.CardPrice
 import com.example.yu_gi_db.model.CardSet
 import com.example.yu_gi_db.model.LargePlayingCard
 import com.example.yu_gi_db.ui.theme.AppTypography
 import com.example.yu_gi_db.ui.theme.LightSilver
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
 import com.example.yu_gi_db.ui.theme.YugiohCardNameDisplay
+import com.example.yu_gi_db.viewmodels.CardDetailViewModel
+import com.example.yu_gi_db.viewmodels.FavoritesViewModel
+import com.example.yu_gi_db.views.navigation.Screen
 import java.net.URLEncoder
 
 // Costanti per il layout degli attributi
@@ -72,6 +83,181 @@ private val SPACE_AROUND_SEPARATOR = 4.dp
 private val SEPARATOR_LINE_THICKNESS = 2.dp
 private val ATTRIBUTE_SEPARATOR_LINE_OFFSET = TEXT_START_END_PADDING + LABEL_TEXT_WIDTH + SPACE_AROUND_SEPARATOR
 private val VALUE_AREA_START_PADDING = SPACE_AROUND_SEPARATOR + SEPARATOR_LINE_THICKNESS + SPACE_AROUND_SEPARATOR
+
+
+
+@Composable
+fun InitLargeCardView(
+    modifier: Modifier = Modifier,
+    cardId: Int,
+    navController: NavHostController? = null,
+    viewModel: CardDetailViewModel = hiltViewModel()
+) {
+    // Osserva gli stati necessari dal ViewModel
+    val largeCard by viewModel.selectedLargeCard.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoadingLargeCard.collectAsStateWithLifecycle()
+    val error by viewModel.largeCardError.collectAsStateWithLifecycle()
+
+    // Effetto per caricare i dati quando cardId cambia o alla prima composizione
+    LaunchedEffect(cardId) {
+        viewModel.fetchLargeCardById(cardId)
+    }
+    // Effetto per pulire i dati quando la schermata viene rimossa dalla composizione
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.clearSelectedLargeCard()
+        }
+    }
+    LargeCardView(
+        modifier = modifier,
+        largeCard = largeCard, // largeCard contiene già il nome e altri dettagli
+        isLoading = isLoading,
+        error = error,
+        navController = navController
+    )
+}
+
+@Composable
+fun LargeCardView(
+    modifier: Modifier = Modifier,
+    largeCard: LargePlayingCard?,
+    isLoading: Boolean,
+    error: String?,
+    navController: NavHostController?,
+    favoritesViewModel: FavoritesViewModel = hiltViewModel()
+    ) {
+    // La logica di optionErrorView gestisce la visualizzazione di caricamento/errore/vuoto
+    if (optionErrorView(
+            modifier = modifier, // Il modifier (con padding) viene passato qui
+            isLoading = isLoading,
+            errorMessage = error,
+            isEmpty = (largeCard == null && !isLoading && error == null) // Condizione di isEmpty più precisa
+        )
+    ) {
+        var boolFavorites by remember { mutableStateOf( largeCard?.isFavorite ?: false) }
+        largeCard?.let { cardData ->
+            LargeCardUI(
+                card = cardData,
+                modifier = modifier.fillMaxSize(), // o un modifier più specifico se necessario
+                navController = navController,
+                onLevelClick = { level ->
+                    navController?.navigate(Screen.DataBaseAdvancedSearch.createRouteForLevel(level = level))
+                },
+                onFavoriteToggle = {
+                    boolFavorites = !boolFavorites
+                    favoritesViewModel.toggleFavoriteStatus(cardData.id)
+                },
+                isFavorite =boolFavorites
+            )
+        }
+    }
+}
+
+@Composable
+fun CardZoomView(
+    url: String,
+    modifier: Modifier = Modifier,
+) {
+    val zoomStep = 0.5f
+    val minZoom = 1.0f
+    val maxZoom = 5.0f
+
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    fun updateZoom(newScale: Float) {
+        val coercedScale = newScale.coerceIn(minZoom, maxZoom)
+        if (scale != coercedScale) {
+            if (coercedScale == minZoom) {
+                offset = Offset.Zero
+            }
+            scale = coercedScale
+        }
+    }
+    Box(
+        modifier =  modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        val newScaleTarget = if (scale > minZoom) minZoom else 2f
+                        updateZoom(newScaleTarget)
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                detectTransformGestures { _, pan, _, _ ->
+                    if (scale > minZoom) {
+                        val newPotentialOffset = offset.plus(pan)
+                        val maxAllowedTranslateX =
+                            (this.size.width * (scale) / 2f).coerceAtLeast(0f)
+                        val maxAllowedTranslateY =
+                            (this.size.height * (scale - 1) / 2f).coerceAtLeast(0f)
+                        offset = Offset(
+                            x = newPotentialOffset.x.coerceIn(
+                                -maxAllowedTranslateX,
+                                maxAllowedTranslateX
+                            ),
+                            y = newPotentialOffset.y.coerceIn(
+                                -maxAllowedTranslateY,
+                                maxAllowedTranslateY
+                            )
+                        )
+                    }
+                }
+            }
+    )
+    {
+        // Box contenente l'immagine, che permette di applicare lo zoom e il pan
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer(
+                    scaleX = scale,
+                    scaleY = scale,
+                    translationX = offset.x,
+                    translationY = offset.y
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            CardUrltoView(
+                url = url,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        // Pulsanti di Zoom sovrapposti
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomEnd) // Posiziona i pulsanti in basso a destra
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            IconButton(
+                onClick = { updateZoom(scale + zoomStep) },
+                modifier = Modifier
+                    .graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                        MaterialTheme.shapes.small
+                    )
+
+            ) {
+                Text("+", Modifier.scale(5f))
+            }
+            IconButton(
+                onClick = { updateZoom(scale - zoomStep) },
+                modifier = Modifier
+                    .graphicsLayer(shadowElevation = 8f, shape = MaterialTheme.shapes.small)
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                        MaterialTheme.shapes.small
+                    )
+            ) {
+                Text("-", Modifier.scale(5f))
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun ClickableValueText(
