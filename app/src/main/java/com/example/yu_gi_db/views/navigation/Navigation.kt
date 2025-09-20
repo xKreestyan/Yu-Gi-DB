@@ -1,4 +1,4 @@
-package com.example.yu_gi_db.views
+package com.example.yu_gi_db.views.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
@@ -8,6 +8,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.ui.theme.YuGiDBTheme
+import com.example.yu_gi_db.views.screen.CardZoomScreen
+import com.example.yu_gi_db.views.screen.DataBaseScreen
+import com.example.yu_gi_db.views.screen.InformationScreen
+import com.example.yu_gi_db.views.screen.InitMainScreen
+import com.example.yu_gi_db.views.screen.LargeCardScreen
+import com.example.yu_gi_db.views.screen.MenuScreen
+import com.example.yu_gi_db.views.screen.SavedCardsScreen
+import com.example.yu_gi_db.views.screen.SplashScreen
 
 // This string will now be the full route pattern, e.g., "CardScreen/{cardId}"
 sealed class Screen(val route: String) {
@@ -23,7 +31,7 @@ sealed class Screen(val route: String) {
         // Main function to create the route
         fun createRoute(searchType: String, searchValue: String): String {
             return route.replace("{$ARG_SEARCH_TYPE}", searchType)
-                        .replace("{$ARG_SEARCH_VALUE}", searchValue)
+                .replace("{$ARG_SEARCH_VALUE}", searchValue)
         }
 
         fun createRouteForType(type: String): String {
@@ -111,14 +119,14 @@ fun Navigation() {
         NavHost(navController = navController, startDestination = Screen.MenuScreen1.route) {
 
             composable(Screen.InitMainScreen.route) {
-                InitMainScreen(navController = navController)
+                InitMainScreen()
             }
             composable(Screen.SplashScreen.route) {
-                SplashScreen(navController = navController)
+                SplashScreen()
             }
             composable(Screen.DataBaseScreen1.route) {
                 // This is for direct navigation to DataBaseScreen1 without pre-filled search
-                DataBaseScreen1(navController = navController)
+                DataBaseScreen(navController = navController)
             }
 
             // New composable for consolidated advanced search
@@ -150,14 +158,14 @@ fun Navigation() {
                         else -> AdvancedSearchCriteria() // Or handle as an error/default
                     }
                 }
-                DataBaseScreen1(
+                DataBaseScreen(
                     navController = navController,
                     initialSearchCriteria = criteria
                 )
             }
 
             composable(Screen.MenuScreen1.route) {
-                MenuScreen1(navController = navController)
+                MenuScreen(navController = navController)
             }
             composable(Screen.InfoScreen.route) {
                 InformationScreen(navController = navController)
@@ -171,7 +179,7 @@ fun Navigation() {
                     type = NavType.IntType
                 })
             ) { backStackEntry ->
-                InitLargePlayingCardScreen(
+                LargeCardScreen(
                     navController = navController,
                     cardId = backStackEntry.arguments?.getInt(Screen.CardScreen.ARG_CARD_ID) ?: -1
                 )
@@ -184,7 +192,10 @@ fun Navigation() {
                 })
             ) { backStackEntry ->
                 val imageUrl = backStackEntry.arguments?.getString(Screen.ZoomCardScreen.ARG_IMAGE_URL)
-                CardZoomScreen(url = imageUrl ?: "", navController = navController)
+                CardZoomScreen(
+                    url = imageUrl ?: "",
+                    navController = navController
+                )
             }
         }
     }

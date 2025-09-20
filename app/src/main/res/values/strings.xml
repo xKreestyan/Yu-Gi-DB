@@ -8,7 +8,7 @@
     <string name="no_cards_saved">No cards saved</string>
     <string name="no_cards_found_search">No cards found for your search</string>
     <string name="loading_text">Loading</string>
-    <string name="card_detail_title_default">Card Details</string>
+    <string name="card_detail_title_default">Card Details:</string>
     <string name="info_screen_title">About App</string>
     <string name="info_section_about_title">About Yu-Gi-DB</string>
     <string name="info_section_about_content">Yu-Gi-DB is an application to consult a Yu-Gi-Oh! card database, allowing users to search, view details, and manage their collections (future functionality). This app is created for demonstrative and educational purposes.</string>
@@ -95,6 +95,24 @@
     <string name="card_type_api_pendulum_effect_monster">Pendulum Effect Monster</string>
     <string name="card_type_api_link_monster">Link Monster</string>
     <string name="card_type_api_token">Token</string>
+    <string name="reset_search_options">Reset search options</string>
+    <string name="icon_arrowback">Icon ArrowBack</string>
+    <string name="icon_favorite">Icon Favorite</string>
+    <string name="icon_info">Icon info</string>
+    <string name="Background_menu">Background image for the menu</string>
+    <string name="database_image_background">database image background</string>
+    <string name="background_image_for_topbar">Background Image for TopBar</string>
+    <string name="search_label_card_type_query">Card Type (Keywords)</string>
+
+    <string name="search_any_subtype">Any Subtype</string>
+    <string name="search_bar_label_subtype_hint">Subtype (Spell/Trap)</string>
+    <string name="normal">Normal</string>
+    <string name="continuous">Continuous</string>
+    <string name="equip">Equip</string>
+    <string name="quick_play">Quick-Play</string>
+    <string name="field">Field</string>
+    <string name="ritual">Ritual</string>
+    <string name="counter">Counter</string>
     <string name="card_type_spell">Spell</string>
     <string name="card_type_trap">Trap</string>
 

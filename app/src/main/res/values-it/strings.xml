@@ -8,7 +8,7 @@
     <string name="no_cards_saved">Nessuna carta salvata</string>
     <string name="no_cards_found_search">Nessuna carta trovata per la tua ricerca</string>
     <string name="loading_text">Caricamento in corso</string>
-    <string name="card_detail_title_default">Dettagli Carta</string> <!-- Titolo di default se non ancora caricato -->
+    <string name="card_detail_title_default">Dettagli Carta:</string> <!-- Titolo di default se non ancora caricato -->
     <string name="info_screen_title">Informazioni sull App</string>
     <string name="info_section_about_title">Riguardo Yu-Gi-DB</string>
     <string name="info_section_about_content">Yu-Gi-DB è unapplicazione per consultare un database di carte di Yu-Gi-Oh!, permettendo agli utenti di cercare, visualizzare dettagli e gestire le proprie collezioni (funzionalità future). Questa app è creata per scopi dimostrativi ed educativi.</string>
@@ -94,9 +94,27 @@
     <string name="card_type_api_xyz_monster">Mostri XYZ</string>
     <string name="card_type_api_pendulum_effect_monster">Mostri Pendulum Effetto</string>
     <string name="card_type_api_link_monster">Mostri Link</string>
-    <string name="card_type_api_token">Token</string> <!-- "Token" è spesso usato anche in italiano in questo contesto -->
+    <string name="card_type_api_token">Token</string>
+    <string name="reset_search_options">Reset Opzioni di Ricerca</string>
+    <string name="icon_arrowback">Icona freccia indietro</string>
+    <string name="icon_favorite">Icona preferito</string>
+    <string name="icon_info">Icona informazioni</string>
+    <string name="Background_menu">Sfondo del menu</string>
+    <string name="database_image_background">Immagine di sfondo del database</string>
+    <string name="background_image_for_topbar">Immagine di sfondo per la barra superiore</string>
+    <string name="search_label_card_type_query">Cerca nel Tipo Carta (es. Fusione, Rituale, VENTO)</string>    <!-- "Token" è spesso usato anche in italiano in questo contesto -->
+
+    <string name="search_any_subtype">Qualsiasi sottotipo</string>
+    <string name="search_bar_label_subtype_hint">Sottotipo (Magia/Trappola)</string>
+
+    <string name="normal">Normale</string> <!-- O "Normal" se preferisci mantenere il termine inglese -->
+    <string name="continuous">Continua</string>
+    <string name="equip">Equipaggiamento</string>
+    <string name="quick_play">Rapida</string>
+    <string name="field">Terreno</string>
+    <string name="ritual">Rituale</string>
+    <string name="counter">Contro-Trappola</string> <!-- Specifico per le trappole. Se è un concetto più generico, "Counter" o "Risposta" potrebbe andare. -->
     <string name="card_type_spell">Magia</string>
     <string name="card_type_trap">Trappola</string>
-
 
 </resources>

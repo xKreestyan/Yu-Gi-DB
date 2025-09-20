@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.yu_gi_db.music.MusicViewModel
-import com.example.yu_gi_db.views.InitMainScreen
+import com.example.yu_gi_db.views.screen.InitMainScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

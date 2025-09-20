@@ -19,6 +19,5 @@ data class CardLocalizationEntity(
     val cardId: Int,
     val languageCode: String, // es. "it", "en"
     val name: String,
-    val desc: String,
-    val humanReadableCardType: String
+    val desc: String
 )

@@ -1,6 +1,9 @@
 package com.example.yu_gi_db.views
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +16,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,10 +28,14 @@ import androidx.constraintlayout.compose.ChainStyle
 import androidx.navigation.NavController
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.ui.theme.darken
-import com.example.yu_gi_db.views.Screen
+import com.example.yu_gi_db.views.navigation.Screen
+import com.rajat.pdfviewer.PdfViewerActivity
+import com.rajat.pdfviewer.util.saveTo
+import java.util.Locale
 
 @Composable
-fun MenuScreen(navController: NavController? = null) {
+fun MenuView(navController: NavController? = null) {
+    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -89,7 +97,7 @@ fun MenuScreen(navController: NavController? = null) {
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.schermata_menu_yugioh),
-            contentDescription = "Sfondo del menu",
+            contentDescription = stringResource(R.string.Background_menu ),
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
@@ -156,7 +164,29 @@ fun MenuScreen(navController: NavController? = null) {
 
             _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
                 text = stringResource(R.string.rulebook),
-                onClick = { /* Azione per REGOLAMENTO */ },
+                onClick = {
+                    val currentLang = Locale.getDefault().language
+                    val pdfFileNameInAssets = if (currentLang == "it") "pdf/rulebook_it.pdf" else "pdf/rulebook_en.pdf"
+                    val pdfTitle = if (currentLang == "it") "Regolamento Yu-Gi-Oh!" else "Yu-Gi-Oh! Rulebook"
+
+                    try {
+                        // 1. Ottieni l'Intent dalla libreria
+                        val pdfIntent: Intent = PdfViewerActivity.launchPdfFromPath(
+                            context = context,
+                            path = pdfFileNameInAssets,
+                            pdfTitle = pdfTitle,
+                            saveTo = saveTo.ASK_EVERYTIME,
+                            fromAssets = true
+                        )
+                        // 2. Avvia l'Activity usando l'Intent ottenuto
+                        context.startActivity(pdfIntent)
+
+                    } catch (_: ActivityNotFoundException) {
+                        Toast.makeText(context, "PDF viewer not found.", Toast.LENGTH_LONG).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "PDF opening error: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                },
                 modifier = Modifier.layoutId("button3"),
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,
@@ -181,11 +211,14 @@ fun MenuScreen(navController: NavController? = null) {
     }
 }
 
+
+
+
 @Preview(showBackground = true, name = "Menu Screen Portrait")
 @Composable
 fun MenuScreenPreviewPortrait() {
     _root_ide_package_.com.example.yu_gi_db.ui.theme.YuGiDBTheme {
-        MenuScreen()
+        MenuView()
     }
 }
 
@@ -193,6 +226,6 @@ fun MenuScreenPreviewPortrait() {
 @Composable
 fun MenuScreenPreviewLandscape() {
     _root_ide_package_.com.example.yu_gi_db.ui.theme.YuGiDBTheme {
-        MenuScreen()
+        MenuView()
     }
 }

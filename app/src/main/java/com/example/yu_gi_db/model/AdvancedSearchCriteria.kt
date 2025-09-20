@@ -4,6 +4,7 @@ data class AdvancedSearchCriteria(
     val idQuery: String? = null,           // Per cercare ID parziali come stringa
     val name: String? = null,
     val type: String? = null,           // Corrisponde a CardEntity.type (es. "Effect Monster", "Spell Card")
+    val raceQuery: String? = null, // Per cercare la razza (es. "Equip")
     val attribute: String? = null,      // Corrisponde a CardEntity.attribute (es. "LIGHT", "DARK")
     val level: Int? = null,             // Corrisponde a CardEntity.level (o rank)
     val atkMin: Int? = null,            // Per la ricerca ATK in un range (>= atkMin)
