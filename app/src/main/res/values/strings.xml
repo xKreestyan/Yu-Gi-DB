@@ -115,6 +115,12 @@
     <string name="counter">Counter</string>
     <string name="card_type_spell">Spell</string>
     <string name="card_type_trap">Trap</string>
-
+    <string name="card_race_continuous">Continuous</string>
+    <string name="card_race_equip">Equip</string>
+    <string name="card_race_ritual">Ritual</string>
+    <string name="card_race_counter">Counter</string>
+    <string name="card_race_quick_play">Quick-Play</string>
+    <string name="card_race_field">Field</string>
+    <string name="card_race_normal">Normal</string>
     <!-- <string name="search_id">ID Carta</string> -->
 </resources>

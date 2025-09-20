@@ -267,7 +267,8 @@ private fun ClickableValueText(
     color: Color = MaterialTheme.colorScheme.primary,
     maxLines: Int = 1,
     overflow: TextOverflow = TextOverflow.Ellipsis,
-    textAlign: TextAlign? = null
+    textAlign: TextAlign? = null,
+    modifier: Modifier = Modifier
 ) {
     Text(
         text = text,
@@ -275,13 +276,70 @@ private fun ClickableValueText(
         maxLines = maxLines,
         overflow = overflow,
         textAlign = textAlign ?: TextAlign.Start,
-        modifier = if (onClick != null) {
-            Modifier.clickable { onClick() }
-        } else {
-            Modifier
-        }
+        modifier = modifier.then(
+            if (onClick != null) {
+                Modifier.clickable { onClick() }
+            } else {
+                Modifier
+            }
+        )
     )
 }
+
+@Composable
+private fun SpellTrapRaceIconAndText(
+    navController: NavHostController?,
+    cardRace: String,
+    modifier: Modifier = Modifier
+) {
+    val raceIconResId = when (cardRace.lowercase()) {
+        "continuous" -> R.drawable.continuous
+        "equip" -> R.drawable.equip
+        "ritual" -> R.drawable.ritual
+        "counter" -> R.drawable.counter
+        "quick-play" -> R.drawable.quick_play
+        "field" -> R.drawable.file_field // Assumendo field_spell.png, aggiorna se diverso
+        else -> null // "Normal" e altri tipi non avranno icona
+    }
+
+    val raceTextToDisplay = when (cardRace.lowercase()) {
+        "continuous" -> stringResource(R.string.card_race_continuous)
+        "equip" -> stringResource(R.string.card_race_equip)
+        "ritual" -> stringResource(R.string.card_race_ritual)
+        "counter" -> stringResource(R.string.card_race_counter)
+        "quick-play" -> stringResource(R.string.card_race_quick_play)
+        "field" -> stringResource(R.string.card_race_field)
+        "normal" -> stringResource(R.string.card_race_normal)
+        else -> cardRace // Fallback se non c'è una stringa localizzata
+    }
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier.clickable(enabled = navController != null) {
+            // Assicurati che createRouteForRace esista e sia corretto
+            //navController?.navigate(Screen.DataBaseAdvancedSearch.(raceQuery = cardRace))
+        }
+    ) {
+        raceIconResId?.let {
+            Image(
+                painter = painterResource(id = it),
+                // TODO: Sostituisci con una stringa di risorsa localizzata per l'accessibilità
+                contentDescription = "$raceTextToDisplay Icon",
+                modifier = Modifier.size(20.dp) // Dimensione dell'icona, puoi aggiustarla
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+        }
+        Text(
+            text = raceTextToDisplay,
+            style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver),
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
 
 @Composable
 fun LargeCardUI(
@@ -296,8 +354,8 @@ fun LargeCardUI(
     val currentCard = card ?: return
     val configuration = LocalConfiguration.current
 
-    // Determina il tipo di carta basandosi su stringhe API standard (inglese)
     val cardApiType = currentCard.type
+    val cardRace = currentCard.race // Usato per Magie/Trappole
 
     val isSpell = cardApiType.equals("Spell Card", ignoreCase = true)
     val isTrap = cardApiType.equals("Trap Card", ignoreCase = true)
@@ -328,7 +386,7 @@ fun LargeCardUI(
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()) // Scroll interno a LargeCardUI
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             val (cardNameBoxRef, mainCardVisualFrameRef, cardSetsSectionRef, cardPricesSectionRef) = createRefs()
@@ -361,7 +419,7 @@ fun LargeCardUI(
             ) {
                 Box {
                     Image(
-                        painter = painterResource(id = R.drawable.sfondo_cornice), // Sfondo cornice rimane invariato
+                        painter = painterResource(id = R.drawable.sfondo_cornice),
                         contentDescription = stringResource(R.string.frame_background_image_description),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -381,9 +439,9 @@ fun LargeCardUI(
 
 
                         val guidelineOffsetDp = if (isMonster) {
-                            52.dp + SEPARATOR_LINE_THICKNESS // Mostro: sotto la prima riga e il suo divisore (26dp + 2dp = 28dp)
+                            52.dp + SEPARATOR_LINE_THICKNESS
                         } else {
-                            0.dp // Magia/Trappola: all'inizio della colonna attributi
+                            108.dp
                         }
                         val dynamicAttributeSeparatorTopGuideline = createGuidelineFromTop(offset = guidelineOffsetDp)
 
@@ -434,7 +492,7 @@ fun LargeCardUI(
                         Box(
                             modifier = Modifier
                                 .constrainAs(attributeLabelValueSeparatorRef) {
-                                    top.linkTo(dynamicAttributeSeparatorTopGuideline) // Vincolato alla guideline dinamica
+                                    top.linkTo(dynamicAttributeSeparatorTopGuideline)
                                     bottom.linkTo(lineaOrizzontaleRef.top)
                                     start.linkTo(
                                         lineaVerticaleRef.end,
@@ -457,7 +515,7 @@ fun LargeCardUI(
                             }
                         ) {
                             val slotMinHeight = 24.dp
-                            // Riga Tipo / Stirpe (Sempre visibile)
+                            // Riga Tipo / Stirpe (Modificata)
                             AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
                                 Row(
                                     modifier = Modifier
@@ -466,17 +524,42 @@ fun LargeCardUI(
                                     horizontalArrangement = Arrangement.Center,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    val typeDisplayRowText = currentCard.type + (if (currentCard.race.isNotEmpty()) " / ${currentCard.race}" else "")
-                                    ClickableValueText(
-                                        text = typeDisplayRowText,
-                                        onClick = {
-                                            navController?.navigate(Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type))
-                                        },
-                                        color = LightSilver,
-                                        maxLines = 3,
-                                        overflow = TextOverflow.Ellipsis,
-                                        textAlign = TextAlign.Center
-                                    )
+                                    if ((isSpell || isTrap) && cardRace.isNotEmpty()) {
+                                        ClickableValueText(
+                                            text = currentCard.type, // Es. "Spell Card"
+                                            onClick = {
+                                                navController?.navigate(Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type))
+                                            },
+                                            color = LightSilver,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                            textAlign = TextAlign.Center,
+                                            modifier = Modifier.weight(1f, fill = false)
+                                        )
+                                        Text(
+                                            text = " / ",
+                                            style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver),
+                                            textAlign = TextAlign.Center
+                                        )
+                                        SpellTrapRaceIconAndText(
+                                            navController = navController,
+                                            cardRace = cardRace,
+                                            modifier = Modifier.weight(1f, fill = false)
+                                        )
+                                    } else {
+                                        // Comportamento originale per Mostri o se race è vuoto
+                                        val typeDisplayRowText = currentCard.type + (if (currentCard.race.isNotEmpty()) " / ${currentCard.race}" else "")
+                                        ClickableValueText(
+                                            text = typeDisplayRowText,
+                                            onClick = {
+                                                navController?.navigate(Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type))
+                                            },
+                                            color = LightSilver,
+                                            maxLines = 3,
+                                            overflow = TextOverflow.Ellipsis,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
                                 }
                             }
                             AttributeDivider()
@@ -509,14 +592,13 @@ fun LargeCardUI(
                                             "FIRE" -> R.drawable.fuoco
                                             "WATER" -> R.drawable.acqua
                                             "EARTH" -> R.drawable.terra
-                                            // Mappature italiane aggiunte correttamente
                                             "LUCE" -> R.drawable.luce
                                             "OSCURITÀ" -> R.drawable.oscurita
                                             "VENTO" -> R.drawable.vento
                                             "FUOCO" -> R.drawable.fuoco
                                             "ACQUA" -> R.drawable.acqua
                                             "TERRA" -> R.drawable.terra
-                                            else -> null // Default per attributi non mappati (es. "DIVINE")
+                                            else -> null
                                         }
                                     }
 
@@ -544,7 +626,7 @@ fun LargeCardUI(
                                                 )
                                             }
                                         }
-                                    } else if (textToDisplayForAttribute != null) { // Mostro con attributo senza icona (es. DIVINE) o testo per Magia/Trappola
+                                    } else if (textToDisplayForAttribute != null) {
                                         ClickableValueText(
                                             text = textToDisplayForAttribute,
                                             onClick = {
@@ -604,13 +686,12 @@ fun LargeCardUI(
                                         Text(text = "$atkValue / $defValue", style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
                                 }
-                            } // Fine blocco if(isMonster)
+                            } 
                         }
 
-                        // Nuovo HorizontalDivider con riferimento newSeparatorRef
                         HorizontalDivider(
                             modifier = Modifier.constrainAs(newSeparatorRef) {
-                                top.linkTo(lineaOrizzontaleRef.bottom, margin = 4.dp) // Vincolato sotto lineaOrizzontaleRef
+                                top.linkTo(lineaOrizzontaleRef.bottom, margin = 4.dp) 
                                 start.linkTo(parent.start)
                                 end.linkTo(parent.end)
                                 width = Dimension.fillToConstraints
@@ -622,7 +703,7 @@ fun LargeCardUI(
                         Card(
                             modifier = Modifier
                                 .constrainAs(descriptionFrameRef) {
-                                    top.linkTo(newSeparatorRef.bottom, margin = 8.dp) // Aggiornato per vincolare a newSeparatorRef
+                                    top.linkTo(newSeparatorRef.bottom, margin = 8.dp) 
                                     start.linkTo(parent.start)
                                     end.linkTo(parent.end)
                                     width = Dimension.fillToConstraints
@@ -831,11 +912,11 @@ fun LargeCardUIPreview() {
         name = "Exodia il Proibito",
         race = "Incantatore",
         desc = "Se hai \"Gamba Dx del Proibito\", \"Gamba Sx del Proibito\", \"Braccio Dx del Proibito\" e \"Braccio Sx del Proibito\" in aggiunta a questa carta nella tua mano, vinci il Duello.",
-        type = "Effect Monster", // CORRETTO: Standard API Type
+        type = "Effect Monster", 
         atk = 1000,
         def = 1000,
         level = 3,
-        attribute = "OSCURITÀ", // Mantenuto in italiano, ora dovrebbe funzionare
+        attribute = "OSCURITÀ", 
         isFavorite = isFavoriteState,
         cardImages = listOf(CardImage(33396948, "", "https://images.ygoprodeck.com/images/cards_small/33396948.jpg", "")),
         typeline = listOf("Incantatore", "Effetto"),
@@ -845,21 +926,26 @@ fun LargeCardUIPreview() {
         cardPrices = emptyList()
     )
     val spellCard = monsterCard.copy(
-        id = 46986414, name = "Raigeki", type = "Spell Card", race = "Normale", attribute = null, // CORRETTO: Standard API Type
+        id = 46986414, name = "Raigeki", type = "Spell Card", race = "Normale", attribute = null, 
         atk = null, def = null, level = null, frameType = "spell",
         typeline = listOf("Magia", "Normale"),
         desc = "Distruggi tutti i mostri controllati dal tuo avversario."
     )
     val trapCard = monsterCard.copy(
-        id = 41408750, name = "Forza Riflessa", type = "Trap Card", race = "Normale", attribute = null, // CORRETTO: Standard API Type
+        id = 41408750, name = "Forza Riflessa", type = "Trap Card", race = "Normale", attribute = null, 
         atk = null, def = null, level = null, frameType = "trap",
         typeline = listOf("Trappola", "Normale"),
         desc = "Quando un mostro dell'avversario dichiara un attacco: distruggi tutti i mostri in Posizione di Attacco controllati dal tuo avversario."
     )
+    val continuousSpellCard = monsterCard.copy(
+        id = 12345678, name = "Spada Rivelatrice", type = "Spell Card", race = "Continuous", attribute = null,
+        atk = null, def = null, level = null, frameType = "spell",
+        typeline = listOf("Magia", "Continua"),
+        desc = "I mostri del tuo avversario non possono dichiarare un attacco."
+    )
 
     YuGiDBTheme {
-        // RIMOSSO .verticalScroll(rememberScrollState()) da questa Column
-        Column(Modifier.padding(8.dp)) {
+        Column(Modifier.padding(8.dp).verticalScroll(rememberScrollState())) {
             Text("Anteprima Mostro:", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp))
             LargeCardUI(
                 card = monsterCard,
@@ -869,8 +955,11 @@ fun LargeCardUIPreview() {
                 onFavoriteToggle = { isFavoriteState = !isFavoriteState }
             )
             Spacer(Modifier.height(16.dp))
-            Text("Anteprima Magia:", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp))
+            Text("Anteprima Magia Normale:", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp))
             LargeCardUI(card = spellCard, navController = null)
+            Spacer(Modifier.height(16.dp))
+            Text("Anteprima Magia Continua:", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp))
+            LargeCardUI(card = continuousSpellCard, navController = null)
             Spacer(Modifier.height(16.dp))
             Text("Anteprima Trappola:", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp))
             LargeCardUI(card = trapCard, navController = null)
@@ -884,13 +973,13 @@ fun LargeCardUISpellPreview() {
     val spellCard = LargePlayingCard(
         id = 46986414,
         name = "Raigeki",
-        type = "Spell Card", // CORRETTO: Standard API Type
-        race = "Normale", // Tipo di icona per Magie/Trappole
+        type = "Spell Card", 
+        race = "Normale", 
         desc = "Distruggi tutti i mostri controllati dal tuo avversario.",
         atk = null,
         def = null,
         level = null,
-        attribute = null, // Le Magie non hanno attributo elementale
+        attribute = null, 
         isFavorite = false,
         cardImages = listOf(CardImage(46986414, "", "https://images.ygoprodeck.com/images/cards_small/46986414.jpg", "")),
         typeline = listOf("Magia", "Normale"),
@@ -900,6 +989,27 @@ fun LargeCardUISpellPreview() {
         cardPrices = emptyList()
     )
 
+    YuGiDBTheme {
+        LargeCardUI(card = spellCard, navController = null)
+    }
+}
+
+@Preview(showBackground = true, name = "LargeCardUI Preview - Continuous Spell")
+@Composable
+fun LargeCardUIContinuousSpellPreview() {
+    val spellCard = LargePlayingCard(
+        id = 123456,
+        name = "Messaggero di Pace",
+        type = "Spell Card",
+        race = "Continuous", // <- Test per icona
+        desc = "I mostri con ATK di 1500 o superiore non possono dichiarare un attacco. Durante ogni tua Standby Phase, paga 100 LP o distruggi questa carta.",
+        atk = null, def = null, level = null, attribute = null, isFavorite = false,
+        cardImages = listOf(CardImage(123456, "", "https://images.ygoprodeck.com/images/cards_small/44182823.jpg", "")), // Usa un'immagine reale se possibile
+        typeline = listOf("Magia", "Continua"),
+        humanReadableCardType = "[Carta Magia / Continua]",
+        frameType = "spell",
+        cardSets = emptyList(), cardPrices = emptyList()
+    )
     YuGiDBTheme {
         LargeCardUI(card = spellCard, navController = null)
     }

@@ -116,5 +116,14 @@
     <string name="counter">Contro-Trappola</string> <!-- Specifico per le trappole. Se è un concetto più generico, "Counter" o "Risposta" potrebbe andare. -->
     <string name="card_type_spell">Magia</string>
     <string name="card_type_trap">Trappola</string>
+    <string name="card_race_continuous">Continua</string>
+    <string name="card_race_equip">Equipaggiamento</string>
+    <string name="card_race_ritual">Rituale</string>
+    <string name="card_race_counter">Contro-Trappola</string>
+    <string name="card_race_quick_play">Rapida</string>
+    <string name="card_race_field">Terreno</string>
+    <string name="card_race_normal">Normale</string>
+    <!-- <string name="search_id">ID Carta</string> -->
+
 
 </resources>
