@@ -2,9 +2,9 @@ package com.example.yu_gi_db.views.screen
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +30,8 @@ import com.example.yu_gi_db.views.InitCardsScreenView
 import com.example.yu_gi_db.views.InitInformationView
 import com.example.yu_gi_db.views.InitLargeCardView
 import com.example.yu_gi_db.views.InitScaffoldView
+import com.example.yu_gi_db.views.LargeCardUI
+import com.example.yu_gi_db.views.LargeCardUIContinuousSpellPreview
 import com.example.yu_gi_db.views.MenuView
 import com.example.yu_gi_db.views.ScaffoldView
 import com.example.yu_gi_db.views.TopBarViewPreview_Full
@@ -64,11 +66,11 @@ fun SplashScreen(modifier: Modifier = Modifier) {
             Box(
                 modifier = modifier
                     .fillMaxSize()
-                    .padding(top = this.maxHeight / 2),
+                    .padding(top = this.maxHeight /(2)+this.maxHeight /(10)),
                 contentAlignment = Alignment.TopCenter
             ) {
                 WaitIndicatorView(
-                    modifier = Modifier.size(this@BoxWithConstraints.maxWidth / 3)
+                    modifier = Modifier.fillMaxHeight(0.4f)
                 )
             }
         }
@@ -217,6 +219,23 @@ fun DataBaseScreen1Preview() {
         )
     }
 }
+
+
+@Preview(showBackground = true)
+@Composable
+fun LargeCardScreenPreview() {
+    YuGiDBTheme {
+        ScaffoldView(
+            topBar = { TopBarViewPreview_Full() }, // Reuse an existing TopBar preview
+            content = { innerPadding ->
+                Box(modifier = Modifier.padding(innerPadding)){
+                LargeCardUIContinuousSpellPreview()
+                }
+            }
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun CardZoomScreenPreview() {

@@ -47,21 +47,6 @@ fun MyScreenWithAToastButton() {
 @Composable
 fun WaitIndicatorView(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val configuration = LocalConfiguration.current // Ottieni la configurazione corrente
-
-    // Determina se il dispositivo è in modalità landscape
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-    // Applica modificatori diversi in base all'orientamento
-    val imageModifier = if (isLandscape) {
-        modifier
-            .size(150.dp) // Rimpicciolisci la GIF in landscape
-            .offset(y = 50.dp) // Abbassa la GIF in landscape
-    } else {
-        modifier
-            .fillMaxSize(0.7f) // Mantieni le dimensioni originali in portrait
-    }
-
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { // Usa Box per centrare se necessario
         AsyncImage(
             model = ImageRequest.Builder(context)
@@ -69,7 +54,7 @@ fun WaitIndicatorView(modifier: Modifier = Modifier) {
                 .decoderFactory(ImageDecoderDecoder.Factory())
                 .build(),
             contentDescription = stringResource(R.string.loading_indicator_description),
-            modifier = imageModifier.align(Alignment.Center) // Centra l'immagine nel Box
+            modifier = modifier.align(Alignment.Center) // Centra l'immagine nel Box
         )
     }
 }

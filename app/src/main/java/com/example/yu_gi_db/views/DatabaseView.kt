@@ -572,7 +572,7 @@ fun CardsScreenView(
 
         // 1. Immagine di Sfondo
         Image(
-            painter = painterResource(id = R.drawable.menu_database_hd), // Sostituisci con l'ID della tua immagine
+            painter = painterResource(id = R.drawable.database2), // Sostituisci con l'ID della tua immagine
             contentDescription = stringResource(R.string.database_image_background), // Stringa per accessibilità
             modifier = modifier.fillMaxSize(), // Fa sì che l'immagine riempia il Box
             contentScale = ContentScale.Crop // o FillBounds, Fit, FillHeight, FillWidth, etc.

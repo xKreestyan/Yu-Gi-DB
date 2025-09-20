@@ -564,9 +564,12 @@ fun LargeCardUI(
                             AttributeDivider()
                             // Riga Attributo (Sempre visibile, mostra icona Magia/Trappola o attributo Mostro)
                             AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
-                                AttributeLabel(stringResource(R.string.card_label_attribute))
+                                AttributeLabel(stringResource(R.string.card_label_type))//type
                                 Row(
                                     modifier = Modifier
+                                        .clickable(enabled = navController != null) {
+                                            navController?.navigate(Screen.DataBaseAdvancedSearch.createRouteForType(type = currentCard.type) )
+                                        }
                                         .weight(1f)
                                         .padding(start = VALUE_AREA_START_PADDING, end = TEXT_START_END_PADDING)
                                         .fillMaxWidth(),
