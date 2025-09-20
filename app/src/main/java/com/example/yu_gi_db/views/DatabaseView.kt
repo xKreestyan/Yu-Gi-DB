@@ -193,16 +193,20 @@ fun TextFieldView(
         stringResource(R.string.attribute_wind) to "WIND",
         stringResource(R.string.attribute_divine) to "DIVINE"
     )
-    val cardMagicTrapSubTypes = mapOf(
+    val cardMagicTypes = mapOf(
         stringResource(R.string.normal) to "Normal",
         stringResource(R.string.continuous) to "Continuous",
         stringResource(R.string.equip) to "Equip",
         stringResource(R.string.quick_play) to "Quick-Play",
         stringResource(R.string.field) to "Field",
         stringResource(R.string.ritual) to "Ritual",
+    )
+    val cardTrapSubTypes = mapOf(
+        stringResource(R.string.normal) to "Normal",
+        stringResource(R.string.continuous) to "Continuous",
         stringResource(R.string.counter) to "Counter"
     )
-
+    val cardMagicTrapSubTypes = if(searchCriteria.type=="Trap Card") cardTrapSubTypes else cardMagicTypes
     val atkValueRange = 0f..5000f
     val currentAtkStart = searchCriteria.atkMin?.toFloat() ?: atkValueRange.start
     val currentAtkEnd = searchCriteria.atkMax?.toFloat() ?: atkValueRange.endInclusive
@@ -299,6 +303,7 @@ fun TextFieldView(
                     }
                     // OutlinedTextField for race (raceQuery)
                     if(!isMoster) {
+                        Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
                         SearchCriteriaDropdown(
                             label = stringResource(R.string.search_bar_label_subtype_hint), // Crea questa stringa
                             selectedValueDisplay = cardMagicTrapSubTypes.entries.find { it.value == searchCriteria.raceQuery }?.key // o searchCriteria.spellTrapSubType
@@ -309,9 +314,8 @@ fun TextFieldView(
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp)) // Add some spacing
 
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
