@@ -1,9 +1,6 @@
 package com.example.yu_gi_db.views
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.content.res.Configuration
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,10 +25,8 @@ import androidx.constraintlayout.compose.ChainStyle
 import androidx.navigation.NavController
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.ui.theme.darken
+import com.example.yu_gi_db.utils.openRulebookPdf
 import com.example.yu_gi_db.views.navigation.Screen
-import com.rajat.pdfviewer.PdfViewerActivity
-import com.rajat.pdfviewer.util.saveTo
-import java.util.Locale
 
 @Composable
 fun MenuView(navController: NavController? = null) {
@@ -164,30 +159,8 @@ fun MenuView(navController: NavController? = null) {
 
             _root_ide_package_.com.example.yu_gi_db.ui.theme.YugiohParallelepipedButton(
                 text = stringResource(R.string.rulebook),
-                onClick = {
-                    val currentLang = Locale.getDefault().language
-                    val pdfFileNameInAssets = if (currentLang == "it") "pdf/rulebook_it.pdf" else "pdf/rulebook_en.pdf"
-                    val pdfTitle = if (currentLang == "it") "Regolamento Yu-Gi-Oh!" else "Yu-Gi-Oh! Rulebook"
-
-                    try {
-                        // 1. Ottieni l'Intent dalla libreria
-                        val pdfIntent: Intent = PdfViewerActivity.launchPdfFromPath(
-                            context = context,
-                            path = pdfFileNameInAssets,
-                            pdfTitle = pdfTitle,
-                            saveTo = saveTo.ASK_EVERYTIME,
-                            fromAssets = true
-                        )
-                        // 2. Avvia l'Activity usando l'Intent ottenuto
-                        context.startActivity(pdfIntent)
-
-                    } catch (_: ActivityNotFoundException) {
-                        Toast.makeText(context, "PDF viewer not found.", Toast.LENGTH_LONG).show()
-                    } catch (e: Exception) {
-                        Toast.makeText(context, "PDF opening error: ${e.message}", Toast.LENGTH_LONG).show()
-                    }
-                },
                 modifier = Modifier.layoutId("button3"),
+                onClick = { openRulebookPdf(context) },
                 faceColor = buttonFaceColor,
                 faceBrush = buttonFaceBrush,
                 contentColor = buttonContentColor,
