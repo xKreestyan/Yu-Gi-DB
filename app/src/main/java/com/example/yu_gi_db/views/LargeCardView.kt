@@ -299,7 +299,7 @@ private fun SpellTrapRaceIconAndText(
         "counter" -> R.drawable.counter
         "quick-play" -> R.drawable.quick_play
         "field" -> R.drawable.file_field // Assumendo field_spell.png, aggiorna se diverso
-        else -> null // "Normal" e altri tipi non avranno icona
+        else -> null // "Normal" e altri tipi non avranno iconaa
     }
 
     val raceTextToDisplay = when (cardRace.lowercase()) {
