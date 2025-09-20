@@ -81,6 +81,10 @@ sealed class Screen(val route: String) {
         fun createRouteForSetCode(setCode: String): String {
             return createRoute("setCode", setCode)
         }
+
+        fun createRouteForRaceQuery(race: String): String {
+            return createRoute("race", race)
+        }
     }
 
     object MenuScreen1 : Screen("MenuScreen1")
@@ -111,6 +115,7 @@ sealed class Screen(val route: String) {
   // navController?.navigate(Screen.DataBaseAdvancedSearch.createRoute("type", "Spell Card"))
   // navController?.navigate(Screen.DataBaseAdvancedSearch.createRoute("attribute", "DARK"))
   // navController?.navigate(Screen.DataBaseAdvancedSearch.createRoute("level", "4"))
+  // navController?.navigate(Screen.DataBaseAdvancedSearch.createRouteForRaceQuery("Warrior"))
 */
 @Composable
 fun Navigation() {
@@ -155,6 +160,7 @@ fun Navigation() {
                         "isFavorite" -> AdvancedSearchCriteria(isFavorite = searchValue.toBooleanStrictOrNull())
                         "setName" -> AdvancedSearchCriteria(setNameQuery = searchValue)
                         "setCode" -> AdvancedSearchCriteria(setCodeQuery = searchValue)
+                        "race" -> AdvancedSearchCriteria(raceQuery = searchValue)
                         else -> AdvancedSearchCriteria() // Or handle as an error/default
                     }
                 }

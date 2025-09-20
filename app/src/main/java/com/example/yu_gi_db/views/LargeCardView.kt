@@ -298,8 +298,8 @@ private fun SpellTrapRaceIconAndText(
         "ritual" -> R.drawable.ritual
         "counter" -> R.drawable.counter
         "quick-play" -> R.drawable.quick_play
-        "field" -> R.drawable.file_field
-        else -> null 
+        "field" -> R.drawable.file_field // Assumendo field_spell.png, aggiorna se diverso
+        else -> null // "Normal" e altri tipi non avranno iconaa
     }
 
     val raceTextToDisplay = when (cardRace.lowercase()) {
@@ -310,23 +310,22 @@ private fun SpellTrapRaceIconAndText(
         "quick-play" -> stringResource(R.string.card_race_quick_play)
         "field" -> stringResource(R.string.card_race_field)
         "normal" -> stringResource(R.string.card_race_normal)
-        else -> cardRace 
+        else -> cardRace // Fallback se non c'è una stringa localizzata
     }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = modifier.clickable(enabled = navController != null) {
-            // TODO: Ensure createRouteForRace exists or use a different navigation strategy if it doesn't.
-            // For now, this line is commented out as createRouteForRace was not found in Screen.DataBaseAdvancedSearch
-            // navController?.navigate(Screen.DataBaseAdvancedSearch.createRouteForRace(race = cardRace))
+            // Assicurati che createRouteForRace esista e sia corretto
+            navController?.navigate(Screen.DataBaseAdvancedSearch.createRouteForRaceQuery(race = cardRace ))
         }
     ) {
         raceIconResId?.let {
             Image(
                 painter = painterResource(id = it),
                 contentDescription = "$raceTextToDisplay Icon", // TODO: Replace with localized string resource
-                modifier = Modifier.size(20.dp) 
+                modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.height(2.dp))
         }
@@ -355,7 +354,7 @@ fun LargeCardUI(
     val configuration = LocalConfiguration.current
 
     val cardApiType = currentCard.type
-    val cardRace = currentCard.race 
+    val cardRace = currentCard.race
 
     val isSpell = cardApiType.equals("Spell Card", ignoreCase = true)
     val isTrap = cardApiType.equals("Trap Card", ignoreCase = true)
@@ -515,6 +514,7 @@ fun LargeCardUI(
                             }
                         ) {
                             val slotMinHeight = 24.dp
+                            // Riga Tipo / Stirpe (Modificata)
                             AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
                                 Row(
                                     modifier = Modifier
@@ -546,6 +546,7 @@ fun LargeCardUI(
                                             modifier = Modifier.weight(1f, fill = false)
                                         )
                                     } else {
+                                        // Comportamento originale per Mostri o se race è vuoto
                                         val typeDisplayRowText = currentCard.type + (if (currentCard.race.isNotEmpty()) " / ${currentCard.race}" else "")
                                         ClickableValueText(
                                             text = typeDisplayRowText,
@@ -561,6 +562,7 @@ fun LargeCardUI(
                                 }
                             }
                             AttributeDivider()
+                            // Riga Attributo (Sempre visibile, mostra icona Magia/Trappola o attributo Mostro)
                             AttributeSlotRow(modifier = Modifier.weight(1f), minHeight = slotMinHeight) {
                                 AttributeLabel(stringResource(R.string.card_label_attribute))
                                 Row(
@@ -581,7 +583,7 @@ fun LargeCardUI(
                                     } else if (isTrap) {
                                         iconResIdToDisplay = R.drawable.trap
                                         textToDisplayForAttribute = stringResource(R.string.card_type_trap)
-                                    } else if (attributeValue != null) { 
+                                    } else if (attributeValue != null) {
                                         iconResIdToDisplay = when (attributeValue.uppercase()) {
                                             "LIGHT" -> R.drawable.luce
                                             "DARK" -> R.drawable.oscurita
@@ -1013,10 +1015,10 @@ fun LargeCardUIContinuousSpellPreview() {
         id = 123456,
         name = "Messaggero di Pace",
         type = "Spell Card",
-        race = "Continuous", 
+        race = "Continuous",
         desc = "I mostri con ATK di 1500 o superiore non possono dichiarare un attacco. Durante ogni tua Standby Phase, paga 100 LP o distruggi questa carta.",
         atk = null, def = null, level = null, attribute = null, isFavorite = false,
-        cardImages = listOf(CardImage(123456, "", "https://images.ygoprodeck.com/images/cards_small/44182823.jpg", "")), 
+        cardImages = listOf(CardImage(123456, "", "https://images.ygoprodeck.com/images/cards_small/44182823.jpg", "")),
         typeline = listOf("Magia", "Continua"),
         humanReadableCardType = "[Carta Magia / Continua]",
         frameType = "spell",
