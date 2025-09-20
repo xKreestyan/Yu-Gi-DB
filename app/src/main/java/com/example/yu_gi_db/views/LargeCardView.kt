@@ -126,7 +126,7 @@ fun LargeCardView(
     navController: NavHostController?,
     favoritesViewModel: FavoritesViewModel = hiltViewModel()
     ) {
-    // La logica di optionErrorView gestisce la visualizzazione di caricamento/errore/vuoto
+    // La logicaa di optionErrorView gestisce la visualizzazione di caricamento/errore/vuoto
     if (optionErrorView(
             modifier = modifier, // Il modifier (con padding) viene passato qui
             isLoading = isLoading,
