@@ -262,13 +262,13 @@ fun CardZoomView(
 @Composable
 private fun ClickableValueText(
     text: String,
+    modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     textStyle: ComposeTextStyle = MaterialTheme.typography.bodyLarge,
     color: Color = MaterialTheme.colorScheme.primary,
     maxLines: Int = 1,
     overflow: TextOverflow = TextOverflow.Ellipsis,
-    textAlign: TextAlign? = null,
-    modifier: Modifier = Modifier
+    textAlign: TextAlign? = null
 ) {
     Text(
         text = text,
@@ -379,7 +379,8 @@ fun LargeCardUI(
             painter = painterResource(id = backgroundImageRes),
             contentDescription = stringResource(R.string.background_image_description),
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillBounds
+            contentScale = ContentScale.Crop,
+            alignment = Alignment.BottomCenter // MODIFICATO QUI
         )
 
         ConstraintLayout(
