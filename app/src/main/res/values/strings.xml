@@ -28,7 +28,7 @@
     <string name="search_bar_label_name_hint">Search by name</string>
     <string name="search_bar_label_type_hint">Type (e.g. Spell Card)</string>
     <string name="search_bar_label_attribute_hint">Attribute (e.g. LIGHT)</string>
-    <string name="search_bar_label_level_hint">Level/Rank</string>
+    <string name="search_bar_label_level_hint">Level</string>
     <string name="search_bar_label_atk_min_hint">ATK Min</string>
     <string name="search_bar_label_atk_max_hint">ATK Max</string>
     <string name="search_bar_label_def_min_hint">DEF Min</string>

@@ -28,7 +28,7 @@
     <string name="search_bar_label_name_hint">Cerca per nome</string>
     <string name="search_bar_label_type_hint">Tipo (es. Carta Magia)</string>
     <string name="search_bar_label_attribute_hint">Attributo (es. LUCE)</string>
-    <string name="search_bar_label_level_hint">Livello/Rango</string>
+    <string name="search_bar_label_level_hint">Livello</string>
     <string name="search_bar_label_atk_min_hint">ATK Min</string>
     <string name="search_bar_label_atk_max_hint">ATK Max</string>
     <string name="search_bar_label_def_min_hint">DEF Min</string>
@@ -36,7 +36,7 @@
     <string name="search_any_type">Qualsiasi Tipo</string>
     <string name="search_any_attribute">Qualsiasi Attributo</string>
     <string name="search_options_collapse">Comprimi Opzioni di Ricerca</string>
-    <string name="card_label_level">Livello/Rango</string>
+    <string name="card_label_level">Livello</string>
     <string name="card_label_type">Tipo</string>
     <string name="search_options_expand">Espandi Opzioni di Ricerca</string>
     <string name="card_label_attribute">Attributo</string>
