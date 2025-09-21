@@ -533,7 +533,7 @@ fun LargeCardUI(
                                             maxLines = 2,
                                             overflow = TextOverflow.Ellipsis,
                                             textAlign = TextAlign.Center,
-                                            modifier = Modifier.weight(1f, fill = false)
+                                            modifier = Modifier.weight(1f) // MODIFICATO: rimosso fill=false
                                         )
                                         Text(
                                             text = " / ",
@@ -542,8 +542,8 @@ fun LargeCardUI(
                                         )
                                         SpellTrapRaceIconAndText(
                                             navController = navController,
-                                            cardRace = cardRace,
-                                            modifier = Modifier.weight(1f, fill = false)
+                                            cardRace = cardRace
+                                            // MODIFICATO: rimosso modifier.weight
                                         )
                                     } else {
                                         // Comportamento originale per Mostri o se race è vuoto
@@ -961,25 +961,35 @@ fun LargeCardUIPreview() {
         desc = "I mostri del tuo avversario non possono dichiarare un attacco."
     )
 
+    val previewCardHeight = 800.dp // Altezza fissa per ogni Card UI nella preview
+
     YuGiDBTheme {
-        Column(Modifier.padding(8.dp).verticalScroll(rememberScrollState())) {
+        Column(Modifier.padding(8.dp).verticalScroll(rememberScrollState())) { // Lo scroll della preview rimane
             Text("Anteprima Mostro:", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp))
-            LargeCardUI(
-                card = monsterCard,
-                navController = null,
-                onLevelClick = { println("Level clicked: $it") },
-                isFavorite = isFavoriteState,
-                onFavoriteToggle = { isFavoriteState = !isFavoriteState }
-            )
+            Box(modifier = Modifier.height(previewCardHeight)) { // Box con altezza fissa per la preview
+                LargeCardUI(
+                    card = monsterCard,
+                    navController = null,
+                    onLevelClick = { println("Level clicked: $it") },
+                    isFavorite = isFavoriteState,
+                    onFavoriteToggle = { isFavoriteState = !isFavoriteState }
+                )
+            }
             Spacer(Modifier.height(16.dp))
             Text("Anteprima Magia Normale:", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp))
-            LargeCardUI(card = spellCard, navController = null)
+            Box(modifier = Modifier.height(previewCardHeight)) { // Box con altezza fissa
+                LargeCardUI(card = spellCard, navController = null)
+            }
             Spacer(Modifier.height(16.dp))
             Text("Anteprima Magia Continua:", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp))
-            LargeCardUI(card = continuousSpellCard, navController = null)
+            Box(modifier = Modifier.height(previewCardHeight)) { // Box con altezza fissa
+                LargeCardUI(card = continuousSpellCard, navController = null)
+            }
             Spacer(Modifier.height(16.dp))
             Text("Anteprima Trappola:", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp))
-            LargeCardUI(card = trapCard, navController = null)
+            Box(modifier = Modifier.height(previewCardHeight)) { // Box con altezza fissa
+                LargeCardUI(card = trapCard, navController = null)
+            }
         }
     }
 }
@@ -1007,7 +1017,13 @@ fun LargeCardUISpellPreview() {
     )
 
     YuGiDBTheme {
-        LargeCardUI(card = spellCard, navController = null)
+        // Per questa preview singola, potremmo non aver bisogno del Column scrollabile esterno
+        // e del Box con altezza fissa se LargeCardUI può riempire lo spazio della preview.
+        // Tuttavia, per coerenza con la soluzione di LargeCardUIPreview, applichiamo un Box.
+        // Se questa preview singola dà problemi, si può provare a rimuovere il Box.
+        Box(modifier = Modifier.height(800.dp)) {
+             LargeCardUI(card = spellCard, navController = null)
+        }
     }
 }
 
@@ -1028,6 +1044,8 @@ fun LargeCardUIContinuousSpellPreview() {
         cardSets = emptyList(), cardPrices = emptyList()
     )
     YuGiDBTheme {
-        LargeCardUI(card = spellCard, navController = null)
+        Box(modifier = Modifier.height(800.dp)) {
+            LargeCardUI(card = spellCard, navController = null)
+        }
     }
 }
