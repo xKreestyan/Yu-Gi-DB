@@ -4,17 +4,20 @@
 
 **Indice:**
 
-- [1. Introduzione e Obiettivi](#1-introduzione-e-obiettivi)
-- [2. Funzionalità Principali](#2-funzionalità-principali)
+- [Yu-Gi-DB](#yu-gi-db)
+  - [Documentazione Progetto](#documentazione-progetto)
+  - [1. Introduzione e Obiettivi](#1-introduzione-e-obiettivi)
+  - [2. Funzionalità Principali](#2-funzionalità-principali)
     - [2.1 Consultazione e Ricerca Carte](#21-consultazione-e-ricerca-carte)
     - [2.2 Visualizzazione Dettagliata della Carta](#22-visualizzazione-dettagliata-della-carta)
     - [2.3 Navigazione per Caratteristiche](#23-navigazione-per-caratteristiche)
     - [2.4 Gestione dei Preferiti](#24-gestione-dei-preferiti)
     - [2.5 Database Locale](#25-database-locale)
-- [3. Architettura e Tecnologie Utilizzate](#3-architettura-e-tecnologie-utilizzate)
-- [4. Interfaccia Grafica (UI/UX)](#4-interfaccia-grafica-uiux)
-- [5. API di Riferimento](#5-api-di-riferimento)
-- [6. Pattern Architetturale MVVM e Flussi di Dati](#6-pattern-architetturale-mvvm-e-flussi-di-dati)
+    - [2.6 Accesso al Regolamento Ufficiale](#26-accesso-al-regolamento-ufficiale)
+  - [3. Architettura e Tecnologie Utilizzate](#3-architettura-e-tecnologie-utilizzate)
+  - [4. Interfaccia Grafica (UI/UX)](#4-interfaccia-grafica-uiux)
+  - [5. API di Riferimento](#5-api-di-riferimento)
+  - [6. Pattern Architetturale MVVM e Flussi di Dati](#6-pattern-architetturale-mvvm-e-flussi-di-dati)
 
 ---
 
@@ -77,6 +80,10 @@ Per migliorare le prestazioni, consentire un accesso offline ai dati precedentem
 * **Caching e Ricerca Locale:** Le informazioni delle carte, una volta recuperate dalle API durante il popolamento iniziale, vengono memorizzate nel database locale. Questa strategia di archiviazione locale è stata adottata per aderire alle linee guida di YGOPRODeck, che raccomandano vivamente di scaricare i dati per ridurre al minimo le chiamate API. Tale approccio è fondamentale non solo per ottimizzare le prestazioni e ridurre il traffico di rete, ma anche per evitare potenziali restrizioni all'accesso API, come il blacklisting dell'indirizzo IP, imposte dal provider in caso di utilizzo eccessivo delle risorse remote. Di conseguenza, tutte le successive operazioni di ricerca e consultazione delle carte avvengono interrogando esclusivamente questo database locale, garantendo risposte rapide.
 *   **Preferiti:** Lo stato di "preferito" di una carta è salvato nel database locale, garantendo la persistenza di questa informazione tra le sessioni di utilizzo dell'app.
 *   **Gestione:** Il database locale è gestito tramite la Room Persistence Library, che fornisce un layer di astrazione sopra SQLite, semplificando l'accesso ai dati e garantendo la robustezza delle query.
+
+### 2.6 Accesso al Regolamento Ufficiale
+Dal menu principale dell'applicazione, l'utente può accedere a una sezione dedicata al regolamento ufficiale del gioco di carte Yu-Gi-Oh!. Cliccando sull'apposito pulsante "Regolamento", verrà visualizzato il documento PDF contenente il regolamento ufficiale del gioco (versione 6.0). L'applicazione seleziona automaticamente la versione del documento (italiano o inglese) in base alla lingua impostata sul dispositivo dell'utente, garantendo così una consultazione agevole delle regole.
+**NB: Questa versione 6.0 del regolamento è moderna e include meccaniche successive ai primi set di carte presenti nell'app ("Legend of Blue Eyes White Dragon" e "Metal Raiders"). Di conseguenza, non tutte le regole del PDF saranno applicabili alle carte di questi set iniziali.**
 
 ---
 
