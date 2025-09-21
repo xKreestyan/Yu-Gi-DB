@@ -42,6 +42,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType // Import aggiunto
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.Text
@@ -53,8 +54,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
@@ -65,7 +64,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.yu_gi_db.R
@@ -76,7 +75,6 @@ import com.example.yu_gi_db.viewmodels.AdvancedSearchViewModel
 import com.example.yu_gi_db.viewmodels.CardListViewModel
 import com.example.yu_gi_db.viewmodels.FavoritesViewModel
 import com.example.yu_gi_db.views.navigation.Screen
-import kotlin.Boolean
 import kotlin.math.roundToInt
 
 
@@ -130,7 +128,7 @@ fun <T> SearchCriteriaDropdown(
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
-                .menuAnchor() // Importante per ExposedDropdownMenuBox
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true) // Modificato qui
                 .fillMaxWidth()
         )
         ExposedDropdownMenu(

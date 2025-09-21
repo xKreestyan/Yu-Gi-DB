@@ -1,6 +1,6 @@
 package com.example.yu_gi_db.views.screen
 
-import android.content.res.Configuration // Import aggiunto
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -13,11 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration // Import aggiunto
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel // Per hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle // Per collectAsStateWithLifecycle
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.yu_gi_db.R
 import com.example.yu_gi_db.model.AdvancedSearchCriteria
@@ -32,7 +32,6 @@ import com.example.yu_gi_db.views.InitCardsScreenView
 import com.example.yu_gi_db.views.InitInformationView
 import com.example.yu_gi_db.views.InitLargeCardView
 import com.example.yu_gi_db.views.InitScaffoldView
-import com.example.yu_gi_db.views.LargeCardUI
 import com.example.yu_gi_db.views.LargeCardUIContinuousSpellPreview
 import com.example.yu_gi_db.views.MenuView
 import com.example.yu_gi_db.views.ScaffoldView

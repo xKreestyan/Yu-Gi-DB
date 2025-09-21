@@ -75,23 +75,6 @@ class ParallelogramShape(private val shearFactor: Float = 0.2f) : Shape {
     }
 }
 
-class SkewedParallelogramShape(private val horizontalShearPx: Float = 20f) : Shape {
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
-    ): Outline {
-        val path = Path().apply {
-            moveTo(horizontalShearPx.coerceAtLeast(0f), 0f) // Top-left
-            lineTo(size.width + horizontalShearPx.coerceAtMost(0f), 0f) // Top-right
-            lineTo(size.width - horizontalShearPx.coerceAtLeast(0f), size.height) // Bottom-right
-            lineTo(-horizontalShearPx.coerceAtMost(0f), size.height) // Bottom-left
-            close()
-        }
-        return Outline.Generic(path)
-    }
-}
-
 fun Color.darken(factor: Float = 0.3f): Color {
     val hsv = FloatArray(3)
     android.graphics.Color.colorToHSV(this.toArgb(), hsv)

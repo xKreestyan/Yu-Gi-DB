@@ -46,40 +46,8 @@ sealed class Screen(val route: String) {
             return createRoute("level", level.toString())
         }
 
-        fun createRouteForId(id: String): String { // Assuming ID is passed as a string
-            return createRoute("id", id)
-        }
-
-        fun createRouteForName(name: String): String {
-            return createRoute("name", name)
-        }
-
-        fun createRouteForAtkMin(atkMin: Int): String {
-            return createRoute("atkMin", atkMin.toString())
-        }
-
-        fun createRouteForAtkMax(atkMax: Int): String {
-            return createRoute("atkMax", atkMax.toString())
-        }
-
-        fun createRouteForDefMin(defMin: Int): String {
-            return createRoute("defMin", defMin.toString())
-        }
-
-        fun createRouteForDefMax(defMax: Int): String {
-            return createRoute("defMax", defMax.toString())
-        }
-
-        fun createRouteForIsFavorite(isFavorite: Boolean): String {
-            return createRoute("isFavorite", isFavorite.toString())
-        }
-
         fun createRouteForSetName(setName: String): String {
             return createRoute("setName", setName)
-        }
-
-        fun createRouteForSetCode(setCode: String): String {
-            return createRoute("setCode", setCode)
         }
 
         fun createRouteForRaceQuery(race: String): String {

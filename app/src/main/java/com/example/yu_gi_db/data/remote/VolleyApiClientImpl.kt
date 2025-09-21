@@ -1,8 +1,7 @@
 package com.example.yu_gi_db.data.remote
 
-import android.net.Uri
 import android.util.Log
-import com.android.volley.Request
+import androidx.core.net.toUri
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.example.yu_gi_db.model.LargePlayingCardResponse
@@ -22,7 +21,7 @@ class VolleyApiClientImpl @Inject constructor(
 
     override suspend fun fetchCards(params: Map<String, String>): LargePlayingCardResponse? {
         // Costruisci l'URL con i parametri
-        val uriBuilder = Uri.parse(baseUrl).buildUpon()
+        val uriBuilder = baseUrl.toUri().buildUpon()
         params.forEach { (key, value) ->
             uriBuilder.appendQueryParameter(key, value)
         }
@@ -32,7 +31,7 @@ class VolleyApiClientImpl @Inject constructor(
             Log.d(tag, "Attempting to fetch cards from API: $apiUrlWithParams")
 
             val stringRequest = object : StringRequest(
-                Request.Method.GET,
+                Method.GET,
                 apiUrlWithParams, // Usa l'URL con i parametri
                 {
                     responseString ->

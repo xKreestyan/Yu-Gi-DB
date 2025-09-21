@@ -8,6 +8,8 @@ import com.example.yu_gi_db.model.AdvancedSearchCriteria
 import com.example.yu_gi_db.model.SmallPlayingCard
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi // Import per ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview // Import per FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
+import kotlin.OptIn // Import per OptIn
 
 @HiltViewModel
 class AdvancedSearchViewModel @Inject constructor(
@@ -63,6 +66,7 @@ class AdvancedSearchViewModel @Inject constructor(
                 setCodeQuery.isNullOrBlank()
     }
 
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class) // Annotazioni aggiornate qui
     private fun observeAndPerformAdvancedSearch() {
         advancedSearchJob?.cancel()
         advancedSearchJob = _searchCriteria
@@ -110,4 +114,3 @@ class AdvancedSearchViewModel @Inject constructor(
         Log.d(_tag, "AdvancedSearchViewModel cleared.")
     }
 }
-    

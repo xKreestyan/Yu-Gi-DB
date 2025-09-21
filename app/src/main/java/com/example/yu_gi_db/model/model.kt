@@ -8,10 +8,6 @@ data class SmallPlayingCard(
         val imageUrlSmall: String,
         val isFavorite: Boolean = false // isFavorite mantenuto
 )
-//Lista formata dalla singola carta
-data class SmallPlayingCardResponse(
-        val data: List<SmallPlayingCard>?
-)
 
 //Carta completa
 data class LargePlayingCard(

@@ -33,7 +33,7 @@ import javax.inject.Inject
 import kotlin.coroutines.resume
 
 class YuGiRepo @Inject constructor(
-    private val appContext: Application,
+    appContext: Application,
     private val yuGiDAO: YuGiDAO,
     private val apiClient: ApiClient,
     private val imageRequestQueue: RequestQueue
@@ -59,7 +59,7 @@ class YuGiRepo @Inject constructor(
         cardId: Int,
         imageSubDir: File
     ): String? = withContext(Dispatchers.IO) {
-        suspendCancellableCoroutine<String?> { continuation ->
+        suspendCancellableCoroutine { continuation ->
             val filename = "${cardId}.jpg"
             val localFile = File(imageSubDir, filename)
 
@@ -77,7 +77,7 @@ class YuGiRepo @Inject constructor(
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, fos)
                         }
                         if (continuation.isActive) continuation.resume(localFile.absolutePath)
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         localFile.delete()
                         if (continuation.isActive) continuation.resume(null)
                     }
@@ -176,17 +176,18 @@ class YuGiRepo @Inject constructor(
                 )
                 yuGiDAO.insertLocalization(localizationEntity)
 
+                @Suppress("UNNECESSARY_SAFE_CALL")
                 apiCard.typeline?.forEach { typeLineName ->
                     if (typeLineName.isNotBlank()) {
-                        var typeLineEntity = yuGiDAO.getTypeLineByName(typeLineName)
+                        val typeLineEntity = yuGiDAO.getTypeLineByName(typeLineName)
                         val typeLineId = typeLineEntity?.id ?: yuGiDAO.insertTypeLine(TypeLineEntity(name = typeLineName))
                         yuGiDAO.insertCardTypeLineCrossRef(CardTypeLineCrossRef(cardId = apiCard.id, typeLineId = typeLineId))
                     }
                 }
 
-                // MODIFICA QUI: Rimosso if (setNames.contains(apiSet.setName))
+                @Suppress("UNNECESSARY_SAFE_CALL")
                 apiCard.cardSets?.forEach { apiSet ->
-                    var setEntity = yuGiDAO.getSetByName(apiSet.setName)
+                    val setEntity = yuGiDAO.getSetByName(apiSet.setName)
                     val setId = setEntity?.id ?: yuGiDAO.insertSet(SetEntity(name = apiSet.setName))
                     val appearance = CardSetAppearanceEntity(
                         cardId = apiCard.id,
@@ -267,7 +268,7 @@ class YuGiRepo @Inject constructor(
             return@withContext null
         }
 
-        var languageToFetch = getCurrentLanguageParam()
+        val languageToFetch = getCurrentLanguageParam()
         var localization = yuGiDAO.getLocalization(cardId, languageToFetch)
 
         if (localization == null && languageToFetch != "en") {
