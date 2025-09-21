@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.Dimension
@@ -34,6 +35,9 @@ fun MenuView(navController: NavController? = null) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    // Valori specificati dall'utente
+    val titleTopMargin = if (isLandscape) 5.dp else 60.dp
+
     val constraints = ConstraintSet {
         val titleRef = createRefFor("title")
         val button1Ref = createRefFor("button1")
@@ -41,7 +45,6 @@ fun MenuView(navController: NavController? = null) {
         val button3Ref = createRefFor("button3")
         val button4Ref = createRefFor("button4")
 
-        val titleTopMargin = if (isLandscape) 5.dp else 32.dp
         val interButtonMargin = if (isLandscape) 15.dp else 50.dp
         val topBottomChainMargin = if (isLandscape) 10.dp else 20.dp
         val buttonFixedWidth = if (isLandscape) 400.dp else 350.dp
@@ -53,21 +56,19 @@ fun MenuView(navController: NavController? = null) {
         }
 
         constrain(button1Ref) {
-            top.linkTo(titleRef.bottom, margin = topBottomChainMargin) // Margine superiore della catena
+            top.linkTo(titleRef.bottom, margin = topBottomChainMargin) 
             start.linkTo(parent.start)
             end.linkTo(parent.end)
             width = Dimension.value(buttonFixedWidth)
         }
 
         constrain(button2Ref) {
-            // Nessun vincolo verticale esplicito, gestito dalla catena
             start.linkTo(parent.start)
             end.linkTo(parent.end)
             width = Dimension.value(buttonFixedWidth)
         }
 
         constrain(button3Ref) {
-            // Nessun vincolo verticale esplicito, gestito dalla catena
             start.linkTo(parent.start)
             end.linkTo(parent.end)
             width = Dimension.value(buttonFixedWidth)
@@ -77,16 +78,22 @@ fun MenuView(navController: NavController? = null) {
             start.linkTo(parent.start)
             end.linkTo(parent.end)
             width = Dimension.value(buttonFixedWidth)
-            bottom.linkTo(parent.bottom) // << ANCORAGGIO INFERIORE AGGIUNTO (DI NUOVO)
+            bottom.linkTo(parent.bottom) 
         }
 
         createVerticalChain(
             button1Ref,
             button2Ref.withChainParams(topMargin = interButtonMargin),
             button3Ref.withChainParams(topMargin = interButtonMargin),
-            button4Ref.withChainParams(topMargin = interButtonMargin, bottomMargin = topBottomChainMargin), // Il bottomMargin si applica all'ancoraggio parent.bottom
+            button4Ref.withChainParams(topMargin = interButtonMargin, bottomMargin = topBottomChainMargin),
             chainStyle = ChainStyle.Packed
         )
+    }
+
+    val titleTextStyle = if (isLandscape) {
+        _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.headlineMedium
+    } else {
+        _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.headlineMedium.copy(fontSize = 60.sp)
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -105,14 +112,14 @@ fun MenuView(navController: NavController? = null) {
                 Text(
                     text = "Yu-Gi-DB",
                     color = Color.Black,
-                    style = _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.headlineMedium.copy(
+                    style = titleTextStyle.copy(
                         drawStyle = Stroke(width = 9f)
                     )
                 )
                 Text(
                     text = "Yu-Gi-DB",
                     color = _root_ide_package_.com.example.yu_gi_db.ui.theme.LightSilver,
-                    style = _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.headlineMedium
+                    style = titleTextStyle
                 )
             }
 
@@ -122,7 +129,9 @@ fun MenuView(navController: NavController? = null) {
                     _root_ide_package_.com.example.yu_gi_db.ui.theme.RoyalBlueDark.darken(0.6f),
                     _root_ide_package_.com.example.yu_gi_db.ui.theme.MidnightBlue,
                     _root_ide_package_.com.example.yu_gi_db.ui.theme.SapphireBlue,
+                    _root_ide_package_.com.example.yu_gi_db.ui.theme.DeepSkyBlueElectric,
                     _root_ide_package_.com.example.yu_gi_db.ui.theme.ElectricCyan,
+                    _root_ide_package_.com.example.yu_gi_db.ui.theme.DeepSkyBlueElectric,
                     _root_ide_package_.com.example.yu_gi_db.ui.theme.SapphireBlue,
                     _root_ide_package_.com.example.yu_gi_db.ui.theme.MidnightBlue,
                     _root_ide_package_.com.example.yu_gi_db.ui.theme.RoyalBlueDark.darken(0.6f)
