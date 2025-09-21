@@ -891,7 +891,7 @@ private fun AttributeLabel(text: String) {
         text = text,
         style = MaterialTheme.typography.bodyLarge.copy(color = LightSilver),
         modifier = Modifier
-            .padding(start = TEXT_START_END_PADDING)
+            .padding(start = 16.dp + TEXT_START_END_PADDING)
             .width(LABEL_TEXT_WIDTH),
         textAlign = TextAlign.Start,
         maxLines = 1,

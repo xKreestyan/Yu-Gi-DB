@@ -1,5 +1,6 @@
 package com.example.yu_gi_db.views.screen
 
+import android.content.res.Configuration // Import aggiunto
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -12,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration // Import aggiunto
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel // Per hiltViewModel
@@ -53,6 +55,13 @@ fun InitMainScreen(modifier: Modifier = Modifier) {
 
 @Composable
 fun SplashScreen(modifier: Modifier = Modifier) {
+    // Accedi alla configurazione corrente
+    val configuration = LocalConfiguration.current
+    val isPortrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+
+    // Determina il fattore di altezza in base all'orientamento
+    val heightFraction = if (isPortrait) 0.25f else 0.3f // Modificato per landscape a 0.3f
+
     Box {
         BoxWithConstraints(
             modifier = modifier
@@ -66,11 +75,11 @@ fun SplashScreen(modifier: Modifier = Modifier) {
             Box(
                 modifier = modifier
                     .fillMaxSize()
-                    .padding(top = this.maxHeight /(2)+this.maxHeight /(10)),
+                    .padding(top = this.maxHeight / (2) + this.maxHeight / (10)),
                 contentAlignment = Alignment.TopCenter
             ) {
                 WaitIndicatorView(
-                    modifier = Modifier.fillMaxHeight(0.4f)
+                    modifier = Modifier.fillMaxHeight(heightFraction) // Applica il fattore dinamico
                 )
             }
         }

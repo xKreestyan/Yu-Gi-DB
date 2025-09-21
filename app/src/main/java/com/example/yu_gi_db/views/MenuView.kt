@@ -35,7 +35,6 @@ fun MenuView(navController: NavController? = null) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    // Valori specificati dall'utente
     val titleTopMargin = if (isLandscape) 5.dp else 60.dp
 
     val constraints = ConstraintSet {
@@ -91,10 +90,13 @@ fun MenuView(navController: NavController? = null) {
     }
 
     val titleTextStyle = if (isLandscape) {
-        _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.headlineMedium
+        _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.headlineMedium.copy(fontSize = 40.sp)
     } else {
         _root_ide_package_.com.example.yu_gi_db.ui.theme.AppTypography.headlineMedium.copy(fontSize = 60.sp)
     }
+
+    // Determina la larghezza dello stroke in base all'orientamento
+    val titleStrokeWidth = if (isLandscape) 11f else 14f
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -113,7 +115,7 @@ fun MenuView(navController: NavController? = null) {
                     text = "Yu-Gi-DB",
                     color = Color.Black,
                     style = titleTextStyle.copy(
-                        drawStyle = Stroke(width = 9f)
+                        drawStyle = Stroke(width = titleStrokeWidth) // Applica la larghezza dinamica dello stroke
                     )
                 )
                 Text(
